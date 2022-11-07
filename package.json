@@ -1,0 +1,35 @@
+{
+  "name": "hop",
+  "description": "health oracle protocol",
+  "version": "0.0.1",
+  "bin": "src/index.js",
+  "type": "module",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/healthscience/hop.git"
+  },
+  "keywords": [
+    "hop",
+    "ptop",
+    "data",
+    "science",
+    "protocol"
+  ],
+  "author": "aboynejames@gmail.com",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/healthscience/hop/issues"
+  },
+  "homepage": "https://github.com/healthscience/hop#readme",
+  "dependencies": {
+    "hop-message": "^0.0.2",
+    "node-safeflow": "^0.9.28"
+  }
+}
