@@ -1,0 +1,52 @@
+{
+  "name": "peerlink",
+  "version": "0.2.7",
+  "private": false,
+  "type": "module",
+  "bin": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon --inspect src/index.js",
+    "prod": "",
+    "clean": "rm -rf dist build",
+    "transpile": "esbuild --platform=node --bundle --outfile=build/serverfiles.js src/index.js",
+    "compile": "pkg  --public --targets latest-linux-x64 --public-packages '*' --compress brotli --out-path=dist/ build/serverfiles.js",
+    "compile:clean": "rm -rf build",
+    "build": "run-s clean transpile compile compile:clean",
+    "bab": "babel src -d babout"
+  },
+  "dependencies": {
+    "atob": "^2.1.2",
+    "bentobox-ai": "^0.1.2",
+    "chalk": "^2.4.1",
+    "corestore": "^6.0.2",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.0.0",
+    "hyperbee": "^1.10.1",
+    "hypercore": "^9.12.0",
+    "hyperdrive": "^11.0.0-alpha.2",
+    "hyperspace": "^3.19.0",
+    "hyperswarm": "^3.0.2",
+    "hypertrie": "^5.1.3",
+    "librarycomposer": "^0.2.3",
+    "node-safeflow": "^0.9.25",
+    "pkg": "^5.3.1",
+    "pump": "^3.0.0",
+    "sqlite3": "^5.0.2",
+    "throttled-queue": "^2.1.2",
+    "uuid": "^3.3.2",
+    "ws": "^8.2.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "esbuild": "^0.12.15",
+    "nodemon": "^2.0.15"
+  },
+  "pkg": {
+    "output": "dist",
+    "targets": [
+      "node14-linux-arm64"
+    ]
+  }
+}
