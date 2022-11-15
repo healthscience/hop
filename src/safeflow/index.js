@@ -14,13 +14,12 @@ import EventEmitter from 'events'
 import SafeFlow from 'node-safeflow'
 
 const HOP = new SafeFlow()
-console.log('{{SafeFLOW-ECS}}')
 
 class SfRoute extends EventEmitter {
 
   constructor() {
     super()
-    console.log('{{sf-route}}')
+    console.log('{{SafeFLOW-ECS}}')
   }
 
   /**
