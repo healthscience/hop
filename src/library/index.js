@@ -24,7 +24,7 @@ class LibraryRoute extends EventEmitter {
   * @method library
   *
   */
-    library = async function (message) {
+    libraryPath = async function (message) {
     console.log('library')
     // console.log('library')
     // console.log(o)

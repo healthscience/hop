@@ -5,8 +5,7 @@
   "main": "src/index.js",
   "bin": "src/index.js",
   "type": "module",
-  "directories": {
-  },
+  "directories": {},
   "scripts": {
     "start": "node src/index.js",
     "test": "mocha test/*.*"
@@ -29,13 +28,14 @@
   },
   "homepage": "https://github.com/healthscience/hop#readme",
   "dependencies": {
-    "hop-message": "^0.0.2",
+    "hop-message": "^0.0.3",
+    "hyperspace-hop": "^0.0.2",
     "node-safeflow": "^0.9.28",
-    "uuid": "^9.0.0",
-    "ws": "^8.11.0"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "assert": "^2.0.0",
-    "mocha": "^10.0.0"
+    "mocha": "^10.0.0",
+    "ws": "^8.11.0"
   }
 }
