@@ -1,5 +1,5 @@
 {
-  "name": "hop",
+  "name": "hop-ecs",
   "description": "health oracle protocol",
   "version": "0.0.1",
   "main": "src/index.js",
