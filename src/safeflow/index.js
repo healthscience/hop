@@ -28,7 +28,7 @@ class SfRoute extends EventEmitter {
   * @method routeMessage
   *
   */
-  messageRoute = async function () {
+  routeMessage = async function (message) {
     console.log('sf route')
     console.log(message)
     if (message.action === 'selfauth') {

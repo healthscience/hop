@@ -85,9 +85,9 @@ class HOP extends EventEmitter {
         const o = JSON.parse(msg)
         let messageRoute = MessagesFlow.messageIn(o)
         if (messageRoute.type === 'safeflow') {
-          this.SafeRoute.messageRoute(messageRoute)
+          SafeRoute.routeMessage(messageRoute)
         } else if (messageRoute.type === 'library') {
-          this.LibRoute.libraryPath(messageRoute)
+          LibRoute.libraryPath(messageRoute)
         }
       })
 

@@ -9,7 +9,7 @@ describe('bring the protocol to life', function () {
     let hopSF = new liveHOP(options)
     assert.equal(hopSF.options.port, 9888)
 
-    setTimeout(closeHOP, 3000)
+    setTimeout(closeHOP, 3000000)
 
     function closeHOP () {
       console.log('message test out')
