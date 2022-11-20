@@ -25,6 +25,7 @@ import throttledQueue from 'throttled-queue'
 import MessageFlow from 'hop-message'
 import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
+import LibComposer from 'librarycomposer'
 import HyperspaceWorker from './dataapi/hyperSpace.js'
 
 class HOP extends EventEmitter {
@@ -34,7 +35,13 @@ class HOP extends EventEmitter {
     this.options = options
     console.log('{{HOP}}')
     console.log(this.options)
+    this.DataRoute = new HyperspaceWorker()
+    this.SafeRoute = new SfRoute()
+    this.LibRoute = new LibraryRoute(this.DataRoute.liveHyperspace)
+    this.liveLibrary = new LibComposer()
+    this.MessagesFlow = new MessageFlow()
     this.hopConnect()
+    this.sfListeners()
     this.wsocket = {}
   }
 
@@ -45,11 +52,7 @@ class HOP extends EventEmitter {
   */
    hopConnect = function () {
 
-    const SafeRoute = new SfRoute()
-    const LibRoute = new LibraryRoute()
-    const DataRoute = new HyperspaceWorker()
-
-    const MessagesFlow = new MessageFlow()
+    // this.sfListeners()
 
     const options = {
       key: fs.readFileSync(_dirname + '/key.pem'),
@@ -73,43 +76,118 @@ class HOP extends EventEmitter {
     const wsServer = new WebSocketServer({ server })
 
     // WebSocket server
-    wsServer.on('connection', function ws(ws, req) {
+    wsServer.on('connection', (ws) => {
       this.wsocket = ws
+      this.LibRoute.setWebsocket(ws)
       // console.log('peer connected websocket')
       // console.log(wsServer.clients)
       // wsServer.clients.forEach(element => console.log(Object.keys(element)))
       // console.log(wsServer.clients.size)
-      ws.id = uuidv4()
+      this.wsocket.id = uuidv4()
 
-      ws.on('message', async msg => {
+      this.wsocket.on('message', msg => {
+        console.log('mesageINto socket')
         const o = JSON.parse(msg)
-        let messageRoute = MessagesFlow.messageIn(o)
-        if (messageRoute.type === 'safeflow') {
-          SafeRoute.routeMessage(messageRoute)
-        } else if (messageRoute.type === 'library') {
-          LibRoute.libraryPath(messageRoute)
-        }
+        console.log(o)
+        this.messageResponder(o)
       })
 
-      ws.on('close', ws => {
+      this.wsocket.on('close', ws => {
         console.log('close ws direct')
-        jwtList = []
-        pairSockTok = {}
-        liveHOPflow = {}
-        setFlow = false
         // process.exit(0)
       })
 
-      ws.on('error', ws => {
+      this.wsocket.on('error', ws => {
           console.log('socket eeeerrrorrrr')
           // process.exit(1)
       })
+      
     })
 
     process.on('unhandledRejection', function(err) {
     console.log(err)
     })
 
+  }
+
+  /**
+  * listen for outputs from SafeFlow
+  * @method messageResponder
+  *
+  */
+  messageResponder = async function (o) {
+
+    let messageRoute = this.MessagesFlow.messageIn(o)
+    console.log(messageRoute)
+    if (messageRoute.type === 'safeflow') {
+      this.SafeRoute.routeMessage(messageRoute)
+    } else if (messageRoute.type === 'library') {
+      this.LibRoute.libraryPath(messageRoute)
+    }
+  }
+
+  /**
+  * listen for outputs from SafeFlow
+  * @method sfListeners
+  *
+  */
+   sfListeners = async function () {
+    // callbacks for datastores
+    function resultsCallback (entity, data) {
+      let resultMatch = {}
+      if (data !== null) {
+        resultMatch.entity = entity
+        resultMatch.data = data
+      } else {
+        resultMatch.entity = entity
+        resultMatch.data = false
+      }
+      this.SafeRoute.resultsFlow(resultMatch)
+    }
+  
+    // listenr for data back from ECS
+    this.SafeRoute.on('selfauth', (data) => {
+      console.log('self uath listener')
+      data.type = 'auth-hop'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('displayEntity', (data) => {
+      data.type = 'newEntity'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    // let deCount = this.SafeRoute.listenerCount('displayEntity')
+    this.SafeRoute.on('displayEntityRange', (data) => {
+      data.type = 'newEntityRange'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('displayUpdateEntity', (data) => {
+      data.type = 'updateEntity'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('displayUpdateEntityRange', (data) => {
+      data.type = 'updateEntityRange'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('displayEmpty', (data) => {
+      data.type = 'displayEmpty'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('updateModule', async (data) => {
+      let moduleRefContract = liveLibrary.liveComposer.moduleComposer(data, 'update')
+      const savedFeedback = await this.DataRoute.liveHyperspace.savePubliclibrary(moduleRefContract)
+    })
+    this.SafeRoute.on('storePeerResults', async (data) => {
+      const checkResults = await HyperspaceWorker.saveHOPresults(data)
+    })
+  
+    this.SafeRoute.on('checkPeerResults', async (data) => {
+      const checkResults = await HyperspaceWorker.peerResults(data)
+      resultsCallback(data, checkResults)
+    })
+  
+    this.SafeRoute.on('kbledgerEntry', async (data) => {
+      const savedFeedback = await HyperspaceWorker.saveKBLentry(data)
+    })
   }
 
   /**

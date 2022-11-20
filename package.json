@@ -28,8 +28,10 @@
   },
   "homepage": "https://github.com/healthscience/hop#readme",
   "dependencies": {
+    "corestore": "^6.2.0",
     "hop-message": "^0.0.3",
     "hyperspace-hop": "^0.0.2",
+    "librarycomposer": "^0.2.3",
     "node-safeflow": "^0.9.28",
     "uuid": "^9.0.0"
   },

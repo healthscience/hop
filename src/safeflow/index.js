@@ -11,16 +11,16 @@
 */
 import util from 'util'
 import EventEmitter from 'events'
+import crypto from 'crypto'
 import SafeFlowECS from 'node-safeflow'
 
 const SafeFLow = new SafeFlowECS()
 
 class SfRoute extends EventEmitter {
 
-  constructor(ws) {
+  constructor() {
     super()
     console.log('{{SafeFLOW-ECS}}')
-    this.ws = ws
   }
 
   /**
@@ -32,9 +32,9 @@ class SfRoute extends EventEmitter {
     console.log('sf route')
     console.log(message)
     if (message.action === 'selfauth') {
-      this.authHOP()
+      this.authHOP(message)
     } else if (message.action === 'networkexperiment') {
-      this.newSafeflow()
+      this.newSafeflow(message)
     } else if (message.action === 'updatenetworkexperiment') {
       this.updateSafeflow()
     }
@@ -42,69 +42,10 @@ class SfRoute extends EventEmitter {
 
   /**
   * bring all the HOP part to life securely
-  * @method sfListeners
-  *
-  */
-  sfListeners = async function () {
-    // callbacks for datastores
-    function resultsCallback (entity, data) {
-      let resultMatch = {}
-      if (data !== null) {
-        resultMatch.entity = entity
-        resultMatch.data = data
-      } else {
-        resultMatch.entity = entity
-        resultMatch.data = false
-      }
-      SafeFLow.resultsFlow(resultMatch)
-    }
-  
-    // listenr for data back from ECS
-    SafeFLow.on('displayEntity', (data) => {
-      data.type = 'newEntity'
-      ws.send(JSON.stringify(data))
-    })
-    let deCount = HOP.listenerCount('displayEntity')
-    SafeFLow.on('displayEntityRange', (data) => {
-      data.type = 'newEntityRange'
-      ws.send(JSON.stringify(data))
-    })
-    SafeFLow.on('displayUpdateEntity', (data) => {
-      data.type = 'updateEntity'
-      ws.send(JSON.stringify(data))
-    })
-    SafeFLow.on('displayUpdateEntityRange', (data) => {
-      data.type = 'updateEntityRange'
-      ws.send(JSON.stringify(data))
-    })
-    SafeFLow.on('displayEmpty', (data) => {
-      data.type = 'displayEmpty'
-      ws.send(JSON.stringify(data))
-    })
-    SafeFLow.on('updateModule', async (data) => {
-      let moduleRefContract = liveLibrary.liveComposer.moduleComposer(data, 'update')
-      const savedFeedback = await liveHyperspace.savePubliclibrary(moduleRefContract)
-    })
-    SafeFLow.on('storePeerResults', async (data) => {
-      const checkResults = await liveHyperspace.saveHOPresults(data)
-    })
-  
-    SafeFLow.on('checkPeerResults', async (data) => {
-      const checkResults = await liveHyperspace.peerResults(data)
-      resultsCallback(data, checkResults)
-    })
-  
-    SafeFLow.on('kbledgerEntry', async (data) => {
-      const savedFeedback = await liveHyperspace.saveKBLentry(data)
-    })
-  }
-
-  /**
-  * bring all the HOP part to life securely
   * @method safeflowECS
   *
   */
-   authHOP = async function () {
+   authHOP = async function (message) {
     // secure connect to safeFLOW
     // let authStatus = await HOP.networkAuthorisation(message.settings)
     // OK with safeFLOW setup then bring peerDatastores to life
@@ -112,12 +53,15 @@ class SfRoute extends EventEmitter {
     // await peerListeners(ws)
     let jwtList = []
     let authPeer = true
-    let tokenString = cryptmessage.randomBytes(64).toString('hex')
+    let tokenString = crypto.randomBytes(64).toString('hex')
     // jwtList.push(tokenString)
     // create socketid, token pair
     // pairSockTok[ws.id] = tokenString
     // pairSockTok[message.data.peer] = tokenString
-    let authStatus = await HOP.networkAuthorisation(message.settings)
+    let authStatus = await SafeFLow.networkAuthorisation(message.settings)
+    // ws.send(JSON.stringify(authStatus))
+    this.emit('selfauth', authStatus)
+    console.log('after emi')
     // send back JWT
     // authStatus.jwt = tokenString
     // ws.send(JSON.stringify(authStatus))
@@ -185,6 +129,7 @@ class SfRoute extends EventEmitter {
     /* if (jwtStatus === true) {
 
     } */
+    
   }
 
   /**
