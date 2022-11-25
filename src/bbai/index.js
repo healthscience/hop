@@ -11,32 +11,55 @@
 */
 import util from 'util'
 import EventEmitter from 'events'
+import BbAi from 'bentobox-ai'
 
 class BBRoute extends EventEmitter {
 
   constructor() {
     super()
-    console.log('{{sf-route}}')
+    console.log('{{bb-ai}}')
+    this.liveBBAI = new BbAi()
+    this.wsocket = {}
+    this.wlist = []
+  }
+
+  /**
+  * pass on websocket to library
+  * @method setWebsocket
+  *
+  */
+   setWebsocket = function (ws) {
+    console.log('set socket bbai')
+    this.wsocket = ws
+    this.wlist.push(ws)
+  }
+
+  /**
+  * return to both websockets
+  * @method bothSockets
+  *
+  */
+  bothSockets = function (retmesg) {
+    for (let ws of this.wlist) {
+      ws.send(retmesg)
+    }
   }
 
   /**
   * toolkit ai messages
-  * @method bbAI
+  * @method bbAIpath
   *
   */
-   bbAI = async function () {
-    // console.log('token status')
-    // console.log(jwtStatus)
-    if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai') {
+  bbAIpath = async function (message) {
+    if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
-        // send to CALE NLP path
-        console.log('bbqq')
-        console.log(message.data)
-        let replyData = liveBBAI.nlpflow(message.data.text)
+        // send to NPL rules
+        let replyData = this.liveBBAI.nlpflow(message.data.text)
         let bbReply = {}
         bbReply.type = 'bbai-reply'
         bbReply.data = replyData
-        ws.send(JSON.stringify(bbReply))
+        this.bothSockets(JSON.stringify(bbReply))
+        // ws.send(JSON.stringify(bbReply))
       } else if (message.action === 'future') {
         // send to routine for prediction or to chat interface to say CALE cannot help right now
         /* let futureData = liveBBAI.routineFuture()

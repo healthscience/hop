@@ -13,14 +13,20 @@ import util from 'util'
 import EventEmitter from 'events'
 import crypto from 'crypto'
 import SafeFlowECS from 'node-safeflow'
+import LibComposer from 'librarycomposer'
 
-const SafeFLow = new SafeFlowECS()
 
 class SfRoute extends EventEmitter {
 
-  constructor() {
+  constructor(HyperSpace) {
     super()
     console.log('{{SafeFLOW-ECS}}')
+    this.wsocket = {}
+    this.wlist = []
+    this.HyperSpace = HyperSpace
+    this.liveLibrary = new LibComposer()
+    this.SafeFlow = new SafeFlowECS(HyperSpace)
+    this.sfListeners()
   }
 
   /**
@@ -29,14 +35,34 @@ class SfRoute extends EventEmitter {
   *
   */
   routeMessage = async function (message) {
-    console.log('sf route')
-    console.log(message)
     if (message.action === 'selfauth') {
       this.authHOP(message)
     } else if (message.action === 'networkexperiment') {
       this.newSafeflow(message)
     } else if (message.action === 'updatenetworkexperiment') {
-      this.updateSafeflow()
+      this.updateSafeflow(message)
+    }
+  }
+
+  /**
+  * pass on websocket to library
+  * @method setWebsocket
+  *
+  */
+  setWebsocket = function (ws) {
+    console.log('set socket safeflow')
+    this.wsocket = ws
+    this.wlist.push(ws)
+  }
+
+  /**
+  * return to both websockets
+  * @method bothSockets
+  *
+  */
+  bothSockets = function (retmesg) {
+    for (let ws of this.wlist) {
+      ws.send(retmesg)
     }
   }
 
@@ -58,10 +84,10 @@ class SfRoute extends EventEmitter {
     // create socketid, token pair
     // pairSockTok[ws.id] = tokenString
     // pairSockTok[message.data.peer] = tokenString
-    let authStatus = await SafeFLow.networkAuthorisation(message.settings)
+    let authStatus = await this.SafeFlow.networkAuthorisation(message.settings)
     // ws.send(JSON.stringify(authStatus))
     this.emit('selfauth', authStatus)
-    console.log('after emi')
+    console.log('after self auth')
     // send back JWT
     // authStatus.jwt = tokenString
     // ws.send(JSON.stringify(authStatus))
@@ -139,11 +165,12 @@ class SfRoute extends EventEmitter {
   */
   newSafeflow = async function (message) {
     // send summary info that SafeFLow has received NXP bundle
-    let ecsData = await SafeFLow.startFlow(message.data)
+    let ecsData = await this.SafeFlow.startFlow(message.data)
     let summaryECS = {}
     summaryECS.type = 'ecssummary'
     summaryECS.data = ecsData
-    // ws.send(JSON.stringify(summaryECS)
+    this.bothSockets(JSON.stringify(summaryECS))
+    // this.wsocket.send(JSON.stringify(summaryECS))
   }
 
   /**
@@ -152,7 +179,79 @@ class SfRoute extends EventEmitter {
   *
   */
   updateSafeflow = async function (message) {
-    let ecsDataUpdate = await SafeFLow.startFlow(message.data)
+    let ecsDataUpdate = await this.SafeFlow.startFlow(message.data)
+  }
+
+  /**
+  * listen for outputs from SafeFlow
+  * @method sfListeners
+  *
+  */
+  sfListeners = async function () {
+    // listenr for data back from ECS
+    this.on('selfauth', (data) => {
+      this.emit('sfauth', data)
+    })
+    this.SafeFlow.on('displayEntity', (data) => {
+      data.type = 'newEntity'
+      this.bothSockets(JSON.stringify(data))
+      // this.wsocket.send(JSON.stringify(data))
+    })
+    // let deCount = this.SafeRoute.listenerCount('displayEntity')
+    this.SafeFlow.on('displayEntityRange', (data) => {
+      data.type = 'newEntityRange'
+      this.bothSockets(JSON.stringify(data))
+      // this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeFlow.on('displayUpdateEntity', (data) => {
+      data.type = 'updateEntity'
+      this.bothSockets(JSON.stringify(data))
+      // this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeFlow.on('displayUpdateEntityRange', (data) => {
+      data.type = 'updateEntityRange'
+      this.bothSockets(JSON.stringify(data))
+      // this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeFlow.on('displayEmpty', (data) => {
+      data.type = 'displayEmpty'
+      this.bothSockets(JSON.stringify(data))
+      // this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeFlow.on('updateModule', async (data) => {
+      let moduleRefContract = this.liveLibrary.liveComposer.moduleComposer(data, 'update')
+      const savedFeedback = await this.HyperSpace.savePubliclibrary(moduleRefContract)
+    })
+    this.SafeFlow.on('storePeerResults', async (data) => {
+      const checkResults = await this.HyperSpace.saveHOPresults(data)
+    })
+  
+    this.SafeFlow.on('checkPeerResults', async (data) => {
+      const checkResults = await this.HyperSpace.peerResults(data)
+      this.resultsCallback(data, checkResults)
+    })
+  
+    this.SafeFlow.on('kbledgerEntry', async (data) => {
+      const savedFeedback = await this.HyperSpace.saveKBLentry(data)
+    })
+  }
+
+  /**
+  * return results to Peer
+  * @method resultsCallback
+  *
+  */
+   resultsCallback =  function (entity, data) {
+    // callbacks for datastores
+    let resultMatch = {}
+    if (data !== null) {
+      resultMatch.entity = entity
+      resultMatch.data = data
+    } else {
+      resultMatch.entity = entity
+      resultMatch.data = false
+    }
+    this.SafeFlow.resultsFlow(resultMatch)
   }
 
 }

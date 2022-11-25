@@ -18,14 +18,12 @@ const _dirname = typeof __dirname !== 'undefined'
   : dirname(fileURLToPath(import.meta.url))
 import { createServer } from 'https'
 import fs from 'fs'
-import crypto from 'crypto'
 import { WebSocketServer } from 'ws'
 import { v4 as uuidv4 } from 'uuid'
-import throttledQueue from 'throttled-queue'
 import MessageFlow from 'hop-message'
 import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
-import LibComposer from 'librarycomposer'
+import BBRoute from './bbai/index.js'
 import HyperspaceWorker from './dataapi/hyperSpace.js'
 
 class HOP extends EventEmitter {
@@ -36,13 +34,14 @@ class HOP extends EventEmitter {
     console.log('{{HOP}}')
     console.log(this.options)
     this.DataRoute = new HyperspaceWorker()
-    this.SafeRoute = new SfRoute()
+    this.SafeRoute = new SfRoute(this.DataRoute.liveHyperspace)
     this.LibRoute = new LibraryRoute(this.DataRoute.liveHyperspace)
-    this.liveLibrary = new LibComposer()
+    this.BBRoute = new BBRoute()
     this.MessagesFlow = new MessageFlow()
     this.hopConnect()
-    this.sfListeners()
     this.wsocket = {}
+    this.socketCount = 0
+    this.listenSF()
   }
 
   /**
@@ -50,9 +49,7 @@ class HOP extends EventEmitter {
   * @method hopConnect
   *
   */
-   hopConnect = function () {
-
-    // this.sfListeners()
+   hopConnect = async function () {
 
     const options = {
       key: fs.readFileSync(_dirname + '/key.pem'),
@@ -76,25 +73,31 @@ class HOP extends EventEmitter {
     const wsServer = new WebSocketServer({ server })
 
     // WebSocket server
-    wsServer.on('connection', (ws) => {
+    wsServer.on('connection', async (ws) => {
+      console.log('ws live')
       this.wsocket = ws
       this.LibRoute.setWebsocket(ws)
+      this.SafeRoute.setWebsocket(ws)
+      // console.log(this.DataRoute)
+      this.DataRoute.liveHyperspace.setWebsocket(ws)
+      this.BBRoute.setWebsocket(ws)
+      // this.socketCount++
       // console.log('peer connected websocket')
       // console.log(wsServer.clients)
       // wsServer.clients.forEach(element => console.log(Object.keys(element)))
       // console.log(wsServer.clients.size)
       this.wsocket.id = uuidv4()
 
-      this.wsocket.on('message', msg => {
-        console.log('mesageINto socket')
+      this.wsocket.on('message', async (msg) => {
+        // console.log('mesageINto socket')
         const o = JSON.parse(msg)
-        console.log(o)
+        // console.log(o)
         this.messageResponder(o)
       })
 
       this.wsocket.on('close', ws => {
         console.log('close ws direct')
-        // process.exit(0)
+        process.exit(0)
       })
 
       this.wsocket.on('error', ws => {
@@ -109,6 +112,28 @@ class HOP extends EventEmitter {
     })
 
   }
+  
+  /**
+  * listener from SafeFLOW router
+  * @method listenSF
+  *
+  */
+  listenSF = async function () {
+    this.SafeRoute.on('sfauth', async (data) => {
+      await this.liveHyperspace()
+      data.type = 'auth-hop'
+      this.wsocket.send(JSON.stringify(data))
+    })
+  }    
+
+  /**
+  * setup hyperspace
+  * @method liveHyperspace
+  *
+  */
+   liveHyperspace = async function () {
+    await this.DataRoute.liveHyperspace.startHyperspace()
+  }
 
   /**
   * listen for outputs from SafeFlow
@@ -116,78 +141,17 @@ class HOP extends EventEmitter {
   *
   */
   messageResponder = async function (o) {
-
     let messageRoute = this.MessagesFlow.messageIn(o)
-    console.log(messageRoute)
+    // console.log(messageRoute)
     if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
       this.LibRoute.libraryPath(messageRoute)
+    } else if (messageRoute.type === 'bentospace') {
+      this.LibRoute.bentoPath(messageRoute)
+    } else if (messageRoute.type === 'bbai-reply') {
+      this.BBRoute.bbAIpath(messageRoute)
     }
-  }
-
-  /**
-  * listen for outputs from SafeFlow
-  * @method sfListeners
-  *
-  */
-   sfListeners = async function () {
-    // callbacks for datastores
-    function resultsCallback (entity, data) {
-      let resultMatch = {}
-      if (data !== null) {
-        resultMatch.entity = entity
-        resultMatch.data = data
-      } else {
-        resultMatch.entity = entity
-        resultMatch.data = false
-      }
-      this.SafeRoute.resultsFlow(resultMatch)
-    }
-  
-    // listenr for data back from ECS
-    this.SafeRoute.on('selfauth', (data) => {
-      console.log('self uath listener')
-      data.type = 'auth-hop'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    this.SafeRoute.on('displayEntity', (data) => {
-      data.type = 'newEntity'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    // let deCount = this.SafeRoute.listenerCount('displayEntity')
-    this.SafeRoute.on('displayEntityRange', (data) => {
-      data.type = 'newEntityRange'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    this.SafeRoute.on('displayUpdateEntity', (data) => {
-      data.type = 'updateEntity'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    this.SafeRoute.on('displayUpdateEntityRange', (data) => {
-      data.type = 'updateEntityRange'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    this.SafeRoute.on('displayEmpty', (data) => {
-      data.type = 'displayEmpty'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    this.SafeRoute.on('updateModule', async (data) => {
-      let moduleRefContract = liveLibrary.liveComposer.moduleComposer(data, 'update')
-      const savedFeedback = await this.DataRoute.liveHyperspace.savePubliclibrary(moduleRefContract)
-    })
-    this.SafeRoute.on('storePeerResults', async (data) => {
-      const checkResults = await HyperspaceWorker.saveHOPresults(data)
-    })
-  
-    this.SafeRoute.on('checkPeerResults', async (data) => {
-      const checkResults = await HyperspaceWorker.peerResults(data)
-      resultsCallback(data, checkResults)
-    })
-  
-    this.SafeRoute.on('kbledgerEntry', async (data) => {
-      const savedFeedback = await HyperspaceWorker.saveKBLentry(data)
-    })
   }
 
   /**
