@@ -17,7 +17,7 @@ class BBRoute extends EventEmitter {
 
   constructor() {
     super()
-    console.log('{{bb-ai}}')
+    this.live = true
     this.liveBBAI = new BbAi()
     this.wsocket = {}
     this.wlist = []
@@ -29,7 +29,6 @@ class BBRoute extends EventEmitter {
   *
   */
    setWebsocket = function (ws) {
-    console.log('set socket bbai')
     this.wsocket = ws
     this.wlist.push(ws)
   }

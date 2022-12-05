@@ -17,7 +17,7 @@ class LibraryRoute extends EventEmitter {
 
   constructor(HyperSpace) {
     super()
-    console.log('{{library-route}}')
+    this.live = true
     this.liveComposer = new LibComposer()
     this.liveHyperspace = HyperSpace
     this.wsocket = {}
@@ -30,7 +30,6 @@ class LibraryRoute extends EventEmitter {
   *
   */
   setWebsocket = function (ws) {
-    console.log('set socket library')
     this.wsocket = ws
     this.wlist.push(ws)
   }
@@ -52,7 +51,6 @@ class LibraryRoute extends EventEmitter {
   *
   */
     libraryPath = async function (message) {
-    // console.log('library')
     // console.log('library')
     // console.log(o)
     // library routing
@@ -144,7 +142,8 @@ class LibraryRoute extends EventEmitter {
     } else if (message.reftype.trim() === 'datatype') {
       // query peer datastore or save dataatype ref contract
       if (message.action === 'GET') {
-        const datatypeList = await this.liveHyperspace.getPublicLibrary('datatype')
+        const datatypeRC = await this.liveHyperspace.getPublicLibrary(message.data)
+        this.callbackDatatype(datatypeRC)
       } else {
         // save a new refContract
         const newRefContract = message.refContract
@@ -447,9 +446,21 @@ class LibraryRoute extends EventEmitter {
     // this.wsocket.send(JSON.stringify(peerNData))
   }
 
+
+  /**
+  * return an individual ref contract datatype
+  * @method 
+  */
+  callbackDatatype = function (data) {
+    let libraryData = {}
+    libraryData.type = 'datatype-rc'
+    libraryData.data = data
+    this.bothSockets(JSON.stringify(libraryData))
+  }
+
   /**
   * call back
-  * @method 
+  * @method callbacklibrary
   */
   callbacklibrary = function (data) {
     // pass to sort data into ref contract types

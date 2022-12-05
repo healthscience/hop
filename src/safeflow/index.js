@@ -20,7 +20,7 @@ class SfRoute extends EventEmitter {
 
   constructor(HyperSpace) {
     super()
-    console.log('{{SafeFLOW-ECS}}')
+    this.live = true
     this.wsocket = {}
     this.wlist = []
     this.HyperSpace = HyperSpace
@@ -36,11 +36,11 @@ class SfRoute extends EventEmitter {
   */
   routeMessage = async function (message) {
     if (message.action === 'selfauth') {
-      this.authHOP(message)
+      await this.authHOP(message)
     } else if (message.action === 'networkexperiment') {
-      this.newSafeflow(message)
+      await this.newSafeflow(message)
     } else if (message.action === 'updatenetworkexperiment') {
-      this.updateSafeflow(message)
+      await this.updateSafeflow(message)
     }
   }
 
@@ -50,7 +50,6 @@ class SfRoute extends EventEmitter {
   *
   */
   setWebsocket = function (ws) {
-    console.log('set socket safeflow')
     this.wsocket = ws
     this.wlist.push(ws)
   }

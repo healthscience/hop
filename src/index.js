@@ -31,8 +31,6 @@ class HOP extends EventEmitter {
   constructor(options) {
     super()
     this.options = options
-    console.log('{{HOP}}')
-    console.log(this.options)
     this.DataRoute = new HyperspaceWorker()
     this.SafeRoute = new SfRoute(this.DataRoute.liveHyperspace)
     this.LibRoute = new LibraryRoute(this.DataRoute.liveHyperspace)
@@ -49,7 +47,7 @@ class HOP extends EventEmitter {
   * @method hopConnect
   *
   */
-   hopConnect = async function () {
+   hopConnect = function () {
 
     const options = {
       key: fs.readFileSync(_dirname + '/key.pem'),
@@ -66,7 +64,7 @@ class HOP extends EventEmitter {
     })
 
     server.listen(this.options.port, () => {
-      console.log('listening on *:9888')
+      console.log('listening on *:' + this.options.port)
       console.log(process.env.npm_package_version)
     })
 
@@ -74,7 +72,6 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
-      console.log('ws live')
       this.wsocket = ws
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
@@ -88,7 +85,7 @@ class HOP extends EventEmitter {
       // console.log(wsServer.clients.size)
       this.wsocket.id = uuidv4()
 
-      this.wsocket.on('message', async (msg) => {
+      this.wsocket.on('message', (msg) => {
         // console.log('mesageINto socket')
         const o = JSON.parse(msg)
         // console.log(o)
@@ -140,7 +137,7 @@ class HOP extends EventEmitter {
   * @method messageResponder
   *
   */
-  messageResponder = async function (o) {
+  messageResponder = function (o) {
     let messageRoute = this.MessagesFlow.messageIn(o)
     // console.log(messageRoute)
     if (messageRoute.type === 'safeflow') {
