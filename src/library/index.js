@@ -154,7 +154,8 @@ class LibraryRoute extends EventEmitter {
     } else if (message.reftype.trim() === 'compute') {
       // query peer hypertrie for datatypes
       if (message.action === 'GET') {
-
+        const datatypeRC = await this.liveHyperspace.getPublicLibrary(message.data)
+        this.callbackDatatype(datatypeRC)
         // peerStoreLive.peerGETRefContracts('compute', callback)
       } else {
         // save a new refContract
