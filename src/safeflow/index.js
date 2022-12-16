@@ -26,6 +26,7 @@ class SfRoute extends EventEmitter {
     this.HyperSpace = HyperSpace
     this.liveLibrary = new LibComposer()
     this.SafeFlow = new SafeFlowECS(HyperSpace)
+    this.SafeFlow.entityGetter()
     this.sfListeners()
   }
 
@@ -86,7 +87,6 @@ class SfRoute extends EventEmitter {
     let authStatus = await this.SafeFlow.networkAuthorisation(message.settings)
     // ws.send(JSON.stringify(authStatus))
     this.emit('selfauth', authStatus)
-    console.log('after self auth')
     // send back JWT
     // authStatus.jwt = tokenString
     // ws.send(JSON.stringify(authStatus))

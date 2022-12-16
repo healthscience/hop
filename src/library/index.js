@@ -12,6 +12,7 @@
 import util from 'util'
 import EventEmitter from 'events'
 import LibComposer from 'librarycomposer'
+import { receiveMessageOnPort } from 'worker_threads'
 
 class LibraryRoute extends EventEmitter {
 
@@ -200,9 +201,38 @@ class LibraryRoute extends EventEmitter {
         // this.wsocket.send(JSON.stringify(saveFeedback))
       }
     } else if (message.reftype.trim() === 'experiment') {
-      // query peer hypertrie for
       if (message.action === 'GET') {
-        // peerStoreLive.peerGETRefContracts('experiment', callback)
+        const newRefContract = message.refContract
+        let contractInfo = await this.liveHyperspace.getPeerLibrary(message.data.refcontract)
+        // look up module contracts
+        let expandedModContact = []
+        for (let mod of contractInfo.value.modules) {
+          let modFull = await this.liveHyperspace.getPeerLibrary(mod)
+          expandedModContact.push(modFull)
+        }
+        // contractInfo.modules = expandedModContact
+        // lookup reference contracts wihin modules
+        let refContractsDetail = []
+        for (let modRef of expandedModContact) {
+          if (modRef.value.type === 'data') {
+            let refContract = await this.liveHyperspace.getPublicLibrary(modRef.value.info.data)
+            modRef.value.info.data = refContract
+            refContractsDetail.push(modRef)
+          } else if (modRef.value.type === 'compute') {
+            let refContract = await this.liveHyperspace.getPublicLibrary(modRef.value.info.compute)
+            modRef.value.info.data = refContract
+            refContractsDetail.push(modRef)
+          } else if (modRef.value.type === 'question') {
+            // let refContract = await this.liveHyperspace.getPeerLibrary(modRef.value.info.question)
+            refContractsDetail.push(modRef)
+          } else if (modRef.value.type === 'visualise') {
+            let refContract = await this.liveHyperspace.getPublicLibrary(modRef.value.info.visualise)
+            modRef.value.info.visualise = refContract
+            refContractsDetail.push(modRef)
+          }
+        }
+        contractInfo.modules = refContractsDetail
+        this.callbackPeerlibrary(contractInfo)
       } else {
         // save a new refContract
         // const savedFeedback = // peerStoreLive.libraryStoreRefContract(o)
@@ -481,6 +511,18 @@ class LibraryRoute extends EventEmitter {
     // this.wsocket.send(JSON.stringify(libraryData))
   }
 
+    /**
+  * call back
+  * @method callbackPeerlibrary
+  */
+  callbackPeerlibrary = function (data) {
+    let libraryData = {}
+    libraryData.type = 'peerlibrary'
+    libraryData.refcontract = 'experiment'
+    libraryData.data = data
+    this.bothSockets(JSON.stringify(libraryData))
+  }
+
   /**
   * call back
   * @method 
@@ -574,8 +616,6 @@ class LibraryRoute extends EventEmitter {
   */
   callbackNXPDelete  = function (data) {
     // pass to sort data into ref contract types
-    console.log('peerprivate delete')
-    console.log(data)
     let libraryData = {}
     libraryData.data = data
     libraryData.type = 'peerprivatedelete'

@@ -86,7 +86,6 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', (msg) => {
-        // console.log('mesageINto socket')
         const o = JSON.parse(msg)
         // console.log(o)
         this.messageResponder(o)
@@ -117,7 +116,7 @@ class HOP extends EventEmitter {
   */
   listenSF = async function () {
     this.SafeRoute.on('sfauth', async (data) => {
-      await this.liveHyperspace()
+      // await this.liveHyperspace()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
