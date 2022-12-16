@@ -33,7 +33,7 @@
     "hop-message": "^0.0.4",
     "hyperspace-hop": "^0.0.4",
     "librarycomposer": "^0.2.3",
-    "node-safeflow": "^0.9.29",
+    "node-safeflow": "^0.9.30",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
   },
