@@ -72,6 +72,8 @@ class SfRoute extends EventEmitter {
   *
   */
    authHOP = async function (message) {
+    console.log('auth HOP start')
+    console.log(message)
     // secure connect to safeFLOW
     // let authStatus = await HOP.networkAuthorisation(message.settings)
     // OK with safeFLOW setup then bring peerDatastores to life

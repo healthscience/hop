@@ -72,6 +72,7 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
+      console.log('sf socket live')
       this.wsocket = ws
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
@@ -116,7 +117,7 @@ class HOP extends EventEmitter {
   */
   listenSF = async function () {
     this.SafeRoute.on('sfauth', async (data) => {
-      // await this.liveHyperspace()
+      await this.setupHyperspace()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
@@ -124,10 +125,11 @@ class HOP extends EventEmitter {
 
   /**
   * setup hyperspace
-  * @method liveHyperspace
+  * @method setupHyperspace
   *
   */
-   liveHyperspace = async function () {
+   setupHyperspace = async function () {
+    console.log('start hyper space')
     await this.DataRoute.liveHyperspace.startHyperspace()
   }
 
