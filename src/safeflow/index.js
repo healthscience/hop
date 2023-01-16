@@ -18,14 +18,14 @@ import LibComposer from 'librarycomposer'
 
 class SfRoute extends EventEmitter {
 
-  constructor(HyperSpace) {
+  constructor(Holepunch) {
     super()
     this.live = true
     this.wsocket = {}
     this.wlist = []
-    this.HyperSpace = HyperSpace
+    this.holepunchLive = Holepunch
     this.liveLibrary = new LibComposer()
-    this.SafeFlow = new SafeFlowECS(HyperSpace)
+    this.SafeFlow = new SafeFlowECS(Holepunch)
     this.SafeFlow.entityGetter()
     this.sfListeners()
   }
@@ -72,8 +72,6 @@ class SfRoute extends EventEmitter {
   *
   */
    authHOP = async function (message) {
-    console.log('auth HOP start')
-    console.log(message)
     // secure connect to safeFLOW
     // let authStatus = await HOP.networkAuthorisation(message.settings)
     // OK with safeFLOW setup then bring peerDatastores to life
@@ -88,7 +86,7 @@ class SfRoute extends EventEmitter {
     // pairSockTok[message.data.peer] = tokenString
     let authStatus = await this.SafeFlow.networkAuthorisation(message.settings)
     // ws.send(JSON.stringify(authStatus))
-    this.emit('selfauth', authStatus)
+    this.emit('auth-response', authStatus)
     // send back JWT
     // authStatus.jwt = tokenString
     // ws.send(JSON.stringify(authStatus))
@@ -190,7 +188,7 @@ class SfRoute extends EventEmitter {
   */
   sfListeners = async function () {
     // listenr for data back from ECS
-    this.on('selfauth', (data) => {
+    this.on('auth-response', (data) => {
       this.emit('sfauth', data)
     })
     this.SafeFlow.on('displayEntity', (data) => {

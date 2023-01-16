@@ -16,11 +16,11 @@ import { receiveMessageOnPort } from 'worker_threads'
 
 class LibraryRoute extends EventEmitter {
 
-  constructor(HyperSpace) {
+  constructor(Holepunch) {
     super()
     this.live = true
     this.liveComposer = new LibComposer()
-    this.liveHyperspace = HyperSpace
+    this.liveHolepunch = Holepunch
     this.wsocket = {}
     this.wlist = []
   }
@@ -51,7 +51,7 @@ class LibraryRoute extends EventEmitter {
   * @method library
   *
   */
-    libraryPath = async function (message) {
+  libraryPath = async function (message) {
     // console.log('library')
     // console.log(o)
     // library routing
@@ -60,11 +60,11 @@ class LibraryRoute extends EventEmitter {
       // console.log(o)
       // save protocol original file save and JSON for HOP
       if (message.data.source === 'local') {
-        let fileInfo = await this.liveHyperspace.hyperdriveFolderFiles(o)
+        let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveFolderFiles(message)
         let fileFeedback = {}
         fileFeedback.success = true
-        fileFeedback.path = fileInfmessage.filename
-        fileFeedback.columns = fileInfmessage.header.splitwords
+        fileFeedback.path = fileInfo.filename
+        fileFeedback.columns = fileInfo.header.splitwords
         let storeFeedback = {}
         storeFeedback.type = 'file-save'
         storeFeedback.action = 'library'
@@ -79,7 +79,7 @@ class LibraryRoute extends EventEmitter {
       console.log('request to sync data for a contract')
       console.log(message.data)
       // query hopresults per key
-      const dataResults = this.liveHyperspace.peerResults(message.data.uuid)
+      const dataResults = this.liveHolepunch.peerResults(message.data.uuid)
       // then replicate part of hopResults hyerbee with the peer, first make hopresult hyperbee replicatabl?
       // route to peerstore to replicate
     } else if (message.reftype.trim() === 'save-json-json') {
@@ -89,7 +89,7 @@ class LibraryRoute extends EventEmitter {
           // liveParser.webJSONfile(o, ws)
         }
     } else if (message.reftype.trim() === 'save-sqlite-file') {
-      let fileInfo = await this.liveHyperspace.hyperdriveFilesave(message.data.type, message.data.name, message.data.path)
+      let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveFilesave(message.data.type, message.data.name, message.data.path)
       let fileFeedback = {}
       fileFeedback.success = true
       fileFeedback.path = fileInfmessage.filename
@@ -101,67 +101,67 @@ class LibraryRoute extends EventEmitter {
       // this.wsocket.send(JSON.stringify(storeFeedback))
     } else if (message.reftype.trim() === 'viewpublickey') {
       // two peer syncing reference contracts
-      // const pubkey = this.liveHyperspace. // peerStoreLive.singlePublicKey('', callbackKey)
+      // const pubkey = this.liveHolepunch. // peerStoreLive.singlePublicKey('', callbackKey)
     } else if (message.reftype.trim() === 'openlibrary') {
       // two peer syncing reference contracts
-      // const pubkey = this.liveHyperspace. // peerStoreLive.openLibrary(message.data, callbackOpenLibrary)
+      // const pubkey = this.liveHolepunch. // peerStoreLive.openLibrary(message.data, callbackOpenLibrary)
     } else if (message.reftype.trim() === 'keymanagement') {
-      // this.liveHyperspace.
+      // this.liveHolepunch.
       // peerStoreLive.keyManagement(callbackKey)
     } else if (message.reftype.trim() === 'peer-add') {
       // peerStoreLive.addPeer(message.data, callbackPeerNetwork)
     } else if (message.reftype.trim() === 'warm-peers') {
-      // this.liveHyperspace.
+      // this.liveHolepunch.
       // peerStoreLive.listWarmPeers(callbackWarmPeers, callbacklibrary)
     } else if (message.reftype.trim() === 'addpubliclibraryentry') {
       // take the ID of nxp selected to added to peers own public library
-      let addPubRefc = await this.liveHyperspace.publicLibraryAddentry(message.data)
+      let addPubRefc = await this.liveHolepunch.BeeData.publicLibraryAddentry(message.data)
       this.callbackPlibraryAdd(addPubRefc)
     } else if (message.reftype.trim() === 'removetemppubliclibrary') {
       // remove temp peers friends library
-      // this.liveHyperspace.
+      // this.liveHolepunch.
       // peerStoreLive.publicLibraryRemoveTempNL(message.data, 'temp')
     } else if (message.reftype.trim() === 'replicatekey') {
       // two peer syncing public reference contracts
-      let repDataStatus = await this.liveHyperspace.replicatePubliclibrary(message.publickey)
+      let repDataStatus = await this.liveHolepunch.BeeData.replicatePubliclibrary(message.publickey)
       this.callbackReplicatereceive(repDataStatus)
     } else if (message.reftype.trim() === 'view-replicatelibrary') {
-      let repData = await this.liveHyperspace.getReplicatePublicLibrary(message.publickey)
+      let repData = await this.liveHolepunch.BeeData.getReplicatePublicLibrary(message.publickey)
       this.callbackReplicatelibrary(repData)
     } else if (message.reftype.trim() === 'publiclibrary') {
-      // await this.liveHyperspace.getPublicLibrary('contracthash')
-      let publibData = await this.liveHyperspace.getPublicLibraryRange()
-      await this.liveHyperspace.getPublicLibraryLast()
+      // await this.liveHolepunch.getPublicLibrary('contracthash')
+      let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange()
+      await this.liveHolepunch.BeeData.getPublicLibraryLast()
       this.callbacklibrary(publibData)
     } else if (message.reftype.trim() === 'privatelibrary') {
-      let contractData = await this.liveHyperspace.getPeerLibraryRange()
+      let contractData = await this.liveHolepunch.BeeData.getPeerLibraryRange()
       this.callbackPeerLib(contractData)
     } else if (message.reftype.trim() === 'remove-nxp') {
       console.log('remove nxp from start ')
-      let removeNXPdashboard = await this.liveHyperspace.deleteRefcontPeerlibrary(message.data)
+      let removeNXPdashboard = await this.liveHolepunch.BeeData.deleteRefcontPeerlibrary(message.data)
       this.callbackNXPDelete(removeNXPdashboard)
     } else if (message.reftype.trim() === 'datatype') {
       // query peer datastore or save dataatype ref contract
       if (message.action === 'GET') {
-        const datatypeRC = await this.liveHyperspace.getPublicLibrary(message.data)
+        const datatypeRC = await this.liveHolepunch.BeeData.getPublicLibrary(message.data)
         this.callbackDatatype(datatypeRC)
       } else {
         // save a new refContract
         const newRefContract = message.refContract
-        let saveFeedback = await this.liveHyperspace.savePubliclibrary(o)
+        let saveFeedback = await this.liveHolepunch.BeeData.savePubliclibrary(message)
         this.bothSockets(JSON.stringify(saveFeedback))
         // this.wsocket.send(JSON.stringify(saveFeedback))
       }
     } else if (message.reftype.trim() === 'compute') {
       // query peer hypertrie for datatypes
       if (message.action === 'GET') {
-        const datatypeRC = await this.liveHyperspace.getPublicLibrary(message.data)
+        const datatypeRC = await this.liveHolepunch.BeeData.getPublicLibrary(message)
         this.callbackDatatype(datatypeRC)
         // peerStoreLive.peerGETRefContracts('compute', callback)
       } else {
         // save a new refContract
         const newRefContract = message.refContract
-        let saveFeedback = await this.liveHyperspace.savePubliclibrary(o)
+        let saveFeedback = await this.liveHolepunch.BeeData.savePubliclibrary(message)
         this.bothSockets(JSON.stringify(saveFeedback))
         // this.wsocket.send(JSON.stringify(saveFeedback))
       }
@@ -172,7 +172,7 @@ class LibraryRoute extends EventEmitter {
       } else {
         // save a new refContract
         const newRefContract = message.refContract
-        let saveFeedback = await this.liveHyperspace.savePubliclibrary(o)
+        let saveFeedback = await this.liveHolepunch.BeeData.savePubliclibrary(message)
         this.bothSockets(JSON.stringify(saveFeedback))
         // this.wsocket.send(JSON.stringify(saveFeedback))
       }
@@ -185,7 +185,7 @@ class LibraryRoute extends EventEmitter {
         // const savedFeedback = // peerStoreLive.libraryStoreRefContract(o)
         // this.wsocket.send(JSON.stringify(savedFeedback))
         const newRefContract = message.refContract
-        let saveFeedback = await this.liveHyperspace.savePubliclibrary(o)
+        let saveFeedback = await this.liveHolepunch.BeeData.savePubliclibrary(message)
         this.bothSockets(JSON.stringify(saveFeedback))
         // this.wsocket.send(JSON.stringify(saveFeedback))
       }
@@ -196,18 +196,18 @@ class LibraryRoute extends EventEmitter {
       } else {
         // save a new refContract
         const newRefContract = message.refContract
-        let saveFeedback = await this.liveHyperspace.savePubliclibrary(o)
+        let saveFeedback = await this.liveHolepunch.BeeData.savePubliclibrary(message)
         this.bothSockets(JSON.stringify(saveFeedback))
         // this.wsocket.send(JSON.stringify(saveFeedback))
       }
     } else if (message.reftype.trim() === 'experiment') {
       if (message.action === 'GET') {
         const newRefContract = message.refContract
-        let contractInfo = await this.liveHyperspace.getPeerLibrary(message.data.refcontract)
+        let contractInfo = await this.liveHolepunch.BeeData.getPeerLibrary(message.data.refcontract)
         // look up module contracts
         let expandedModContact = []
         for (let mod of contractInfo.value.modules) {
-          let modFull = await this.liveHyperspace.getPeerLibrary(mod)
+          let modFull = await this.liveHolepunch.BeeData.getPeerLibrary(mod)
           expandedModContact.push(modFull)
         }
         // contractInfo.modules = expandedModContact
@@ -215,18 +215,18 @@ class LibraryRoute extends EventEmitter {
         let refContractsDetail = []
         for (let modRef of expandedModContact) {
           if (modRef.value.type === 'data') {
-            let refContract = await this.liveHyperspace.getPublicLibrary(modRef.value.info.data)
+            let refContract = await this.liveHolepunch.BeeData.getPublicLibrary(modRef.value.info.data)
             modRef.value.info.data = refContract
             refContractsDetail.push(modRef)
           } else if (modRef.value.type === 'compute') {
-            let refContract = await this.liveHyperspace.getPublicLibrary(modRef.value.info.compute)
+            let refContract = await this.liveHolepunch.BeeData.getPublicLibrary(modRef.value.info.compute)
             modRef.value.info.data = refContract
             refContractsDetail.push(modRef)
           } else if (modRef.value.type === 'question') {
-            // let refContract = await this.liveHyperspace.getPeerLibrary(modRef.value.info.question)
+            // let refContract = await this.liveHolepunch.getPeerLibrary(modRef.value.info.question)
             refContractsDetail.push(modRef)
           } else if (modRef.value.type === 'visualise') {
-            let refContract = await this.liveHyperspace.getPublicLibrary(modRef.value.info.visualise)
+            let refContract = await this.liveHolepunch.BeeData.getPublicLibrary(modRef.value.info.visualise)
             modRef.value.info.visualise = refContract
             refContractsDetail.push(modRef)
           }
@@ -247,7 +247,7 @@ class LibraryRoute extends EventEmitter {
       for (let mh of message.data) {
         const moduleRefContract = this.liveComposer.liveComposer.moduleComposer(mh, '')
         const moduleRefContractReady = JSON.stringify(moduleRefContract)
-        const savedFeedback = await this.liveHyperspace.savePubliclibrary(moduleRefContract)
+        const savedFeedback = await this.liveHolepunch.savePubliclibrary(moduleRefContract)
         moduleGenesisList.push(savedFeedback.key)
         // stand key value format or query and get back ref contract double check TODO
         let moduleContract = {}
@@ -260,7 +260,7 @@ class LibraryRoute extends EventEmitter {
         // aggregate all modules into exeriment contract
         let genesisRefContract = this.liveComposer.liveComposer.experimentComposerGenesis(moduleGenesisList)
         // double check they are created
-        const savedFeedback = await this.liveHyperspace.savePubliclibrary(genesisRefContract)
+        const savedFeedback = await this.liveHolepunch.savePubliclibrary(genesisRefContract)
         savedFeedback.expanded = moduleGenesisExpanded
         this.bothSockets(JSON.stringify(savedFeedback))
         // this.wsocket.send(JSON.stringify(savedFeedback))
@@ -292,7 +292,7 @@ class LibraryRoute extends EventEmitter {
           peerModules.settings = message.data.options.visualise
         }
         let moduleRefContract = this.liveComposer.liveComposer.moduleComposer(peerModules, 'join')
-        const savedFeedback = await this.liveHyperspace.savePeerLibrary(moduleRefContract)
+        const savedFeedback = await this.liveHolepunch.savePeerLibrary(moduleRefContract)
         moduleJoinedList.push(savedFeedback.key)
         // form key value refcont structure
         let moduleKeyValue = {}
@@ -306,14 +306,14 @@ class LibraryRoute extends EventEmitter {
         // aggregate all modules into exeriment contract
         // double check they are created
         let joinRefContract = this.liveComposer.liveComposer.experimentComposerJoin(moduleJoinedList)
-        const savedFeedback = await this.liveHyperspace.savePeerLibrary(joinRefContract)
+        const savedFeedback = await this.liveHolepunch.savePeerLibrary(joinRefContract)
         savedFeedback.expanded = moduleJoinedExpanded
         this.bothSockets(JSON.stringify(savedFeedback))
         // this.wsocket.send(JSON.stringify(savedFeedback))
       }
     } else if (message.reftype.trim() === 'genesisexperiment') {
       let genesisRefContract = this.liveComposer.liveComposer.experimentComposerGenesis(message.data)
-      const savedFeedback = await this.liveHyperspace.savePeerLibrary(genesisRefContract)
+      const savedFeedback = await this.liveHolepunch.savePeerLibrary(genesisRefContract)
       this.bothSockets(JSON.stringify(savedFeedback))
       // this.wsocket.send(JSON.stringify(savedFeedback))
     } else if (message.reftype.trim() === 'kbid') {
@@ -361,7 +361,7 @@ class LibraryRoute extends EventEmitter {
         // peerStoreLive.peerGETRefContracts('module', callback)
       } else {
         // save a new refContract
-        const savedFeedback = this.liveHyperspace.savePeerLibrary(o)
+        const savedFeedback = this.liveHolepunch.savePeerLibrary(o)
         this.bothSockets(JSON.stringify(savedFeedback))
         // this.wsocket.send(JSON.stringify(savedFeedback))
       }
@@ -385,21 +385,21 @@ class LibraryRoute extends EventEmitter {
       // this.wsocket.send(JSON.stringify(moduleTempData))
     } else if (message.reftype.trim() === 'newmodules') {
       let moduleRefContract = this.liveComposer.liveComposer.moduleComposer(message.data, 'join')
-      const savedFeedback = this.liveHyperspace.savePeerLibrary(moduleRefContract)
+      const savedFeedback = this.liveHolepunch.savePeerLibrary(moduleRefContract)
       this.bothSockets(JSON.stringify(savedFeedback))
       // this.wsocket.send(JSON.stringify(savedFeedback))
     } else if (message.reftype.trim() === 'newlifeboard') {
       let lifeboardRefContract = this.liveComposer.liveComposer.lifeboardComposer(message.data, 'new')
-      // const saveLB = this.liveHyperspace.saveLifeboard() // peerStoreLive.lifeboardStoreRefContract(lifeboardRefContract)
+      // const saveLB = this.liveHolepunch.saveLifeboard() // peerStoreLive.lifeboardStoreRefContract(lifeboardRefContract)
       this.bothSockets(JSON.stringify(saveLB))
       // this.wsocket.send(JSON.stringify(saveLB))
     } else if (message.reftype.trim() === 'addlifeboard') {
       let lifeboardMember = this.liveComposer.liveComposer.lifeboardComposer(message.data, 'member')
-      // const saveLBmember = this.liveHyperspace.saveLifeboard // peerStoreLive.lifeboardStoreRefContract(lifeboardMember)
+      // const saveLBmember = this.liveHolepunch.saveLifeboard // peerStoreLive.lifeboardStoreRefContract(lifeboardMember)
       this.bothSockets(JSON.stringify(saveLBmember))
       // this.wsocket.send(JSON.stringify(saveLBmember))
     } else if (message.reftype.trim() === 'peerLifeboard') {
-      // this.liveHyperspace.
+      // this.liveHolepunch.
       // peerStoreLive.peerGETLifeboards('all', callbackLifeboard)
     } else {
       console.log('network library no match')
@@ -417,11 +417,11 @@ class LibraryRoute extends EventEmitter {
     // console.log(o)
       if (o.action.trim() === 'save-position') {
         // liveHyperspace.
-        let bentospace = await this.liveHyperspace.saveBentospace(o.data)
+        let bentospace = await this.liveHolepunch.BeeData.saveBentospace(o.data)
         this.callbackBentospace(bentospace)
       } else if (o.action.trim() === 'list-position') {
         // liveHyperspace.
-        let bbspace = await this.liveHyperspace.getBentospace()
+        let bbspace = await this.liveHolepunch.BeeData.getBentospace()
         this.callbackListBentospace(bbspace)
       } else {
         console.log('no action bentospace')

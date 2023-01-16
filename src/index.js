@@ -24,18 +24,20 @@ import MessageFlow from 'hop-message'
 import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
 import BBRoute from './bbai/index.js'
-import HyperspaceWorker from './dataapi/hyperSpace.js'
+import HolepunchHOP from 'holepunch-hop'
 
 class HOP extends EventEmitter {
 
   constructor(options) {
     super()
     this.options = options
-    this.DataRoute = new HyperspaceWorker()
-    this.SafeRoute = new SfRoute(this.DataRoute.liveHyperspace)
-    this.LibRoute = new LibraryRoute(this.DataRoute.liveHyperspace)
+    this.DataRoute = new HolepunchHOP()
+    this.SafeRoute = new SfRoute(this.DataRoute)
+    this.LibRoute = new LibraryRoute(this.DataRoute)
     this.BBRoute = new BBRoute()
     this.MessagesFlow = new MessageFlow()
+    // this.DataRoute.DriveFiles.setupHyperdrive()
+    // this.DataRoute.BeeData.setupHyperbee()
     this.hopConnect()
     this.wsocket = {}
     this.socketCount = 0
@@ -74,10 +76,9 @@ class HOP extends EventEmitter {
     wsServer.on('connection', async (ws) => {
       console.log('sf socket live')
       this.wsocket = ws
+      this.DataRoute.setWebsocket(ws)
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
-      // console.log(this.DataRoute)
-      this.DataRoute.liveHyperspace.setWebsocket(ws)
       this.BBRoute.setWebsocket(ws)
       // this.socketCount++
       // console.log('peer connected websocket')
@@ -88,7 +89,8 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('message', (msg) => {
         const o = JSON.parse(msg)
-        // console.log(o)
+        console.log('message into HOP')
+        console.log(o)
         this.messageResponder(o)
       })
 
@@ -117,7 +119,7 @@ class HOP extends EventEmitter {
   */
   listenSF = async function () {
     this.SafeRoute.on('sfauth', async (data) => {
-      await this.setupHyperspace()
+      await this.setupHolepunch()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
@@ -125,12 +127,12 @@ class HOP extends EventEmitter {
 
   /**
   * setup hyperspace
-  * @method setupHyperspace
+  * @method setupHolepunch
   *
   */
-   setupHyperspace = async function () {
-    console.log('start hyper space')
-    await this.DataRoute.liveHyperspace.startHyperspace()
+   setupHolepunch = async function () {
+    console.log('start holepunch')
+    // await this.DataRoute.startHyperspace()
   }
 
   /**
