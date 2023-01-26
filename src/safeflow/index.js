@@ -219,19 +219,19 @@ class SfRoute extends EventEmitter {
     })
     this.SafeFlow.on('updateModule', async (data) => {
       let moduleRefContract = this.liveLibrary.liveComposer.moduleComposer(data, 'update')
-      const savedFeedback = await this.HyperSpace.savePubliclibrary(moduleRefContract)
+      const savedFeedback = await this.holepunchLive.BeeData.savePubliclibrary(moduleRefContract)
     })
     this.SafeFlow.on('storePeerResults', async (data) => {
-      const checkResults = await this.HyperSpace.saveHOPresults(data)
+      const checkResults = await this.holepunchLive.BeeData.saveHOPresults(data)
     })
   
     this.SafeFlow.on('checkPeerResults', async (data) => {
-      const checkResults = await this.HyperSpace.peerResults(data)
+      const checkResults = await this.holepunchLive.BeeData.peerResults(data)
       this.resultsCallback(data, checkResults)
     })
   
     this.SafeFlow.on('kbledgerEntry', async (data) => {
-      const savedFeedback = await this.HyperSpace.saveKBLentry(data)
+      const savedFeedback = await this.holepunchLive.BeeData.saveKBLentry(data)
     })
   }
 

@@ -74,7 +74,6 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
-      console.log('sf socket live')
       this.wsocket = ws
       this.DataRoute.setWebsocket(ws)
       this.LibRoute.setWebsocket(ws)
@@ -89,8 +88,8 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('message', (msg) => {
         const o = JSON.parse(msg)
-        console.log('message into HOP')
-        console.log(o)
+        // console.log('message into HOP')
+        // console.log(o)
         this.messageResponder(o)
       })
 
@@ -131,7 +130,7 @@ class HOP extends EventEmitter {
   *
   */
    setupHolepunch = async function () {
-    console.log('start holepunch')
+    // console.log('start holepunch')
     // await this.DataRoute.startHyperspace()
   }
 
