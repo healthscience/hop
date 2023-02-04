@@ -29,6 +29,7 @@
   "homepage": "https://github.com/healthscience/hop#readme",
   "dependencies": {
     "bentobox-ai": "^0.1.2",
+    "bs58": "^5.0.0",
     "corestore": "^6.2.0",
     "holepunch-hop": "^0.0.5",
     "hop-message": "^0.0.4",

@@ -121,14 +121,115 @@ class LibraryRoute extends EventEmitter {
     } else if (message.reftype.trim() === 'view-replicatelibrary') {
       let repData = await this.liveHolepunch.BeeData.getReplicatePublicLibrary(message.publickey)
       this.callbackReplicatelibrary(repData)
-    } else if (message.reftype.trim() === 'publiclibrary') {
-      // await this.liveHolepunch.getPublicLibrary('contracthash')
-      let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange()
+    } else if (message.reftype.trim() === 'publiclibrary-start') {
+      console.log('public library start')
+      // limit to ten and tell if more to offer up local or from the network
+      let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange(10)
+      console.log(publibData)
+      // now build out reference contracts and modules
+      // let joinRefContList = []
+      /* for (let join of publibdata) {
+        console.log(join)
+        joinRefContList.push()
+      } */
       // await this.liveHolepunch.BeeData.getPublicLibraryLast()
       this.callbacklibrary(publibData)
+    } else if (message.reftype.trim() === 'publiclibrary') {
+      // await this.liveHolepunch.getPublicLibrary('contracthash')
+      let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange(100)
+      // await this.liveHolepunch.BeeData.getPublicLibraryLast()
+      this.callbacklibrary(publibData)
+    } else if (message.reftype.trim() === 'privatelibrary-start') {
+      console.log('no specifi contract so return joined list ie modules')
+      console.log(message)
+      let privateALL = await this.liveHolepunch.BeeData.getPeerLibraryRange()
+      let expJoinList = []
+      for (let mod of privateALL) {
+        if (mod.value.refcontract === 'experiment-join') {
+          expJoinList.push(mod)
+        }
+      }
+      // now loop over and expand to include contracts
+      let expandedModules = {}
+      for (let bmod of expJoinList) {
+        expandedModules[bmod.key] = []
+        for (let module of bmod.value.modules) {
+          // match mod to its module contract
+          for (let item of privateALL) {
+            if (item.key === module) {
+              expandedModules[bmod.key].push(item)
+            }
+          }
+        }
+      }
+      // need to add to expand info object ///////////////////////////////////////
+      let returnExpanded = []
+      // let keyBoards = Object.keys(expandedModules)
+      // add expand to list of boards
+      for (let board of expJoinList) {
+        let fullExpand = {}
+        fullExpand = board
+        fullExpand.modules = expandedModules[board.key]
+        returnExpanded.push(fullExpand)
+      }
+      // next sticked modules
+      this.callbackStartPeerLibBoard(message.data, returnExpanded)
     } else if (message.reftype.trim() === 'privatelibrary') {
-      let contractData = await this.liveHolepunch.BeeData.getPeerLibraryRange()
-      this.callbackPeerLib(contractData)
+      console.log('private library')
+      let singleContract = await this.liveHolepunch.BeeData.getPeerLibrary(message.data)
+      console.log('npx contract joined')
+      console.log(singleContract)
+      let moduleBoard = []
+      for (let mods of singleContract.value.modules) {
+        // lookup modules and refcontracts
+        let cellContract = await this.liveHolepunch.BeeData.getPeerLibrary(mods)
+        moduleBoard.push(cellContract)
+      }
+      console.log('expand modules')
+      console.log(util.inspect(moduleBoard, {showHidden: false, depth: null}))
+      singleContract.expanded = moduleBoard
+      // next extract the reference contracts per module
+      let extractContractKey = this.liveComposer.liveRefcontUtility.extractRefcontracts(moduleBoard, 'private')
+      console.log('contraclist')
+      console.log(extractContractKey)
+      let privateALL = await this.liveHolepunch.BeeData.getPeerLibraryRange()
+      console.log('peer privaet lib------------------------')
+      console.log(util.inspect(privateALL, {showHidden: false, depth: null}))
+      let publiclibALL = await this.liveHolepunch.BeeData.getPublicLibraryRange()
+      console.log('public libiar all lib------------------------')
+      console.log(util.inspect(publiclibALL, {showHidden: false, depth: null}))
+      let peerPrivCompute = []
+      for (let prc of privateALL) {
+        console.log(prc)
+        if (prc.value.type === 'compute') {
+          peerPrivCompute.push(prc)
+        }
+        if (prc.value.type === 'compute') {
+          // refcontract
+        }
+      }
+      // console.log('list compute contracts')
+      // console.log(peerPrivCompute)
+      let refContractList = []
+      for (let rc of extractContractKey) {
+        let typeCheck = typeof rc
+        if (typeCheck === 'string') {
+          let refcont = await this.liveHolepunch.BeeData.getPublicLibrary(rc)
+          console.log('ref contr lookup loop')
+          console.log(rc)
+          console.log(refcont)
+          refContractList.push(refcont)
+          let privteCompute = await this.liveHolepunch.BeeData.getPeerLibrary(rc)
+          console.log('compute private')
+          console.log(privteCompute)
+        }
+      }
+      console.log('finshed')
+      console.log(refContractList)
+      singleContract.referencecontracts = refContractList
+      // let contractData = await this.liveHolepunch.BeeData.getPeerLibraryRange()
+      // console.log(contractData)
+      this.callbackPeerLibBoard(message.data, singleContract)
     } else if (message.reftype.trim() === 'remove-nxp') {
       let removeNXPdashboard = await this.liveHolepunch.BeeData.deleteRefcontPeerlibrary(message.data)
       this.callbackNXPDelete(removeNXPdashboard)
@@ -611,6 +712,35 @@ class LibraryRoute extends EventEmitter {
     this.bothSockets(JSON.stringify(libraryData))
     // this.wsocket.send(JSON.stringify(libraryData))
   }
+
+  /**
+  * call back peer library data start
+  * @method 
+  */
+  callbackStartPeerLibBoard = function (board, data) {
+    // pass to sort data into ref contract types
+    let libraryData = {}
+    libraryData.board = board
+    libraryData.data = data
+    libraryData.type = 'peerprivate-start'
+    this.bothSockets(JSON.stringify(libraryData))
+    // this.wsocket.send(JSON.stringify(libraryData))
+  }
+
+  /**
+  * call back peer library data
+  * @method 
+  */
+  callbackPeerLibBoard = function (board, data) {
+    // pass to sort data into ref contract types
+    let libraryData = {}
+    libraryData.board = board
+    libraryData.data = data
+    libraryData.type = 'peerprivate'
+    this.bothSockets(JSON.stringify(libraryData))
+    // this.wsocket.send(JSON.stringify(libraryData))
+  }
+
 
   /**
   * call back peer library data
