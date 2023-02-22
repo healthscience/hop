@@ -125,23 +125,12 @@ class LibraryRoute extends EventEmitter {
       console.log('public library start')
       // limit to ten and tell if more to offer up local or from the network
       let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange(10)
-      console.log(publibData)
       // now build out reference contracts and modules
-      // let joinRefContList = []
-      /* for (let join of publibdata) {
-        console.log(join)
-        joinRefContList.push()
-      } */
-      // await this.liveHolepunch.BeeData.getPublicLibraryLast()
       this.callbacklibrary(publibData)
     } else if (message.reftype.trim() === 'publiclibrary') {
-      // await this.liveHolepunch.getPublicLibrary('contracthash')
       let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange(100)
-      // await this.liveHolepunch.BeeData.getPublicLibraryLast()
       this.callbacklibrary(publibData)
     } else if (message.reftype.trim() === 'privatelibrary-start') {
-      console.log('no specifi contract so return joined list ie modules')
-      console.log(message)
       let privateALL = await this.liveHolepunch.BeeData.getPeerLibraryRange()
       let expJoinList = []
       for (let mod of privateALL) {
@@ -149,7 +138,7 @@ class LibraryRoute extends EventEmitter {
           expJoinList.push(mod)
         }
       }
-      // now loop over and expand to include contracts
+      // now loop over and expand to include modules contracts
       let expandedModules = {}
       for (let bmod of expJoinList) {
         expandedModules[bmod.key] = []
@@ -162,45 +151,124 @@ class LibraryRoute extends EventEmitter {
           }
         }
       }
+      // console.log('first expand INSERT')
+      // console.log(util.inspect(expandedModules, {showHidden: false, depth: null}))
+      // need to add reference contracts for data compute visualise  (no need for question)
       // need to add to expand info object ///////////////////////////////////////
-      let returnExpanded = []
-      // let keyBoards = Object.keys(expandedModules)
+      let extractRefList = {}
+      for (let board of expJoinList) {
+        let boardGroup = expandedModules[board.key]
+        extractRefList[board.key] = []
+        for (let modCont of boardGroup) {
+          if (modCont.value.type === 'data') {
+            let modRefc = {}
+            modRefc.type = 'data'
+            modRefc.referencecontract = modCont.value.info.data
+            extractRefList[board.key].push(modRefc)
+          } else if (modCont.value.type === 'compute') {
+            let modRefc = {}
+            modRefc.type = 'compute'
+            modRefc.referencecontract = modCont.value.info.compute
+            extractRefList[board.key].push(modRefc)
+          } else if (modCont.value.type === 'visualise') {
+            let modRefc = {}
+            modRefc.type = 'visualise'
+            modRefc.referencecontract = modCont.value.info.visualise
+            extractRefList[board.key].push(modRefc)
+          } else if (modCont.value.type === 'question') {
+            let modRefc = {}
+            modRefc.type = 'question'
+            modRefc.referencecontract = 'none'
+            extractRefList[board.key].push(modRefc)
+          }
+        }      
+      }
+      // lookup all public ref contracts
+      let refContractPublic =  await this.liveHolepunch.BeeData.getPublicLibraryRange()
+      let refContLookup = {}
+      for (let board of expJoinList) {
+        refContLookup[board.key] = []
+        for (let refc of extractRefList[board.key]) {
+          // compute has a one to many modules relationship, e.g. order by date to get latest
+          if (refc.type !== 'compute') {
+            let refContract =  await this.liveHolepunch.BeeData.getPublicLibrary(refc.referencecontract)
+            refContLookup[board.key].push(refContract)
+          } else {
+            // match compute to base module for compute and track back to ref contract
+            for (let refm of refContractPublic) {
+              if (refm.value?.info?.moduleinfo?.refcont === refc.referencecontract) {
+                refContLookup[board.key].push(refm)
+                // lastly loop up source of compute
+                for (let pubrc of refContractPublic) {
+                  if (pubrc.key === refm.value.info.refcont) {
+                    refm.value.info.refcont = pubrc
+                    // let addComputeSourceRefc = {}
+                    refContLookup[board.key].push(refm)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      // next replace refcontract keys with actual contract
+      let keyBoards = Object.keys(expandedModules)
+      for (let bd of keyBoards) {
+        for (let boardi of expandedModules[bd]) {
+          if(boardi.value?.type === 'data') {
+            for (let rfi of refContLookup[bd]) {
+              if (rfi?.key === boardi.value.info.data) {
+                boardi.value.info.data = rfi
+              }
+            }
+          } else if (boardi.value?.type === 'compute') {
+            for (let rfi of refContLookup[bd]) {
+              if (rfi?.key === boardi.value.info.compute) {
+                boardi.value.info.visualise = rfi
+              }
+            }
+
+          } else if (boardi.value?.type === 'visualise') {
+          for (let rfi of refContLookup[bd]) {
+              if (rfi?.key === boardi.value.info.visualise) {
+                boardi.value.info.visualise = rfi
+              }
+            }
+          }
+        }
+      }
+      // console.log(util.inspect(expandedModules, {showHidden: false, depth: null}))
       // add expand to list of boards
+      let returnExpanded = []
       for (let board of expJoinList) {
         let fullExpand = {}
         fullExpand = board
         fullExpand.modules = expandedModules[board.key]
         returnExpanded.push(fullExpand)
       }
+      // console.log(util.inspect(returnExpanded, {showHidden: false, depth: null}))
       // next sticked modules
       this.callbackStartPeerLibBoard(message.data, returnExpanded)
     } else if (message.reftype.trim() === 'privatelibrary') {
-      console.log('private library')
+      // console.log('private library -- bento space start flow----------')
       let singleContract = await this.liveHolepunch.BeeData.getPeerLibrary(message.data)
-      console.log('npx contract joined')
-      console.log(singleContract)
+      // console.log('BentoBoard (npx) contract joined')
+      // console.log(singleContract)
       let moduleBoard = []
       for (let mods of singleContract.value.modules) {
         // lookup modules and refcontracts
         let cellContract = await this.liveHolepunch.BeeData.getPeerLibrary(mods)
         moduleBoard.push(cellContract)
       }
-      console.log('expand modules')
-      console.log(util.inspect(moduleBoard, {showHidden: false, depth: null}))
-      singleContract.expanded = moduleBoard
+      singleContract.modules = moduleBoard
       // next extract the reference contracts per module
       let extractContractKey = this.liveComposer.liveRefcontUtility.extractRefcontracts(moduleBoard, 'private')
-      console.log('contraclist')
-      console.log(extractContractKey)
       let privateALL = await this.liveHolepunch.BeeData.getPeerLibraryRange()
-      console.log('peer privaet lib------------------------')
-      console.log(util.inspect(privateALL, {showHidden: false, depth: null}))
       let publiclibALL = await this.liveHolepunch.BeeData.getPublicLibraryRange()
-      console.log('public libiar all lib------------------------')
-      console.log(util.inspect(publiclibALL, {showHidden: false, depth: null}))
+      // console.log('public libiar all lib------------------------')
+      // console.log(util.inspect(publiclibALL, {showHidden: false, depth: null}))
       let peerPrivCompute = []
       for (let prc of privateALL) {
-        console.log(prc)
         if (prc.value.type === 'compute') {
           peerPrivCompute.push(prc)
         }
@@ -208,27 +276,66 @@ class LibraryRoute extends EventEmitter {
           // refcontract
         }
       }
-      // console.log('list compute contracts')
-      // console.log(peerPrivCompute)
+      // match compute contract for this board contract
+      let computeContractHolder = []
+      for (let mod of singleContract.value.modules) {
+        for (let comprc of peerPrivCompute) {
+          if (mod === comprc.key) {
+            computeContractHolder = comprc
+          }
+        }
+      }
+      let computeHistory = {}
+      for (let refm of publiclibALL) {
+        if (refm.value?.info?.moduleinfo?.refcont === computeContractHolder.value.info.compute) {
+          computeHistory = refm
+        }
+      }
+      // get the compute reference contract
+      let computeSourceRC = {}
+      for (let refm of publiclibALL) {
+        if (refm.key === computeHistory.value.info.refcont) {
+          computeSourceRC = refm
+        }
+      }
       let refContractList = []
       for (let rc of extractContractKey) {
         let typeCheck = typeof rc
         if (typeCheck === 'string') {
           let refcont = await this.liveHolepunch.BeeData.getPublicLibrary(rc)
-          console.log('ref contr lookup loop')
-          console.log(rc)
-          console.log(refcont)
+          // need to get all compute modules and public compute reference contracts and match up
           refContractList.push(refcont)
-          let privteCompute = await this.liveHolepunch.BeeData.getPeerLibrary(rc)
-          console.log('compute private')
-          console.log(privteCompute)
+          // let privteCompute = await this.liveHolepunch.BeeData.getPeerLibrary(rc)
+         } 
+       }
+       // add compute to list
+       refContractList.push(computeSourceRC)
+      // need to integrate those reference contracts into the board (nxp) contract structure
+      // REPEAT CODE FROM above private lib start not bentospace list
+      // next replace refcontract keys with actual contract
+      for (let boardi of moduleBoard) {
+        if(boardi.value?.type === 'data') {
+          for (let rfi of refContractList) {
+            if (rfi?.key === boardi.value.info.data) {
+              boardi.value.info.data = rfi
+            }
+          }
+        } else if (boardi.value?.type === 'compute') {
+          for (let rfi of refContractList) {
+            if (rfi?.key === boardi.value.info.compute) {
+              boardi.value.info.visualise = rfi
+            }
+          }
+
+        } else if (boardi.value?.type === 'visualise') {
+        for (let rfi of refContractList) {
+            if (rfi?.key === boardi.value.info.visualise) {
+              boardi.value.info.visualise = rfi
+            }
+          }
         }
       }
-      console.log('finshed')
-      console.log(refContractList)
-      singleContract.referencecontracts = refContractList
-      // let contractData = await this.liveHolepunch.BeeData.getPeerLibraryRange()
-      // console.log(contractData)
+      singleContract.modules = moduleBoard
       this.callbackPeerLibBoard(message.data, singleContract)
     } else if (message.reftype.trim() === 'remove-nxp') {
       let removeNXPdashboard = await this.liveHolepunch.BeeData.deleteRefcontPeerlibrary(message.data)
