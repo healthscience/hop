@@ -33,7 +33,7 @@
     "corestore": "^6.2.0",
     "holepunch-hop": "^0.0.5",
     "hop-message": "^0.0.4",
-    "librarycomposer": "^0.2.7",
+    "librarycomposer": "^0.2.9",
     "node-safeflow": "^0.9.31",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"

@@ -615,16 +615,24 @@ class LibraryRoute extends EventEmitter {
     if (o.reftype.trim() === 'bentospace') {
       // console.log(o)
       if (o.action.trim() === 'save-position') {
-        // liveHyperspace.
         let bentospace = await this.liveHolepunch.BeeData.saveBentospace(o.data)
         this.callbackBentospace(bentospace)
       } else if (o.action.trim() === 'list-position') {
-        // liveHyperspace.
         let bbspace = await this.liveHolepunch.BeeData.getBentospace()
         this.callbackListBentospace(bbspace)
       } else {
         console.log('no action bentospace')
       }
+    } else if (o.reftype.trim() === 'solospace') {
+      if (o.action.trim() === 'save-position') {
+        let bentospace = await this.liveHolepunch.BeeData.saveSolospace(o.data)
+        this.callbacSolospace(bentospace)
+       } else if (o.action.trim() === 'list-position') {
+        let ssspace = await this.liveHolepunch.BeeData.getSolospace(o.data)
+         this.callbackListSolospace(ssspace)
+       } else {
+         console.log('no action solospace')
+       }
     }
   }
 
@@ -796,7 +804,7 @@ class LibraryRoute extends EventEmitter {
 
   /**
   * call back
-  * @method 
+  * @method callbackListBentospace
   */
   callbackListBentospace = function (data) {
     // pass to sort data into ref contract types
@@ -807,6 +815,32 @@ class LibraryRoute extends EventEmitter {
     // this.wsocket.send(JSON.stringify(blibraryData))
   }
 
+    /**
+  * call back
+  * @method callbacSolospace
+  */
+    callbacSolospace = function (data) {
+      // pass to sort data into ref contract types
+      let blibraryData = {}
+      blibraryData.type = 'solospaces'
+      blibraryData.data = data
+      this.bothSockets(JSON.stringify(blibraryData))
+      // this.wsocket.send(JSON.stringify(blibraryData))
+    }
+  
+    /**
+    * call back
+    * @method callbackListSolospace
+    */
+    callbackListSolospace = function (data) {
+      // pass to sort data into ref contract types
+      let blibraryData = {}
+      blibraryData.type = 'solospaces-list'
+      blibraryData.data = data
+      this.bothSockets(JSON.stringify(blibraryData))
+      // this.wsocket.send(JSON.stringify(blibraryData))
+    }
+  
   /**
   * call back
   * @method 
