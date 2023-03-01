@@ -1,7 +1,7 @@
 {
   "name": "hop-ecs",
   "description": "health oracle protocol",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "src/index.js",
   "bin": "src/index.js",
   "type": "module",
@@ -31,9 +31,9 @@
     "bentobox-ai": "^0.1.2",
     "bs58": "^5.0.0",
     "corestore": "^6.2.0",
-    "holepunch-hop": "^0.0.6",
-    "hop-message": "^0.0.4",
-    "librarycomposer": "^0.2.9",
+    "holepunch-hop": "^0.0.7",
+    "hop-message": "^0.0.5",
+    "librarycomposer": "^0.3.0",
     "node-safeflow": "^0.9.31",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
