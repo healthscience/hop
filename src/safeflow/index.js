@@ -219,7 +219,8 @@ class SfRoute extends EventEmitter {
     })
     this.SafeFlow.on('updateModule', async (data) => {
       let moduleRefContract = this.liveLibrary.liveComposer.moduleComposer(data, 'update')
-      const savedFeedback = await this.holepunchLive.BeeData.savePubliclibrary(moduleRefContract)
+      // const savedFeedback = await this.holepunchLive.BeeData.savePubliclibrary(moduleRefContract)
+      const savedFeedback = await this.holepunchLive.BeeData.savePeerLibrary(moduleRefContract.data)
     })
     this.SafeFlow.on('storePeerResults', async (data) => {
       const checkResults = await this.holepunchLive.BeeData.saveHOPresults(data)

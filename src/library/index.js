@@ -75,6 +75,12 @@ class LibraryRoute extends EventEmitter {
       const dataResults = this.liveHolepunch.BeeData.peerResults(message.data.uuid)
       // then replicate part of hopResults hyerbee with the peer, first make hopresult hyperbee replicatabl?
       // route to peerstore to replicate
+    } else if (message.reftype.trim() === 'results-all') {
+      const dataResults = await this.liveHolepunch.BeeData.peerResultsAll()
+      this.callbackPeerResultsAll(dataResults)
+    } else if (message.reftype.trim() === 'ledger') {
+      const dataLedger = await this.liveHolepunch.BeeData.peerKBLedger()
+      this.callbackPeerKBL(dataLedger)
     } else if (message.reftype.trim() === 'save-json-json') {
         if (message.data.source === 'local') {
           // await liveParser.localJSONfile(o, ws)
@@ -130,6 +136,9 @@ class LibraryRoute extends EventEmitter {
     } else if (message.reftype.trim() === 'publiclibrary') {
       let publibData = await this.liveHolepunch.BeeData.getPublicLibraryRange(100)
       this.callbacklibrary(publibData)
+    } else if (message.reftype.trim() === 'privatelibrary-all') {
+      let privateALL = await this.liveHolepunch.BeeData.getPeerLibraryRange()
+      this.callbackPeerLibAllBoard(message.data, privateALL)
     } else if (message.reftype.trim() === 'privatelibrary-start') {
       let privateALL = await this.liveHolepunch.BeeData.getPeerLibraryRange()
       let expJoinList = []
@@ -184,7 +193,8 @@ class LibraryRoute extends EventEmitter {
         }      
       }
       // lookup all public ref contracts
-      let refContractPublic =  await this.liveHolepunch.BeeData.getPublicLibraryRange()
+      // let refContractPublic =  await this.liveHolepunch.BeeData.getPublicLibraryRange()
+      let refContractPeer =  await this.liveHolepunch.BeeData.getPeerLibraryRange()
       let refContLookup = {}
       for (let board of expJoinList) {
         refContLookup[board.key] = []
@@ -195,11 +205,11 @@ class LibraryRoute extends EventEmitter {
             refContLookup[board.key].push(refContract)
           } else {
             // match compute to base module for compute and track back to ref contract
-            for (let refm of refContractPublic) {
+            for (let refm of refContractPeer) {
               if (refm.value?.info?.moduleinfo?.refcont === refc.referencecontract) {
                 refContLookup[board.key].push(refm)
                 // lastly loop up source of compute
-                for (let pubrc of refContractPublic) {
+                for (let pubrc of refContractPeer) {
                   if (pubrc.key === refm.value.info.refcont) {
                     refm.value.info.refcont = pubrc
                     // let addComputeSourceRefc = {}
@@ -868,6 +878,23 @@ class LibraryRoute extends EventEmitter {
     // this.wsocket.send(JSON.stringify(libraryData))
   }
 
+
+  /**
+  * call back peer library data all for network library
+  * @method 
+  */
+  callbackPeerLibAllBoard = function (board, data) {
+    // pass to sort data into ref contract types
+    let libraryData = {}
+    libraryData.board = board
+    libraryData.data = data
+    libraryData.type = 'peerprivate-returnall'
+    this.bothSockets(JSON.stringify(libraryData))
+    // this.wsocket.send(JSON.stringify(libraryData))
+  }
+
+
+
   /**
   * call back peer library data
   * @method 
@@ -882,6 +909,34 @@ class LibraryRoute extends EventEmitter {
     // this.wsocket.send(JSON.stringify(libraryData))
   }
 
+  /**
+  * call back peer results
+  * @method callbackPeerResultsAll
+  */
+  callbackPeerResultsAll = function (data) {
+    // pass to sort data into ref contract types
+    let libraryData = {}
+    libraryData.board = 'peer'
+    libraryData.data = data
+    libraryData.type = 'results-all'
+    this.bothSockets(JSON.stringify(libraryData))
+    // this.wsocket.send(JSON.stringify(libraryData))
+  }
+
+  /**
+  * call back kb ledger
+  * @method 
+  */
+    callbackPeerKBL = function (data) {
+      // pass to sort data into ref contract types
+      let libraryData = {}
+      libraryData.board = 'peer'
+      libraryData.data = data
+      libraryData.type = 'ledger'
+      this.bothSockets(JSON.stringify(libraryData))
+      // this.wsocket.send(JSON.stringify(libraryData))
+    }
+  
 
   /**
   * call back peer library data
