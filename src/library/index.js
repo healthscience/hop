@@ -206,6 +206,9 @@ class LibraryRoute extends EventEmitter {
           } else {
             // match compute to base module for compute and track back to ref contract
             for (let refm of refContractPeer) {
+              // console.log('compute matching modules to ref contracts')
+              // console.log(refm.value?.info?.moduleinfo?.refcont)
+              // console.log(refc.referencecontract)
               if (refm.value?.info?.moduleinfo?.refcont === refc.referencecontract) {
                 refContLookup[board.key].push(refm)
                 // lastly loop up source of compute
@@ -288,13 +291,19 @@ class LibraryRoute extends EventEmitter {
       }
       // match compute contract for this board contract
       let computeContractHolder = []
+      let computeLink = []
       for (let mod of singleContract.value.modules) {
         for (let comprc of peerPrivCompute) {
           if (mod === comprc.key) {
             computeContractHolder = comprc
           }
+          if (mod === comprc.value.link)
+            computeLink.push(comprc)
         }
       }
+      // console.log('copute holder start peer board')
+      // console.log(computeContractHolder)
+      // console.log(computeLink)
       let computeHistory = {}
       for (let refm of publiclibALL) {
         if (refm.value?.info?.moduleinfo?.refcont === computeContractHolder.value.info.compute) {
@@ -331,6 +340,8 @@ class LibraryRoute extends EventEmitter {
             }
           }
         } else if (boardi.value?.type === 'compute') {
+          // console.log('copute  module')
+          // console.log(boardi)
           for (let rfi of refContractList) {
             if (rfi?.key === boardi.value.info.compute) {
               boardi.value.info.visualise = rfi

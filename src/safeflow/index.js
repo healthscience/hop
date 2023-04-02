@@ -217,10 +217,12 @@ class SfRoute extends EventEmitter {
       this.bothSockets(JSON.stringify(data))
       // this.wsocket.send(JSON.stringify(data))
     })
-    this.SafeFlow.on('updateModule', async (data) => {
+    this.SafeFlow.on('updateModule', async (data, shellID, dataPrint) => {
       let moduleRefContract = this.liveLibrary.liveComposer.moduleComposer(data, 'update')
       // const savedFeedback = await this.holepunchLive.BeeData.savePubliclibrary(moduleRefContract)
-      const savedFeedback = await this.holepunchLive.BeeData.savePeerLibrary(moduleRefContract.data)
+      const updateComputeModule = await this.holepunchLive.BeeData.savePeerLibrary(moduleRefContract.data)
+      // need to tell SafeFlow computeModule HASH has been created
+      this.SafeFlow.emit('updatesaved-compute', updateComputeModule, shellID, dataPrint)
     })
     this.SafeFlow.on('storePeerResults', async (data) => {
       const checkResults = await this.holepunchLive.BeeData.saveHOPresults(data)
