@@ -739,8 +739,8 @@ class LibraryRoute extends EventEmitter {
       }
     } else if (o.reftype.trim() === 'solospace') {
       if (o.action.trim() === 'save-position') {
-        let bentospace = await this.liveHolepunch.BeeData.saveSolospace(o.data)
-        this.callbacSolospace(bentospace)
+        let solospace = await this.liveHolepunch.BeeData.saveSolospace(o.data)
+        this.callbacSolospace(solospace)
        } else if (o.action.trim() === 'list-position') {
         let ssspace = await this.liveHolepunch.BeeData.getSolospace(o.data)
          this.callbackListSolospace(ssspace)
@@ -936,6 +936,7 @@ class LibraryRoute extends EventEmitter {
     callbacSolospace = function (data) {
       // pass to sort data into ref contract types
       let blibraryData = {}
+      blibraryData.stored = true
       blibraryData.type = 'solospaces'
       blibraryData.data = data
       this.bothSockets(JSON.stringify(blibraryData))
