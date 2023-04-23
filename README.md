@@ -1,7 +1,7 @@
 # hop
 health oracle protocol
 
-An experimental and novel coherence protocol to allow a peer to peer network to control, analyse, share and manage decentralise machine learning.
+An experimental and novel coherence protocol to allow a peer to peer network to control, analyse, share and manage decentralises machine learning.
 
 Roadmap https://github.com/healthscience/hop/wiki
 
