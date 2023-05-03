@@ -10,6 +10,7 @@
 * @version    $Id$
 */
 import util from 'util'
+import log from 'electron-log'
 import EventEmitter from 'events'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -174,8 +175,7 @@ class HOP extends EventEmitter {
 }
 
 export default HOP
-// let options = {}
-// options.port = 9888
-// let hopSF = new liveHOP(options)
-
-// export default new HOP(options)
+log.info('bring to life')
+let options = {}
+options.port = 9888
+let hopSF = new HOP(options)
