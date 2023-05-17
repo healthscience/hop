@@ -13,7 +13,6 @@ describe('bring the protocol to life', function () {
     setTimeout(closeHOP, 3000000)
 
     function closeHOP () {
-      console.log('message test out')
       let startHOP = {}
       startHOP.reftype = 'ignore'
       startHOP.type = 'launch'

@@ -53,6 +53,7 @@ class LibraryRoute extends EventEmitter {
   */
   libraryPath = async function (message) {
     if (message.reftype.trim() === 'convert-csv-json') {
+      console.log('cvs to path to json savefiles hpyherdrive')
       // save protocol original file save and JSON for HOP
       if (message.data.source === 'local') {
         let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveFolderFiles(message)
