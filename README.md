@@ -19,3 +19,25 @@ A new CLI command line interface tool to complement is also in the works
 
 
 ( Old peerlink software in peerlink branch)
+
+TEST
+
+npm run test
+
+INSTALL
+
+npm install
+
+USING
+HOP connect to BentoBox-DS via a secure web socket.  Use certbot or certifcate issuer and save those in files call cert.pem and key.pm in the src folder.
+
+You will need to write a script to start HOP or add it to the button of src/index.js file e.g. 
+
+let options = {}
+options.port = 9888
+let hopSF = new HOP(options)
+
+Call it
+
+node src/index.js
+
