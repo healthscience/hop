@@ -174,8 +174,6 @@ class HOP extends EventEmitter {
 }
 
 export default HOP
-// let options = {}
-// options.port = 9888
-// let hopSF = new liveHOP(options)
-
-// export default new HOP(options)
+let options = {}
+options.port = 9888
+new HOP(options)

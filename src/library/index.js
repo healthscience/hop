@@ -77,11 +77,11 @@ class LibraryRoute extends EventEmitter {
       // then replicate part of hopResults hyerbee with the peer, first make hopresult hyperbee replicatabl?
       // route to peerstore to replicate
     } else if (message.reftype.trim() === 'results-all') {
-      // const dataResults = await this.liveHolepunch.BeeData.peerResultsAll()
-      // this.callbackPeerResultsAll(dataResults)
+      const dataResults = await this.liveHolepunch.BeeData.peerResults()
+      this.callbackPeerResultsAll(dataResults)
     } else if (message.reftype.trim() === 'ledger') {
-      // const dataLedger = await this.liveHolepunch.BeeData.peerKBLedger()
-      // this.callbackPeerKBL(dataLedger)
+      const dataLedger = await this.liveHolepunch.BeeData.KBLentries()
+      this.callbackPeerKBL(dataLedger)
     } else if (message.reftype.trim() === 'save-json-json') {
         if (message.data.source === 'local') {
           // await liveParser.localJSONfile(o, ws)

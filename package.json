@@ -34,7 +34,7 @@
     "holepunch-hop": "^0.1.1",
     "hop-message": "^0.0.5",
     "librarycomposer": "^0.3.1",
-    "node-safeflow": "^0.9.33",
+    "node-safeflow": "^0.9.34",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
   },
