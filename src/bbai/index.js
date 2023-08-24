@@ -11,7 +11,8 @@
 */
 import util from 'util'
 import EventEmitter from 'events'
-import BbAi from 'bentobox-ai'
+import BbAi from 'beebee-ai'
+import safeFlow from 'node-safeflow'
 
 class BBRoute extends EventEmitter {
 
@@ -50,15 +51,23 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
+    console.log('bee mssage in')
+    console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
         let replyData = this.liveBBAI.nlpflow(message.data.text)
+        console.log('beebee reply----------------------')
+        console.log(replyData)
+        // need to pass to HOP - via query builder
+        this.emit('safeflow-query', replyData)
+        // route to HOP
         let bbReply = {}
         bbReply.type = 'bbai-reply'
         bbReply.data = replyData
+        bbReply.bbid = message.bbid
         this.bothSockets(JSON.stringify(bbReply))
-        // ws.send(JSON.stringify(bbReply))
+        // ws.send(JSON.stringify(bbReply)
       } else if (message.action === 'future') {
         // send to routine for prediction or to chat interface to say CALE cannot help right now
         /* let futureData = liveBBAI.routineFuture()

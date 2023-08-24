@@ -24,6 +24,7 @@ import MessageFlow from 'hop-message'
 import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
 import BBRoute from './bbai/index.js'
+import DmlRoute from './dml/index.js'
 import HolepunchHOP from 'holepunch-hop'
 
 class HOP extends EventEmitter {
@@ -31,16 +32,18 @@ class HOP extends EventEmitter {
   constructor(options) {
     super()
     this.options = options
+    this.MessagesFlow = new MessageFlow()
     this.DataRoute = new HolepunchHOP()
+    this.BBRoute = new BBRoute()
     this.SafeRoute = new SfRoute(this.DataRoute)
     this.LibRoute = new LibraryRoute(this.DataRoute)
-    this.BBRoute = new BBRoute()
-    this.MessagesFlow = new MessageFlow()
+    this.DmlRoute = new DmlRoute(this.DataRoute)
     // this.DataRoute.DriveFiles.setupHyperdrive()
     // this.DataRoute.BeeData.setupHyperbee()
     this.hopConnect()
     this.wsocket = {}
     this.socketCount = 0
+    this.listenBeebee()
     this.listenSF()
   }
 
@@ -110,7 +113,20 @@ class HOP extends EventEmitter {
     })
 
   }
-  
+
+  /**
+  * listener from SafeFLOW router
+  * @method listenBeebee
+  *
+  */
+  listenBeebee = async function () {
+    this.BBRoute.on('safeflow-query', async (data) => {
+      console.log('beebee query for safeflow')
+      console.log(data)
+      this.SafeRoute.newSafeflow(data)
+    })
+  }  
+
   /**
   * listener from SafeFLOW router
   * @method listenSF
@@ -142,14 +158,14 @@ class HOP extends EventEmitter {
   messageResponder = function (o) {
     let messageRoute = this.MessagesFlow.messageIn(o)
     // console.log(messageRoute)
-    if (messageRoute.type === 'safeflow') {
+    if (messageRoute.type === 'bbai-reply') {
+      this.BBRoute.bbAIpath(messageRoute)
+    } else if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
       this.LibRoute.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentospace') {
       this.LibRoute.bentoPath(messageRoute)
-    } else if (messageRoute.type === 'bbai-reply') {
-      this.BBRoute.bbAIpath(messageRoute)
     }
   }
 

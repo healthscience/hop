@@ -159,7 +159,7 @@ class SfRoute extends EventEmitter {
 
   /**
   * input into safeFlow-ECS
-  * @method newSsafeflow
+  * @method newSafeflow
   *
   */
   newSafeflow = async function (message) {
