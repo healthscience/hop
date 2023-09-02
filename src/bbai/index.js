@@ -9,17 +9,16 @@
 * @license    http://www.gnu.org/licenses/old-licenses/gpl-3.0.html
 * @version    $Id$
 */
-import util from 'util'
 import EventEmitter from 'events'
 import BbAi from 'beebee-ai'
-import safeFlow from 'node-safeflow'
 
 class BBRoute extends EventEmitter {
 
-  constructor() {
+  constructor(Holepunch) {
     super()
     this.live = true
-    this.liveBBAI = new BbAi()
+    this.holepunchLive = Holepunch
+    this.liveBBAI = new BbAi(Holepunch)
     this.wsocket = {}
     this.wlist = []
   }
@@ -51,16 +50,20 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
-    console.log('bee mssage in')
+    console.log('hop--message action')
     console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
         let replyData = this.liveBBAI.nlpflow(message.data.text)
-        console.log('beebee reply----------------------')
+        console.log('hop--beebee reply------')
         console.log(replyData)
-        // need to pass to HOP - via query builder
-        this.emit('safeflow-query', replyData)
+        replyData.bbid = message.bbid
+        if (replyData.query === true) {
+          // need to pass to SafeFlow
+          console.log('hop--true safeflow query required')
+          this.emit('safeflow-query', replyData)
+        }
         // route to HOP
         let bbReply = {}
         bbReply.type = 'bbai-reply'

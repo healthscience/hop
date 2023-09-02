@@ -33,18 +33,31 @@ class HOP extends EventEmitter {
     super()
     this.options = options
     this.MessagesFlow = new MessageFlow()
-    this.DataRoute = new HolepunchHOP()
-    this.BBRoute = new BBRoute()
-    this.SafeRoute = new SfRoute(this.DataRoute)
-    this.LibRoute = new LibraryRoute(this.DataRoute)
-    this.DmlRoute = new DmlRoute(this.DataRoute)
-    // this.DataRoute.DriveFiles.setupHyperdrive()
-    // this.DataRoute.BeeData.setupHyperbee()
-    this.hopConnect()
+    this.DataNetwork = new HolepunchHOP()
     this.wsocket = {}
     this.socketCount = 0
+    this.BBRoute = {}
+    this.SafeRoute = {}
+    this.LibRoute = {}
+    this.DmlRoute = {}
+    this.startPtoPnetwork()
+    // this.DataNetwork.DriveFiles.setupHyperdrive()
+    // this.DataNetwork.BeeData.setupHyperbee()
+  }
+
+  /**
+  * start holepunch data infrastructure
+  * @method startPtoPnetwork
+  *
+  */
+  startPtoPnetwork = function () {
+    this.BBRoute = new BBRoute(this.DataNetwork)
+    this.SafeRoute = new SfRoute(this.DataNetwork)
+    this.LibRoute = new LibraryRoute(this.DataNetwork)
+    this.DmlRoute = new DmlRoute(this.DataNetwork)
     this.listenBeebee()
     this.listenSF()
+    this.hopConnect()
   }
 
   /**
@@ -78,10 +91,10 @@ class HOP extends EventEmitter {
     // WebSocket server
     wsServer.on('connection', async (ws) => {
       this.wsocket = ws
-      this.DataRoute.setWebsocket(ws)
+      this.DataNetwork.setWebsocket(ws)
+      this.BBRoute.setWebsocket(ws)
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
-      this.BBRoute.setWebsocket(ws)
       // this.socketCount++
       // console.log('peer connected websocket')
       // console.log(wsServer.clients)
@@ -121,7 +134,7 @@ class HOP extends EventEmitter {
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
-      console.log('beebee query for safeflow')
+      console.log('hop--event-query for safeflow')
       console.log(data)
       this.SafeRoute.newSafeflow(data)
     })
@@ -138,17 +151,20 @@ class HOP extends EventEmitter {
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
+
+    this.DataNetwork.on('hcores-active', () => {
+      console.log('HP-HOP--hypberbees live')
+      // allow other components have access to data
+       this.processListen()
+    })
+
   }    
 
-  /**
-  * setup hyperspace
-  * @method setupHolepunch
-  *
-  */
-   setupHolepunch = async function () {
-    // console.log('start holepunch')
-    // await this.DataRoute.startHyperspace()
+  processListen = function () {
+    console.log('ation he')
+    this.BBRoute.liveBBAI.listenHolepunchLive()
   }
+
 
   /**
   * listen for outputs from SafeFlow

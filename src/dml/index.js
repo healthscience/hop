@@ -10,12 +10,14 @@
 * @version    $Id$
 */
 import EventEmitter from 'events'
+import DmlProtocol from 'hop-dml'
 
 class DmlRoute extends EventEmitter {
 
   constructor(Holepunch) {
     super()
     this.holepunchLive = Holepunch
+    this.dmlLive = new DmlProtocol(Holepunch)
     this.dmlListeners()
   }
 
