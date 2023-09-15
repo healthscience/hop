@@ -134,8 +134,8 @@ class HOP extends EventEmitter {
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
-      console.log('hop--event-query for safeflow')
-      console.log(data)
+      // console.log('hop--event-query for safeflow')
+      // console.log(data)
       this.SafeRoute.newSafeflow(data)
     })
   }  

@@ -164,7 +164,9 @@ class SfRoute extends EventEmitter {
   */
   newSafeflow = async function (message) {
     // send summary info that SafeFLow has received NXP bundle
-    let ecsData = await this.SafeFlow.startFlow(message.data)
+    console.log('HOP-leave via SFroute')
+    console.log(message)
+    let ecsData = await this.SafeFlow.startFlow(message.data.data)
     let summaryECS = {}
     summaryECS.type = 'ecssummary'
     summaryECS.data = ecsData
