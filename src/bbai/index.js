@@ -55,7 +55,7 @@ class BBRoute extends EventEmitter {
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
-        let replyData = this.liveBBAI.nlpflow(message.data.text)
+        let replyData = await this.liveBBAI.nlpflow(message)
         console.log('hop--beebee reply------')
         console.log(replyData)
         replyData.bbid = message.bbid
