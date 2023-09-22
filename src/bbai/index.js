@@ -57,11 +57,11 @@ class BBRoute extends EventEmitter {
         // send to NPL rules
         let replyData = await this.liveBBAI.nlpflow(message)
         console.log('hop--beebee reply------')
-        console.log(replyData)
+        // console.log(replyData)
         replyData.bbid = message.bbid
         if (replyData.query === true) {
           // need to pass to SafeFlow
-          console.log('hop--true safeflow query required')
+          console.log('HOP--true safeflow query required')
           this.emit('safeflow-query', replyData)
         }
         // route to HOP

@@ -164,11 +164,9 @@ class SfRoute extends EventEmitter {
   */
   newSafeflow = async function (message) {
     // send summary info that SafeFLow has received NXP bundle
-    console.log('HOP-leave via SFroute')
-    console.log(message)
-    let ecsData = await this.SafeFlow.startFlow(message.data.data)
+    let ecsData = await this.SafeFlow.startFlow(message.data)
     let summaryECS = {}
-    summaryECS.type = 'ecssummary'
+    summaryECS.type = 'sf-summary'
     summaryECS.data = ecsData
     this.bothSockets(JSON.stringify(summaryECS))
     // this.wsocket.send(JSON.stringify(summaryECS))
@@ -193,24 +191,24 @@ class SfRoute extends EventEmitter {
     this.on('auth-response', (data) => {
       this.emit('sfauth', data)
     })
-    this.SafeFlow.on('displayEntity', (data) => {
-      data.type = 'newEntity'
+    this.SafeFlow.on('sf-displayEntity', (data) => {
+      data.type = 'sf-newEntity'
       this.bothSockets(JSON.stringify(data))
       // this.wsocket.send(JSON.stringify(data))
     })
     // let deCount = this.SafeRoute.listenerCount('displayEntity')
-    this.SafeFlow.on('displayEntityRange', (data) => {
-      data.type = 'newEntityRange'
+    this.SafeFlow.on('sf-displayEntityRange', (data) => {
+      data.type = 'sf-newEntityRange'
       this.bothSockets(JSON.stringify(data))
       // this.wsocket.send(JSON.stringify(data))
     })
-    this.SafeFlow.on('displayUpdateEntity', (data) => {
-      data.type = 'updateEntity'
+    this.SafeFlow.on('sf-displayUpdateEntity', (data) => {
+      data.type = 'sf-updateEntity'
       this.bothSockets(JSON.stringify(data))
       // this.wsocket.send(JSON.stringify(data))
     })
     this.SafeFlow.on('displayUpdateEntityRange', (data) => {
-      data.type = 'updateEntityRange'
+      data.type = 'sf-updateEntityRange'
       this.bothSockets(JSON.stringify(data))
       // this.wsocket.send(JSON.stringify(data))
     })
@@ -232,6 +230,8 @@ class SfRoute extends EventEmitter {
   
     this.SafeFlow.on('checkPeerResults', async (data) => {
       const checkResults = await this.holepunchLive.BeeData.peerResults(data)
+      console.log('resutls check bees')
+      console.log(checkResults)
       this.resultsCallback(data, checkResults)
     })
   
