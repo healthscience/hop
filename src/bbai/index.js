@@ -67,7 +67,7 @@ class BBRoute extends EventEmitter {
         // route to HOP
         let bbReply = {}
         bbReply.type = 'bbai-reply'
-        bbReply.data = replyData
+        bbReply.data = 'SafeFlow-processing' // replyData
         bbReply.bbid = message.bbid
         this.bothSockets(JSON.stringify(bbReply))
         // ws.send(JSON.stringify(bbReply)

@@ -168,6 +168,7 @@ class SfRoute extends EventEmitter {
     let summaryECS = {}
     summaryECS.type = 'sf-summary'
     summaryECS.data = ecsData
+    summaryECS.bbid = message.bbid
     this.bothSockets(JSON.stringify(summaryECS))
     // this.wsocket.send(JSON.stringify(summaryECS))
   }
