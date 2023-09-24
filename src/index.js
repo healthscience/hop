@@ -134,8 +134,6 @@ class HOP extends EventEmitter {
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
-      // console.log('hop--event-query for safeflow')
-      // console.log(data)
       this.SafeRoute.newSafeflow(data)
     })
   }  
@@ -153,7 +151,6 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('hcores-active', () => {
-      console.log('HP-HOP--hypberbees live')
       // allow other components have access to data
        this.processListen()
     })
