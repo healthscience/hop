@@ -62,6 +62,7 @@ class BBRoute extends EventEmitter {
         if (replyData.query === true) {
           // need to pass to SafeFlow
           console.log('HOP--true safeflow query required')
+          // console.log(replyData)
           this.emit('safeflow-query', replyData)
         }
         // route to HOP
