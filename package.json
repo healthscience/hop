@@ -28,15 +28,15 @@
   },
   "homepage": "https://github.com/healthscience/hop#readme",
   "dependencies": {
-    "beebee-ai": "^0.1.64",
+    "beebee-ai": "0.1.8",
     "bs58": "^5.0.0",
     "corestore": "^6.2.0",
-    "holepunch-hop": "^0.1.4",
+    "holepunch-hop": "^0.1.5",
     "hop-dml": "^0.0.1",
     "hop-message": "^0.0.6",
     "hop-query-builder": "^0.0.1",
     "librarycomposer": "^0.3.1",
-    "node-safeflow": "0.9.5",
+    "node-safeflow": "0.9.51",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
   },
