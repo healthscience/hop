@@ -90,6 +90,8 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
+      console.log('ws--connection')
+      console.log(ws)
       this.wsocket = ws
       this.DataNetwork.setWebsocket(ws)
       this.BBRoute.setWebsocket(ws)
@@ -111,6 +113,7 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('close', ws => {
         console.log('close ws direct')
+        console.log(ws)
         // process.exit(0)
       })
 
