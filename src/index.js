@@ -91,7 +91,6 @@ class HOP extends EventEmitter {
     // WebSocket server
     wsServer.on('connection', async (ws) => {
       console.log('ws--connection')
-      console.log(ws)
       this.wsocket = ws
       this.DataNetwork.setWebsocket(ws)
       this.BBRoute.setWebsocket(ws)
