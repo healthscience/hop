@@ -54,45 +54,31 @@ class BBRoute extends EventEmitter {
     console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
-        console.log('question')
         // send to NPL rules
         let replyData = await this.liveBBAI.nlpflow(message)
         console.log('hop--beebee reply------')
-        console.log(replyData)
+        // console.log(replyData)
         replyData.bbid = message.bbid
         if (replyData.query === true) {
           // need to pass to SafeFlow
           console.log('HOP--true safeflow query required')
           // console.log(replyData)
           this.emit('safeflow-query', replyData)
-          let bbReply = {}
-          bbReply.type = 'bbai-reply'
-          bbReply.data = 'HOP' // replyData
-          bbReply.bbid = message.bbid
-          this.bothSockets(JSON.stringify(bbReply))
-        } else {
-          let bbReply = {}
-          bbReply.type = 'bbai-reply'
-          bbReply.action = replyData.type
-          bbReply.data = replyData.text
-          bbReply.bbid = message.bbid
-          this.bothSockets(JSON.stringify(bbReply))
         }
-      } else if (message.action === '') {
-        console.log('from library  process file')
-        // replyData = await this.liveBBAI.nlpflow(message)
-      } else if (message.action === 'predict-future') {
-        console.log('prediction PATH==============')
-        // handover to the model
-        let processFdata = await this.liveBBAI.managePrediction(message)
-        console.log('HOP-----back from future beebee')
-        console.log(processFdata)
-        // route message via HOP out
+        // route to HOP
         let bbReply = {}
-        bbReply.type = 'bbai-future'
-        bbReply.data = processFdata
+        bbReply.type = 'bbai-reply'
+        bbReply.data = 'SafeFlow-processing' // replyData
         bbReply.bbid = message.bbid
         this.bothSockets(JSON.stringify(bbReply))
+        // ws.send(JSON.stringify(bbReply)
+      } else if (message.action === 'future') {
+        // send to routine for prediction or to chat interface to say CALE cannot help right now
+        /* let futureData = liveBBAI.routineFuture()
+        let caleFuture = {}
+        caleFuture.type = 'cale-future'
+        caleFuture.data = {}
+        ws.send(JSON.stringify(futureData)) */
       }
     }
   }

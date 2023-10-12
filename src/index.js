@@ -33,16 +33,18 @@ class HOP extends EventEmitter {
     super()
     this.options = options
     this.MessagesFlow = new MessageFlow()
-    this.DataNetwork = new HolepunchHOP()
+    this.DataNetwork = {} // new HolepunchHOP()
     this.wsocket = {}
     this.socketCount = 0
     this.BBRoute = {}
     this.SafeRoute = {}
     this.LibRoute = {}
     this.DmlRoute = {}
-    this.startPtoPnetwork()
+    // this.startPtoPnetwork()
     // this.DataNetwork.DriveFiles.setupHyperdrive()
     // this.DataNetwork.BeeData.setupHyperbee()
+    this.counter = 1
+    this.startPtoPnetwork()
   }
 
   /**
@@ -51,15 +53,31 @@ class HOP extends EventEmitter {
   *
   */
   startPtoPnetwork = function () {
+    // holepunch with UUID store
+    this.DataNetwork = new HolepunchHOP(1)
+    this.listenHolepunch()
+    this.counter++
     this.BBRoute = new BBRoute(this.DataNetwork)
     this.SafeRoute = new SfRoute(this.DataNetwork)
     this.LibRoute = new LibraryRoute(this.DataNetwork)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
-    this.listenBeebee()
-    this.listenLibrary()
     this.listenSF()
+    this.listenBeebee()
+  }
+
+  /**
+  * start holepunch data infrastructure
+  * @method startHcores
+  *
+  */
+  startHcores = function () {
+    console.log('setup the hyper drives')
+    // now active active HP drive and bees
+    this.DataNetwork.DriveFiles.setupHyperdrive()
+    this.DataNetwork.BeeData.setupHyperbee()
     this.hopConnect()
   }
+
 
   /**
   * server & websocket
@@ -92,7 +110,10 @@ class HOP extends EventEmitter {
     // WebSocket server
     wsServer.on('connection', async (ws) => {
       console.log('ws--connection')
+      // console.log(ws)
       this.wsocket = ws
+      // start ptop with unique HOP store ID
+      // this.startPtoPnetwork()
       this.DataNetwork.setWebsocket(ws)
       this.BBRoute.setWebsocket(ws)
       this.LibRoute.setWebsocket(ws)
@@ -131,54 +152,54 @@ class HOP extends EventEmitter {
   }
 
   /**
-  * listener from BeeBee router
+  * listener from SafeFLOW router
   * @method listenBeebee
   *
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
-      console.log(data)
       this.SafeRoute.newSafeflow(data)
     })
   }  
 
   /**
-  * listener from Library router
-  * @method listenLibrary
+  * listener for HolePunch router
+  * @method listenHolepunch
   *
   */
-  listenLibrary = async function () {
-    this.LibRoute.on('safeflow-query', async (data) => {
-      console.log('listen library SF')
-      console.log(data)
-      // need to inform beebee and prepare HQB for SF
-      this.BBRoute.bbAIpath(data)
-      // this.SafeRoute.newSafeflow(data)
+  listenHolepunch = function () {
+    console.log('listenHolepuch  ===== start')
+    this.DataNetwork.on('hyperdrive-active', () => {
+      // allow other components have access to data
+      console.log('publib live##############################')
+        this.processListen()
     })
-  }  
+
+    this.DataNetwork.on('bees-active', () => {
+      // allow other components have access to data
+      console.log('publib live##############################')
+        this.processListen()
+    })
+    this.startHcores()
+  }    
+
 
   /**
   * listener from SafeFLOW router
   * @method listenSF
   *
   */
-  listenSF = async function () {
+  listenSF = function () {
+    console.log('listensf')
     this.SafeRoute.on('sfauth', async (data) => {
-      await this.setupHolepunch()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
-
-    this.DataNetwork.on('hcores-active', () => {
-      // allow other components have access to data
-       this.processListen()
-    })
-
   }    
 
   processListen = function () {
     console.log('ation he')
-    this.BBRoute.liveBBAI.listenHolepunchLive()
+    this.BBRoute.liveBBAI.getPublicLibraryFirst()
   }
 
 
