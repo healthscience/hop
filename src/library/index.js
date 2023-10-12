@@ -50,25 +50,8 @@ class LibraryRoute extends EventEmitter {
   *
   */
   libraryPath = async function (message) {
-    if (message.reftype.trim() === 'convert-csv-json') {
-      console.log('cvs to path to json savefiles hpyherdrive')
-      // save protocol original file save and JSON for HOP
-      if (message.data.source === 'local') {
-        let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveFolderFiles(message)
-        let fileFeedback = {}
-        fileFeedback.success = true
-        fileFeedback.path = fileInfo.filename
-        fileFeedback.columns = fileInfo.header.splitwords
-        let storeFeedback = {}
-        storeFeedback.type = 'file-save'
-        storeFeedback.action = 'library'
-        storeFeedback.data = fileFeedback
-        this.bothSockets(JSON.stringify(storeFeedback))
-        // this.wsocket.send(JSON.stringify(storeFeedback))
-        // await liveParser.localFileParse(o, ws)
-      } else if (message.data.source === 'web') {
-        // liveParser.webFileParse(o, ws)
-      }
+    if (message.action.trim() === 'save-file') {
+      await this.saveFileManager(message)
     } else if (message.reftype.trim() === 'sync-nxp-data') {
       // query hopresults per key
       const dataResults = this.liveHolepunch.BeeData.peerResults(message.data.uuid)
@@ -81,22 +64,7 @@ class LibraryRoute extends EventEmitter {
       const dataLedger = await this.liveHolepunch.BeeData.KBLentries()
       this.callbackPeerKBL(dataLedger)
     } else if (message.reftype.trim() === 'save-json-json') {
-        if (message.data.source === 'local') {
-          // await liveParser.localJSONfile(o, ws)
-        } else if (message.data.source === 'web') {
-          // liveParser.webJSONfile(o, ws)
-        }
     } else if (message.reftype.trim() === 'save-sqlite-file') {
-      let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveFilesave(message.data.type, message.data.name, message.data.path)
-      let fileFeedback = {}
-      fileFeedback.success = true
-      fileFeedback.path = fileInfo.filename
-      let storeFeedback = {}
-      storeFeedback.type = 'file-save'
-      storeFeedback.action = 'library'
-      storeFeedback.data = fileFeedback
-      this.bothSockets(JSON.stringify(storeFeedback))
-      // this.wsocket.send(JSON.stringify(storeFeedback))
     } else if (message.reftype.trim() === 'viewpublickey') {
       // two peer syncing reference contracts
       // const pubkey = this.liveHolepunch. // peerStoreLive.singlePublicKey('', callbackKey)
@@ -719,6 +687,62 @@ class LibraryRoute extends EventEmitter {
     }
   }
 
+  /**
+  * save file manager
+  * @method saveFileManager
+  */
+  saveFileManager = async function (save) {
+    console.log('Library--save manager')
+    // console.log(save)
+    let fileList = []
+    fileList.push(save.data)
+    save.data = fileList
+    // route for different type of processing before save, add PandasAI (via beebee?)
+    // how many files coming in?
+    let fileCount = save.data.length
+    for (let i = 0; i < fileCount; i++) {
+      if (save.data[i].type === 'sqlite') {
+        console.log('a sqlite file eg. gadgetbridge')
+        console.log(save.data[i])
+        let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveFilesave(save.data[i].type, save.data[i].name, save.data[i].content)
+        let fileFeedback = {}
+        fileFeedback.success = true
+        fileFeedback.path = fileInfo.filename
+        let storeFeedback = {}
+        storeFeedback.type = 'library'
+        storeFeedback.action = 'file-save'
+        storeFeedback.data = fileFeedback
+        this.bothSockets(JSON.stringify(storeFeedback))
+      } else if (save.data[i].type === 'application/json') {
+        if (save.data[i].source === 'local') {
+          // await liveParser.localJSONfile(o, ws)
+        } else if (save.data[i].source === 'web') {
+          // liveParser.webJSONfile(o, ws)
+        }
+      } else if (save.data[i].type === 'text/csv') {
+        console.log('cvs to path to json savefiles hyperdrive')
+        // save protocol original file save and JSON for HOP
+        if (save.data[i].source === 'local') {
+          let fileInfo = await this.liveHolepunch.DriveFiles.hyperdriveCSVmanager(save)
+          let fileFeedback = {}
+          fileFeedback.success = true
+          fileFeedback.path = fileInfo.filename
+          fileFeedback.columns = fileInfo.header.splitwords
+          let storeFeedback = {}
+          storeFeedback.type = 'library'
+          storeFeedback.action = 'save-file'
+          storeFeedback.data = fileFeedback
+          this.bothSockets(JSON.stringify(storeFeedback))
+          // now inform SafeFlow that data needs charting
+          this.emit('safeflow-query', fileFeedback)
+        } else if (message.data.source === 'web') {
+          // liveParser.webFileParse(o, ws)
+        }
+      } else if (save.data[i].type === 'spreadsheet') {
+        // need to pass to pandasAI
+      }
+    }
+  }
 
   /**
   * bentobox info gathering

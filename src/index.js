@@ -56,6 +56,7 @@ class HOP extends EventEmitter {
     this.LibRoute = new LibraryRoute(this.DataNetwork)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
     this.listenBeebee()
+    this.listenLibrary()
     this.listenSF()
     this.hopConnect()
   }
@@ -130,13 +131,29 @@ class HOP extends EventEmitter {
   }
 
   /**
-  * listener from SafeFLOW router
+  * listener from BeeBee router
   * @method listenBeebee
   *
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
+      console.log(data)
       this.SafeRoute.newSafeflow(data)
+    })
+  }  
+
+  /**
+  * listener from Library router
+  * @method listenLibrary
+  *
+  */
+  listenLibrary = async function () {
+    this.LibRoute.on('safeflow-query', async (data) => {
+      console.log('listen library SF')
+      console.log(data)
+      // need to inform beebee and prepare HQB for SF
+      this.BBRoute.bbAIpath(data)
+      // this.SafeRoute.newSafeflow(data)
     })
   }  
 

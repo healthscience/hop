@@ -73,10 +73,14 @@ class BBRoute extends EventEmitter {
         } else {
           let bbReply = {}
           bbReply.type = 'bbai-reply'
+          bbReply.action = replyData.type
           bbReply.data = replyData.text
           bbReply.bbid = message.bbid
           this.bothSockets(JSON.stringify(bbReply))
         }
+      } else if (message.action === '') {
+        console.log('from library  process file')
+        // replyData = await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'predict-future') {
         console.log('prediction PATH==============')
         // handover to the model
