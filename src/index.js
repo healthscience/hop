@@ -177,7 +177,6 @@ class HOP extends EventEmitter {
   }    
 
   processListen = function () {
-    console.log('ation he')
     this.BBRoute.liveBBAI.listenHolepunchLive()
   }
 

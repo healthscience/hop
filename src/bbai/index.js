@@ -50,20 +50,17 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
-    console.log('hop--message action')
-    console.log(message)
+    // console.log('hop--message action')
+    // console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
-        console.log('question')
         // send to NPL rules
         let replyData = await this.liveBBAI.nlpflow(message)
-        console.log('hop--beebee reply------')
-        console.log(replyData)
+        // console.log('hop--beebee reply------')
+        // console.log(replyData)
         replyData.bbid = message.bbid
         if (replyData.query === true) {
           // need to pass to SafeFlow
-          console.log('HOP--true safeflow query required')
-          // console.log(replyData)
           this.emit('safeflow-query', replyData)
           let bbReply = {}
           bbReply.type = 'bbai-reply'
@@ -85,11 +82,12 @@ class BBRoute extends EventEmitter {
         console.log('prediction PATH==============')
         // handover to the model
         let processFdata = await this.liveBBAI.managePrediction(message)
-        console.log('HOP-----back from future beebee')
-        console.log(processFdata)
+        // console.log('pass query on to SafeFlow')
+        // console.log(processFdata)
+        this.emit('safeflow-query', processFdata)
         // route message via HOP out
         let bbReply = {}
-        bbReply.type = 'bbai-future'
+        bbReply.type = 'bbai-future-summary'
         bbReply.data = processFdata
         bbReply.bbid = message.bbid
         this.bothSockets(JSON.stringify(bbReply))
