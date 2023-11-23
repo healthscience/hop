@@ -148,13 +148,24 @@ class HOP extends EventEmitter {
   *
   */
   listenLibrary = async function () {
-    this.LibRoute.on('safeflow-query', async (data) => {
-      console.log('listen library SF')
+    this.LibRoute.on('library-data', async (data) => {
+      console.log('listen library data')
       console.log(data)
       // need to inform beebee and prepare HQB for SF
-      this.BBRoute.bbAIpath(data)
-      // this.SafeRoute.newSafeflow(data)
+      let bbMessage = {}
+      bbMessage.type = 'bbai-reply'
+      bbMessage.reftype = 'ignore'
+      bbMessage.action = 'library'
+      bbMessage.data = data
+      this.BBRoute.bbAIpath(bbMessage)
     })
+
+    this.BBRoute.on('library-query', async (data) => {
+      console.log('listen query requests')
+      // console.log(data)
+      // call function in library and return data
+      // let dataLib = libraryPath('query', data)
+     })
   }  
 
   /**
@@ -188,7 +199,7 @@ class HOP extends EventEmitter {
   */
   messageResponder = function (o) {
     let messageRoute = this.MessagesFlow.messageIn(o)
-    // console.log(messageRoute)
+    console.log(messageRoute)
     if (messageRoute.type === 'bbai-reply') {
       this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {

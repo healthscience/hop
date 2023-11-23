@@ -50,14 +50,14 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
-    // console.log('hop--message action')
-    // console.log(message)
+    console.log('HOP--message action')
+    console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
         let replyData = await this.liveBBAI.nlpflow(message)
-        // console.log('hop--beebee reply------')
-        // console.log(replyData)
+        console.log('HOP--beebee reply------')
+        console.log(replyData)
         replyData.bbid = message.bbid
         if (replyData.query === true) {
           // need to pass to SafeFlow
@@ -67,6 +67,15 @@ class BBRoute extends EventEmitter {
           bbReply.data = 'HOP' // replyData
           bbReply.bbid = message.bbid
           this.bothSockets(JSON.stringify(bbReply))
+        } else if (replyData.type === 'library-peerlibrary') {
+          console.log('beebee library require')
+          // this.emit('library-query', replyData)
+          let bbReply = {}
+          bbReply.type = 'bbai-reply'
+          bbReply.action = replyData.type
+          bbReply.data = replyData
+          bbReply.bbid = message.bbid
+          this.bothSockets(JSON.stringify(bbReply))        
         } else {
           let bbReply = {}
           bbReply.type = 'bbai-reply'
@@ -75,7 +84,7 @@ class BBRoute extends EventEmitter {
           bbReply.bbid = message.bbid
           this.bothSockets(JSON.stringify(bbReply))
         }
-      } else if (message.action === '') {
+      } else if (message.action === 'library') {
         console.log('from library  process file')
         // replyData = await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'predict-future') {

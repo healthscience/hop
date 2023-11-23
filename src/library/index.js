@@ -734,7 +734,7 @@ class LibraryRoute extends EventEmitter {
           storeFeedback.data = fileFeedback
           this.bothSockets(JSON.stringify(storeFeedback))
           // now inform SafeFlow that data needs charting
-          this.emit('safeflow-query', fileFeedback)
+          this.emit('library-data', fileFeedback)
         } else if (message.data.source === 'web') {
           // liveParser.webFileParse(o, ws)
         }
