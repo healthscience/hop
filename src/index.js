@@ -91,7 +91,6 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
-      console.log('ws--connection')
       this.wsocket = ws
       this.DataNetwork.setWebsocket(ws)
       this.BBRoute.setWebsocket(ws)
@@ -113,7 +112,6 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('close', ws => {
         console.log('close ws direct')
-        console.log(ws)
         // process.exit(0)
       })
 
@@ -137,7 +135,6 @@ class HOP extends EventEmitter {
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
-      console.log(data)
       this.SafeRoute.newSafeflow(data)
     })
   }  
@@ -149,8 +146,6 @@ class HOP extends EventEmitter {
   */
   listenLibrary = async function () {
     this.LibRoute.on('library-data', async (data) => {
-      console.log('listen library data')
-      console.log(data)
       // need to inform beebee and prepare HQB for SF
       let bbMessage = {}
       bbMessage.type = 'bbai-reply'
@@ -161,7 +156,6 @@ class HOP extends EventEmitter {
     })
 
     this.BBRoute.on('library-query', async (data) => {
-      console.log('listen query requests')
       // console.log(data)
       // call function in library and return data
       // let dataLib = libraryPath('query', data)
@@ -199,7 +193,6 @@ class HOP extends EventEmitter {
   */
   messageResponder = function (o) {
     let messageRoute = this.MessagesFlow.messageIn(o)
-    console.log(messageRoute)
     if (messageRoute.type === 'bbai-reply') {
       this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
