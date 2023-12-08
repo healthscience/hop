@@ -198,7 +198,7 @@ class HOP extends EventEmitter {
     } else if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
-      this.LibRoute.libraryPath(messageRoute)
+      this.LibRoute.libManager.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentospace') {
       this.LibRoute.bentoPath(messageRoute)
     }
