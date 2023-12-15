@@ -41,8 +41,7 @@ class HOP extends EventEmitter {
     this.LibRoute = {}
     this.DmlRoute = {}
     this.startPtoPnetwork()
-    // this.DataNetwork.DriveFiles.setupHyperdrive()
-    // this.DataNetwork.BeeData.setupHyperbee()
+    this.sockcount = 0
   }
 
   /**
@@ -51,12 +50,13 @@ class HOP extends EventEmitter {
   *
   */
   startPtoPnetwork = function () {
-    this.BBRoute = new BBRoute(this.DataNetwork)
-    this.SafeRoute = new SfRoute(this.DataNetwork)
     this.LibRoute = new LibraryRoute(this.DataNetwork)
+    this.SafeRoute = new SfRoute(this.DataNetwork)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
+    this.BBRoute = new BBRoute(this.LibRoute)
     this.listenBeebee()
     this.listenLibrary()
+    this.listenLibrarySF()
     this.listenSF()
     this.hopConnect()
   }
@@ -91,11 +91,17 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
+      console.log('SOOSOOCOCOKKKKKETHHOWMANY?????????????')
+      // console.log(wsServer)
+      console.log(this.sockcount)
+      this.sockcount++ 
       this.wsocket = ws
+      console.log('sockconnet-----')
+      // console.log(ws)
       this.DataNetwork.setWebsocket(ws)
-      this.BBRoute.setWebsocket(ws)
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
+      this.BBRoute.setWebsocket(ws)
       // this.socketCount++
       // console.log('peer connected websocket')
       // console.log(wsServer.clients)
@@ -104,6 +110,7 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', (msg) => {
+        console.log('HOP===message')
         const o = JSON.parse(msg)
         // console.log('message into HOP')
         // console.log(o)
@@ -111,19 +118,21 @@ class HOP extends EventEmitter {
       })
 
       this.wsocket.on('close', ws => {
+        console.log(ws)
         console.log('close ws direct')
-        // process.exit(0)
+        // console.log(wsServer)
+        // process.exit(1)
       })
 
       this.wsocket.on('error', ws => {
-          console.log('socket eeeerrrorrrr')
-          // process.exit(1)
+        console.log('socket eeeerrrorrrr')
+        // process.exit(1)
       })
       
     })
 
     process.on('unhandledRejection', function(err) {
-    console.log(err)
+     console.log(err)
     })
 
   }
@@ -138,6 +147,17 @@ class HOP extends EventEmitter {
       this.SafeRoute.newSafeflow(data)
     })
   }  
+  
+  /**
+  * listener from Library SF router
+  * @method listenLibrarySF
+  *
+  */
+  listenLibrarySF = async function () {
+    this.LibRoute.on('safeflow-query', async (data) => {
+      this.SafeRoute.newSafeflow(data)
+    })
+  } 
 
   /**
   * listener from Library router
@@ -154,12 +174,6 @@ class HOP extends EventEmitter {
       bbMessage.data = data
       this.BBRoute.bbAIpath(bbMessage)
     })
-
-    this.BBRoute.on('library-query', async (data) => {
-      // console.log(data)
-      // call function in library and return data
-      // let dataLib = libraryPath('query', data)
-     })
   }  
 
   /**
@@ -176,7 +190,9 @@ class HOP extends EventEmitter {
 
     this.DataNetwork.on('hcores-active', () => {
       // allow other components have access to data
-       this.processListen()
+      this.processListen()
+      // this.DataNetwork.DriveFiles.listFilesFolder('')
+      // this.DataNetwork.DriveFiles.hyperdriveLocalfile('sqlite/Gadgetbridge')
     })
 
   }    
@@ -191,14 +207,20 @@ class HOP extends EventEmitter {
   * @method messageResponder
   *
   */
-  messageResponder = function (o) {
+  //  = function (o) {
+    messageResponder = (o) => {
+    console.log('message in')
+    console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
+    console.log('back message verify')
+    console.log(messageRoute)
     if (messageRoute.type === 'bbai-reply') {
       this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
-      this.LibRoute.libManager.libraryPath(messageRoute)
+      this.LibRoute.libManager.libraryManage(messageRoute)
+      // this.LibRoute.libManager.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentospace') {
       this.LibRoute.bentoPath(messageRoute)
     }
@@ -219,7 +241,7 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = function () {
-    process.exit(1)
+    // process.exit(0)
   }
 
 }

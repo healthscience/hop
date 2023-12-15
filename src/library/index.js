@@ -32,6 +32,7 @@ class LibraryRoute extends EventEmitter {
   setWebsocket = function (ws) {
     this.wsocket = ws
     this.wlist.push(ws)
+    console.log(this.wlist.length)
   }
 
   /**
@@ -53,6 +54,10 @@ class LibraryRoute extends EventEmitter {
   libraryListen =  function () {
     this.libManager.on('libmessage', (data) => {
       this.bothSockets(data)
+    })
+    // message for SafeFlow
+    this.libManager.on('libsafeflow', (data) => {
+      this.emit('safeflow-query', data)
     })
   }
 

@@ -31,6 +31,8 @@ class BBRoute extends EventEmitter {
    setWebsocket = function (ws) {
     this.wsocket = ws
     this.wlist.push(ws)
+    console.log('bb')
+    console.log(this.wlist.length)
   }
 
   /**
@@ -73,6 +75,7 @@ class BBRoute extends EventEmitter {
         this.bothSockets(JSON.stringify(bbReply))
       }  else if (replyData.type === 'library-peerlibrary') {
           // this.emit('library-query', replyData)
+          console.log('library public and private')
           let bbReply = {}
           bbReply.type = 'bbai-reply'
           bbReply.action = replyData.type
