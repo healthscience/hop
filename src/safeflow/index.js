@@ -183,6 +183,17 @@ class SfRoute extends EventEmitter {
   }
 
   /**
+  * data in from Network  check SF strucutre and send to peer
+  * @method networkSFpeerdata
+  *
+  */
+  networkSFpeerdata = function (data) {
+    // need to check structure TODO
+    data.type = 'sf-networkdata'
+    this.bothSockets(JSON.stringify(data))
+  }
+
+  /**
   * listen for outputs from SafeFlow
   * @method sfListeners
   *

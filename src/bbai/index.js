@@ -21,6 +21,7 @@ class BBRoute extends EventEmitter {
     this.liveBBAI = new BbAi(Holepunch)
     this.wsocket = {}
     this.wlist = []
+    this.peerNetworklisten()
   }
 
   /**
@@ -31,8 +32,6 @@ class BBRoute extends EventEmitter {
    setWebsocket = function (ws) {
     this.wsocket = ws
     this.wlist.push(ws)
-    console.log('bb')
-    console.log(this.wlist.length)
   }
 
   /**
@@ -75,7 +74,6 @@ class BBRoute extends EventEmitter {
         this.bothSockets(JSON.stringify(bbReply))
       }  else if (replyData.type === 'library-peerlibrary') {
           // this.emit('library-query', replyData)
-          console.log('library public and private')
           let bbReply = {}
           bbReply.type = 'bbai-reply'
           bbReply.action = replyData.type
@@ -102,8 +100,21 @@ class BBRoute extends EventEmitter {
         bbReply.data = processFdata
         bbReply.bbid = message.bbid
         this.bothSockets(JSON.stringify(bbReply))
-      }
+      } 
     }
+  }
+
+  /**
+  * listen for messages / data from peer network
+  * @method peerNetworklisten
+  *
+  */
+  peerNetworklisten = function (messagedata) {
+    this.liveBBAI.on('peer-bb-direct', (data) => {
+      if (messagedata.action === 'peer-direct') {
+        this.bothSockets(JSON.stringify(messagedata))
+      }      
+    })
   }
 
 }

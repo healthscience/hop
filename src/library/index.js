@@ -32,7 +32,6 @@ class LibraryRoute extends EventEmitter {
   setWebsocket = function (ws) {
     this.wsocket = ws
     this.wlist.push(ws)
-    console.log(this.wlist.length)
   }
 
   /**

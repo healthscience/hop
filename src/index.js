@@ -54,6 +54,7 @@ class HOP extends EventEmitter {
     this.SafeRoute = new SfRoute(this.DataNetwork)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
     this.BBRoute = new BBRoute(this.LibRoute)
+    this.listenNetwork()
     this.listenBeebee()
     this.listenLibrary()
     this.listenLibrarySF()
@@ -91,13 +92,9 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
-      console.log('SOOSOOCOCOKKKKKETHHOWMANY?????????????')
-      // console.log(wsServer)
       console.log(this.sockcount)
       this.sockcount++ 
       this.wsocket = ws
-      console.log('sockconnet-----')
-      // console.log(ws)
       this.DataNetwork.setWebsocket(ws)
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
@@ -110,7 +107,7 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', (msg) => {
-        console.log('HOP===message')
+        // console.log('HOP===message')
         const o = JSON.parse(msg)
         // console.log('message into HOP')
         // console.log(o)
@@ -191,16 +188,32 @@ class HOP extends EventEmitter {
     this.DataNetwork.on('hcores-active', () => {
       // allow other components have access to data
       this.processListen()
-      // this.DataNetwork.DriveFiles.listFilesFolder('')
-      // this.DataNetwork.DriveFiles.hyperdriveLocalfile('sqlite/Gadgetbridge')
     })
 
   }    
 
+  /**
+  * listen holepunch
+  * @method processListen
+  *
+  */
   processListen = function () {
     this.BBRoute.liveBBAI.listenHolepunchLive()
   }
 
+  /**
+  * listen ptop network messages
+  * @method listenNetwork
+  *
+  */
+  listenNetwork = function () {
+    this.DataNetwork.on('peer-topeer', (data) => {
+      // route to beebee for text message back to peer & prep bentobox
+      this.BBRoute.liveBBAI.networkPeerdirect(data)
+      // return vis data, like from SafeFlow
+      this.SafeRoute.networkSFpeerdata(data)
+    })
+  }  
 
   /**
   * listen for outputs from SafeFlow
@@ -209,11 +222,9 @@ class HOP extends EventEmitter {
   */
   //  = function (o) {
     messageResponder = (o) => {
-    console.log('message in')
-    console.log(o)
+    // console.log('message in')
+    // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
-    console.log('back message verify')
-    console.log(messageRoute)
     if (messageRoute.type === 'bbai-reply') {
       this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
@@ -223,6 +234,8 @@ class HOP extends EventEmitter {
       // this.LibRoute.libManager.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentospace') {
       this.LibRoute.bentoPath(messageRoute)
+    } else if (messageRoute.type === 'network') {
+      this.DataNetwork.networkPath(messageRoute)
     }
   }
 
