@@ -225,6 +225,7 @@ class HOP extends EventEmitter {
     // console.log('message in')
     // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
+    // console.log(messageRoute)
     if (messageRoute.type === 'bbai-reply') {
       this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
@@ -232,8 +233,8 @@ class HOP extends EventEmitter {
     } else if (messageRoute.type === 'library') {
       this.LibRoute.libManager.libraryManage(messageRoute)
       // this.LibRoute.libManager.libraryPath(messageRoute)
-    } else if (messageRoute.type === 'bentospace') {
-      this.LibRoute.bentoPath(messageRoute)
+    } else if (messageRoute.type === 'bentobox') {
+      this.LibRoute.libManager.bentoPath(messageRoute)
     } else if (messageRoute.type === 'network') {
       this.DataNetwork.networkPath(messageRoute)
     }
