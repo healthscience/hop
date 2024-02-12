@@ -121,7 +121,7 @@ class HOP extends EventEmitter {
         console.log(ws)
         console.log('close ws direct')
         // console.log(wsServer)
-        // process.exit(1)
+        process.exit(0)
       })
 
       this.wsocket.on('error', ws => {
