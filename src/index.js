@@ -107,11 +107,14 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', (msg) => {
-        // console.log('HOP===message')
         const o = JSON.parse(msg)
         // console.log('message into HOP')
         // console.log(o)
-        this.messageResponder(o)
+        if (o.type.trim() === 'close') {
+          this.closeHOP()
+        } else {
+         this.messageResponder(o)
+        }
       })
 
       this.wsocket.on('close', ws => {
@@ -255,7 +258,7 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = function () {
-    // process.exit(0)
+    process.exit(0)
   }
 
 }
