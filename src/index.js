@@ -216,6 +216,15 @@ class HOP extends EventEmitter {
       // return vis data, like from SafeFlow
       this.SafeRoute.networkSFpeerdata(data)
     })
+  
+    this.DataNetwork.on('peer-incoming', (data) => {
+      let peerId = {}
+      peerId.type = 'network-notification'
+      peerId.action = 'warm-peer-new'
+      peerId.data = data
+      this.sendSocketMessage(JSON.stringify(peerId))
+    })
+  
   }  
 
   /**
@@ -258,7 +267,7 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = function () {
-    process.exit(0)
+    process.exit(1)
   }
 
 }
