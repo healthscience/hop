@@ -241,7 +241,7 @@ class SfRoute extends EventEmitter {
     })
   
     this.SafeFlow.on('checkPeerResults', async (data) => {
-      const checkResults = await this.holepunchLive.BeeData.peerResults(data)
+      const checkResults = await this.holepunchLive.BeeData.peerResultsItem(data)
       this.resultsCallback(data, checkResults)
     })
   
