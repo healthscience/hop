@@ -38,7 +38,7 @@
     "hop-query-builder": "^0.0.10",
     "library-hop": "^0.0.5",
     "librarycomposer": "0.3.2",
-    "node-safeflow": "0.9.54",
+    "node-safeflow": "0.9.55",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
   },
