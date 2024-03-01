@@ -1,7 +1,7 @@
 {
   "name": "hop-ecs",
   "description": "health oracle protocol",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "src/index.js",
   "bin": "src/index.js",
   "type": "module",
@@ -29,10 +29,10 @@
   },
   "homepage": "https://github.com/healthscience/hop#readme",
   "dependencies": {
-    "beebee-ai": "^0.2.8",
+    "beebee-ai": "^0.2.9",
     "bs58": "^5.0.0",
     "corestore": "^6.2.0",
-    "holepunch-hop": "^0.2.4",
+    "holepunch-hop": "^0.2.5",
     "hop-dml": "^0.0.1",
     "hop-message": "^0.1.0",
     "hop-query-builder": "^0.0.10",
