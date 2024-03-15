@@ -51,6 +51,8 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
+    console.log('beebee path')
+    console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
@@ -72,7 +74,7 @@ class BBRoute extends EventEmitter {
         bbReply.data = replyData
         bbReply.bbid = message.bbid
         this.bothSockets(JSON.stringify(bbReply))
-      }  else if (replyData.type === 'library-peerlibrary') {
+      } else if (replyData.type === 'library-peerlibrary') {
           // this.emit('library-query', replyData)
           let bbReply = {}
           bbReply.type = 'bbai-reply'
@@ -90,6 +92,10 @@ class BBRoute extends EventEmitter {
         }
       } else if (message.action === 'library') {
         // replyData = await this.liveBBAI.nlpflow(message)
+      } else if (message.action === 'ai-task') {
+        console.log('AI task sure which ai?')
+        console.log(message)
+        this.liveBBAI.coordinationAI(message)
       } else if (message.action === 'predict-future') {
         // handover to the model
         let processFdata = await this.liveBBAI.managePrediction(message)
