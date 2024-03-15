@@ -52,7 +52,7 @@ class BBRoute extends EventEmitter {
   */
   bbAIpath = async function (message) {
     console.log('beebee path')
-    console.log(message)
+    // console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
