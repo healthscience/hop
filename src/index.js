@@ -50,6 +50,7 @@ class HOP extends EventEmitter {
   *
   */
   startPtoPnetwork = function () {
+    console.log('setup routes')
     this.LibRoute = new LibraryRoute(this.DataNetwork)
     this.SafeRoute = new SfRoute(this.DataNetwork)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
@@ -190,6 +191,7 @@ class HOP extends EventEmitter {
 
     this.DataNetwork.on('hcores-active', () => {
       // allow other components have access to data
+      console.log('peer storage alive')
       this.processListen()
     })
 
@@ -202,6 +204,7 @@ class HOP extends EventEmitter {
   */
   processListen = function () {
     this.BBRoute.liveBBAI.listenHolepunchLive()
+    this.LibRoute.libManager.startLibrary()
   }
 
   /**

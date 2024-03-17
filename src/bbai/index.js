@@ -93,8 +93,6 @@ class BBRoute extends EventEmitter {
       } else if (message.action === 'library') {
         // replyData = await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'ai-task') {
-        console.log('AI task sure which ai?')
-        console.log(message)
         this.liveBBAI.coordinationAI(message)
       } else if (message.action === 'predict-future') {
         // handover to the model
@@ -119,7 +117,9 @@ class BBRoute extends EventEmitter {
     this.liveBBAI.on('peer-bb-direct', (data) => {
       if (data.action === 'chart') {
         this.bothSockets(JSON.stringify(data))
-      }      
+      } else if (data.action === 'ai-task') {
+        this.bothSockets(JSON.stringify(data))
+      }  
     })
   }
 

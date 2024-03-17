@@ -34,7 +34,7 @@
     "corestore": "^6.2.0",
     "holepunch-hop": "^0.2.5",
     "hop-dml": "^0.0.1",
-    "hop-message": "^0.1.0",
+    "hop-message": "^0.1.1",
     "hop-query-builder": "^0.0.11",
     "library-hop": "^0.0.5",
     "librarycomposer": "0.3.2",
