@@ -52,7 +52,7 @@ class BBRoute extends EventEmitter {
   */
   bbAIpath = async function (message) {
     console.log('beebee path')
-    // console.log(message)
+    console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
@@ -92,8 +92,10 @@ class BBRoute extends EventEmitter {
         }
       } else if (message.action === 'library') {
         // replyData = await this.liveBBAI.nlpflow(message)
-      } else if (message.action === 'ai-task') {
-        this.liveBBAI.coordinationAI(message)
+      } else if (message.action === 'learn-agent-start') {
+        await this.liveBBAI.beginAgents(message.data.model)
+      } else if (message.action === 'agent-task') {
+        await this.liveBBAI.coordinationAgents(message)
       } else if (message.action === 'predict-future') {
         // handover to the model
         let processFdata = await this.liveBBAI.managePrediction(message)
@@ -117,9 +119,11 @@ class BBRoute extends EventEmitter {
     this.liveBBAI.on('peer-bb-direct', (data) => {
       if (data.action === 'chart') {
         this.bothSockets(JSON.stringify(data))
-      } else if (data.action === 'ai-task') {
+      } else if (data.task === 'cale-evolution' || data.action === 'cale-evolution' || data.context.task === 'cale-evolution') {
         this.bothSockets(JSON.stringify(data))
-      }  
+      } else if (data.task === 'cale-gpt4all' || data.action === 'cale-gpt4all') {
+        this.bothSockets(JSON.stringify(data))
+      }
     })
   }
 
