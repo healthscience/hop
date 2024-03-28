@@ -22,6 +22,7 @@ class BBRoute extends EventEmitter {
     this.wsocket = {}
     this.wlist = []
     this.peerNetworklisten()
+    this.listenBBresponse()
   }
 
   /**
@@ -51,45 +52,12 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
-    console.log('beebee path')
-    console.log(message)
+    // console.log('beebee path')
+    // console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
-        let replyData = await this.liveBBAI.nlpflow(message)
-        replyData.bbid = message.bbid
-        if (replyData.query === true) {
-          // need to pass to SafeFlow
-          this.emit('safeflow-query', replyData)
-          let bbReply = {}
-          bbReply.type = 'bbai-reply'
-          bbReply.data = 'HOP' // replyData
-          bbReply.bbid = message.bbid
-          this.bothSockets(JSON.stringify(bbReply))
-      } else if (replyData.type === 'upload') {
-        // this.emit('library-query', replyData)
-        let bbReply = {}
-        bbReply.type = 'upload'
-        bbReply.action = replyData.type
-        bbReply.data = replyData
-        bbReply.bbid = message.bbid
-        this.bothSockets(JSON.stringify(bbReply))
-      } else if (replyData.type === 'library-peerlibrary') {
-          // this.emit('library-query', replyData)
-          let bbReply = {}
-          bbReply.type = 'bbai-reply'
-          bbReply.action = replyData.type
-          bbReply.data = replyData
-          bbReply.bbid = message.bbid
-          this.bothSockets(JSON.stringify(bbReply))        
-        } else {
-          let bbReply = {}
-          bbReply.type = 'bbai-reply'
-          bbReply.action = replyData.type
-          bbReply.data = replyData.text
-          bbReply.bbid = message.bbid
-          this.bothSockets(JSON.stringify(bbReply))
-        }
+        await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'library') {
         // replyData = await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'learn-agent-start') {
@@ -111,6 +79,48 @@ class BBRoute extends EventEmitter {
   }
 
   /**
+  * listen for agent responses via beebee
+  * @method listenBBresponse
+  *
+  */
+  listenBBresponse = function () {
+    this.liveBBAI.on('beebee-response', (replyData) => {
+      if (replyData.query === true) {
+          // need to pass to SafeFlow
+          this.emit('safeflow-query', replyData)
+          let bbReply = {}
+          bbReply.type = 'bbai-reply'
+          bbReply.data = 'HOP' // replyData
+          bbReply.bbid = replyData.bbid
+          this.bothSockets(JSON.stringify(bbReply))
+      } else if (replyData.type === 'upload') {
+        // this.emit('library-query', replyData)
+        let bbReply = {}
+        bbReply.type = 'upload'
+        bbReply.action = replyData.type
+        bbReply.data = replyData
+        bbReply.bbid = replyData.bbid
+        this.bothSockets(JSON.stringify(bbReply))
+      } else if (replyData.type === 'library-peerlibrary') {
+        // this.emit('library-query', replyData)
+        let bbReply = {}
+        bbReply.type = 'bbai-reply'
+        bbReply.action = replyData.type
+        bbReply.data = replyData
+        bbReply.bbid = replyData.bbid
+        this.bothSockets(JSON.stringify(bbReply))        
+      } else {
+        let bbReply = {}
+        bbReply.type = 'bbai-reply'
+        bbReply.action = replyData.type
+        bbReply.data = replyData.text
+        bbReply.bbid = replyData.bbid
+        this.bothSockets(JSON.stringify(bbReply))
+      }
+    })
+  }
+
+  /**
   * listen for messages / data from peer network
   * @method peerNetworklisten
   *
@@ -119,9 +129,9 @@ class BBRoute extends EventEmitter {
     this.liveBBAI.on('peer-bb-direct', (data) => {
       if (data.action === 'chart') {
         this.bothSockets(JSON.stringify(data))
-      } else if (data.task === 'cale-evolution' || data.action === 'cale-evolution' || data.context.task === 'cale-evolution') {
+      } else if (data?.task === 'cale-evolution' || data.action === 'cale-evolution' || data.context?.task === 'cale-evolution') {
         this.bothSockets(JSON.stringify(data))
-      } else if (data.task === 'cale-gpt4all' || data.action === 'cale-gpt4all') {
+      } else if (data?.task === 'cale-gpt4all' || data.action === 'cale-gpt4all') {
         this.bothSockets(JSON.stringify(data))
       }
     })

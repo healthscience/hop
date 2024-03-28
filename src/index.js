@@ -50,7 +50,6 @@ class HOP extends EventEmitter {
   *
   */
   startPtoPnetwork = function () {
-    console.log('setup routes')
     this.LibRoute = new LibraryRoute(this.DataNetwork)
     this.SafeRoute = new SfRoute(this.DataNetwork)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
@@ -119,7 +118,6 @@ class HOP extends EventEmitter {
       })
 
       this.wsocket.on('close', ws => {
-        console.log(ws)
         console.log('close ws direct')
         // console.log(wsServer)
         process.exit(0)
@@ -173,7 +171,7 @@ class HOP extends EventEmitter {
       bbMessage.reftype = 'ignore'
       bbMessage.action = 'library'
       bbMessage.data = data
-      this.BBRoute.bbAIpath(bbMessage)
+      await this.BBRoute.bbAIpath(bbMessage)
     })
   }  
 
