@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/healthscience/hop#readme",
   "dependencies": {
-    "beebee-ai": "^0.2.18",
+    "beebee-ai": "^0.2.19",
     "bs58": "^5.0.0",
     "chrono-node": "^2.7.5",
     "corestore": "^6.2.0",
