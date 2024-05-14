@@ -52,7 +52,7 @@ class BBRoute extends EventEmitter {
   *
   */
   bbAIpath = async function (message) {
-    // console.log('beebee path')
+    // console.log('HOP -- beebee path')
     // console.log(message)
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
@@ -64,6 +64,11 @@ class BBRoute extends EventEmitter {
         await this.liveBBAI.beginAgents(message.data.model)
       } else if (message.action === 'agent-task') {
         await this.liveBBAI.coordinationAgents(message)
+      } else if (message.action === 'agent-network-task') {
+        // start build DML evidence here???
+        console.log('dml path')
+        console.log(message)
+        await this.liveBBAI.coordinationDML(message)
       } else if (message.action === 'predict-future') {
         // handover to the model
         let processFdata = await this.liveBBAI.managePrediction(message)

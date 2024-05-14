@@ -87,73 +87,6 @@ class SfRoute extends EventEmitter {
     let authStatus = await this.SafeFlow.networkAuthorisation(message.settings)
     // ws.send(JSON.stringify(authStatus))
     this.emit('auth-response', authStatus)
-    // send back JWT
-    // authStatus.jwt = tokenString
-    // ws.send(JSON.stringify(authStatus))
-  /* } else if (message.action === 'cloudauth') {
-    // console.log('auth1')
-    // does the username and password on the allow list?
-    let allowPeers = JSON.parse(process.env.PEER_LIST)
-    let authPeer = false
-    for (let pID of allowPeers) {
-      if (pID.peer === message.data.peer && pID.pw === message.data.password) {
-        authPeer = true
-      }
-    }
-    // is the peer already connected and authorised?
-    // no peers connected and autherise
-    let getAuth = Object.keys(pairSockTok)
-    let numAuth = getAuth.length
-    // can only be one token auth at same time
-    if (jwtList.length > 0) {
-      authPeer = false
-    }
-    // is the peer already connected?
-    let alreadyConnect = pairSockTok[message.data.peer]
-    let peerAuthed = pairSockTok[ws.id]
-    if (authPeer === true && alreadyConnect === undefined) {
-      // setup safeFLOW
-      if (setFlow === false && alreadyConnect === undefined) {
-        await peerListeners(ws)
-      }
-      // form token  (need to upgrade proper JWT)
-      let tokenString = cryptmessage.randomBytes(64).toString('hex')
-      jwtList.push(tokenString)
-      // create socketid, token pair
-      pairSockTok[ws.id] = tokenString
-      pairSockTok[message.data.peer] = tokenString
-      let authStatus = await HOP.networkAuthorisation(message.settings)
-      // send back JWT
-      authStatus.jwt = tokenString
-      ws.send(JSON.stringify(authStatus))
-    } else {
-      let authFailStatus = {}
-      authFailStatus.safeflow = true
-      authFailStatus.type = 'auth'
-      authFailStatus.auth = false
-      ws.send(JSON.stringify(authFailStatus))
-    }
-  } */
-  // need to check if cloud account is allow access to process message?
-  // be good use of JWT TODO
-  // valid jwt?
-  /* let jwtStatus = true
-  for (let pt of jwtList) {
-    if (pt === message.jwt) {
-      jwtStatus = true
-    } else {
-      jwtStatus = true
-      /* let authFailStatus = {}
-      authFailStatus.safeflow = true
-      authFailStatus.type = 'auth'
-      authFailStatus.auth = false
-      ws.send(JSON.stringify(authFailStatus)) */
-    // }
-    // console.log('token status')
-    // console.log(jwtStatus)
-    /* if (jwtStatus === true) {
-
-    } */
     
   }
 
@@ -232,7 +165,9 @@ class SfRoute extends EventEmitter {
     this.SafeFlow.on('updateModule', async (data, shellID, dataPrint) => {
       let moduleRefContract = this.liveLibrary.liveComposer.moduleComposer(data, 'update')
       // const savedFeedback = await this.holepunchLive.BeeData.savePubliclibrary(moduleRefContract)
-      const updateComputeModule = await this.holepunchLive.BeeData.savePeerLibrary(moduleRefContract.data)
+      // console.log('save peer life update')
+      // console.log(moduleRefContract)
+      const updateComputeModule = await this.holepunchLive.BeeData.savePeerLibrary(moduleRefContract)
       // need to tell SafeFlow computeModule HASH has been created
       this.SafeFlow.emit('updatesaved-compute', updateComputeModule, shellID, dataPrint)
     })

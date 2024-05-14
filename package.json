@@ -33,6 +33,7 @@
     "bs58": "^5.0.0",
     "chrono-node": "^2.7.5",
     "corestore": "^6.2.0",
+    "gpt4all": "^4.0.0",
     "holepunch-hop": "^0.2.7",
     "hop-dml": "^0.0.1",
     "hop-message": "^0.1.1",
@@ -41,6 +42,7 @@
     "librarycomposer": "0.3.2",
     "luxon": "^3.4.4",
     "node-safeflow": "0.9.55",
+    "object-hash": "^3.0.0",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"

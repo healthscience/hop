@@ -92,7 +92,7 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
-      console.log(this.sockcount)
+  
       this.sockcount++ 
       this.wsocket = ws
       this.DataNetwork.setWebsocket(ws)
@@ -119,13 +119,11 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('close', ws => {
         console.log('close ws direct')
-        // console.log(wsServer)
         process.exit(0)
       })
 
       this.wsocket.on('error', ws => {
         console.log('socket eeeerrrorrrr')
-        // process.exit(1)
       })
       
     })
@@ -189,7 +187,6 @@ class HOP extends EventEmitter {
 
     this.DataNetwork.on('hcores-active', () => {
       // allow other components have access to data
-      console.log('peer storage alive')
       this.processListen()
     })
 

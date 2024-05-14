@@ -7,7 +7,6 @@ describe('bring the protocol to life', function () {
     let options = {}
     options.port = 9888
     let hopECS = new liveHOP(options)
-    // console.log(hopECS)
     assert.equal(hopECS.options.port, 9888)
 
     setTimeout(closeHOP, 3000000)
