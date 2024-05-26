@@ -58,6 +58,10 @@ class LibraryRoute extends EventEmitter {
     this.libManager.on('libsafeflow', (data) => {
       this.emit('safeflow-query', data)
     })
+    // systems data for SafeFlow
+    this.libManager.on('systemssafeflow', (data) => {
+      this.emit('safeflow-systems', data)
+    })
   }
 
 }

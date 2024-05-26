@@ -62,6 +62,8 @@ class BBRoute extends EventEmitter {
         // replyData = await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'learn-agent-start') {
         await this.liveBBAI.beginAgents(message.data.model)
+      } else if (message.action === 'learn-agent-stop') {
+        this.liveBBAI.stopAgents(message.data.model)
       } else if (message.action === 'agent-task') {
         await this.liveBBAI.coordinationAgents(message)
       } else if (message.action === 'agent-network-task') {
@@ -137,6 +139,9 @@ class BBRoute extends EventEmitter {
       } else if (data?.task === 'cale-evolution' || data.action === 'cale-evolution' || data.context?.task === 'cale-evolution') {
         this.bothSockets(JSON.stringify(data))
       } else if (data?.task === 'cale-gpt4all' || data.action === 'cale-gpt4all') {
+        this.bothSockets(JSON.stringify(data))
+      } else {
+        console.log(data)
         this.bothSockets(JSON.stringify(data))
       }
     })

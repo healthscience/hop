@@ -5,7 +5,7 @@
 *
 * @class SfRoute
 * @package    SafeflowRoute
-* @copyright  Copyright (c) 2022 James Littlejohn
+* @copyright  Copyright (c) 2024 James Littlejohn
 * @license    http://www.gnu.org/licenses/old-licenses/gpl-3.0.html
 * @version    $Id$
 */
@@ -107,6 +107,20 @@ class SfRoute extends EventEmitter {
   }
 
   /**
+  * inform SF on systems this peer uses
+  * @method setSafeflowSystems
+  *
+  */
+  setSafeflowSystems = async function (message) {
+    let setSystems = await this.SafeFlow.setSystemsStart(message)
+    let summarySFsystems = {}
+    summarySFsystems.type = 'sf-systems'
+    summarySFsystems.data = setSystems
+    summarySFsystems.bbid = message.bbid
+    this.bothSockets(JSON.stringify(summarySFsystems))
+  }
+
+  /**
   * input into safeFlow-ECS
   * @method updateSafeflow
   *
@@ -133,40 +147,36 @@ class SfRoute extends EventEmitter {
   */
   sfListeners = async function () {
     // listenr for data back from ECS
+    this.on('start-systems', (data) => {
+      // ask library for systems
+      console.log('start systems SG listeen')
+      this.emit('library-systems')
+    })
     this.on('auth-response', (data) => {
       this.emit('sfauth', data)
     })
     this.SafeFlow.on('sf-displayEntity', (data) => {
       data.type = 'sf-newEntity'
       this.bothSockets(JSON.stringify(data))
-      // this.wsocket.send(JSON.stringify(data))
     })
-    // let deCount = this.SafeRoute.listenerCount('displayEntity')
     this.SafeFlow.on('sf-displayEntityRange', (data) => {
       data.type = 'sf-newEntityRange'
       this.bothSockets(JSON.stringify(data))
-      // this.wsocket.send(JSON.stringify(data))
     })
     this.SafeFlow.on('sf-displayUpdateEntity', (data) => {
       data.type = 'sf-updateEntity'
       this.bothSockets(JSON.stringify(data))
-      // this.wsocket.send(JSON.stringify(data))
     })
     this.SafeFlow.on('displayUpdateEntityRange', (data) => {
       data.type = 'sf-updateEntityRange'
       this.bothSockets(JSON.stringify(data))
-      // this.wsocket.send(JSON.stringify(data))
     })
     this.SafeFlow.on('displayEmpty', (data) => {
       data.type = 'displayEmpty'
       this.bothSockets(JSON.stringify(data))
-      // this.wsocket.send(JSON.stringify(data))
     })
     this.SafeFlow.on('updateModule', async (data, shellID, dataPrint) => {
       let moduleRefContract = this.liveLibrary.liveComposer.moduleComposer(data, 'update')
-      // const savedFeedback = await this.holepunchLive.BeeData.savePubliclibrary(moduleRefContract)
-      // console.log('save peer life update')
-      // console.log(moduleRefContract)
       const updateComputeModule = await this.holepunchLive.BeeData.savePeerLibrary(moduleRefContract)
       // need to tell SafeFlow computeModule HASH has been created
       this.SafeFlow.emit('updatesaved-compute', updateComputeModule, shellID, dataPrint)

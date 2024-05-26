@@ -141,7 +141,7 @@ class HOP extends EventEmitter {
   */
   listenBeebee = async function () {
     this.BBRoute.on('safeflow-query', async (data) => {
-      this.SafeRoute.newSafeflow(data)
+      await this.SafeRoute.newSafeflow(data)
     })
   }  
   
@@ -152,7 +152,10 @@ class HOP extends EventEmitter {
   */
   listenLibrarySF = async function () {
     this.LibRoute.on('safeflow-query', async (data) => {
-      this.SafeRoute.newSafeflow(data)
+      await this.SafeRoute.newSafeflow(data)
+    })
+    this.LibRoute.on('safeflow-systems', async (data) => {
+      await this.SafeRoute.setSafeflowSystems(data)
     })
   } 
 
@@ -180,9 +183,14 @@ class HOP extends EventEmitter {
   */
   listenSF = async function () {
     this.SafeRoute.on('sfauth', async (data) => {
+      console.log('sf aut complete listener')
       await this.setupHolepunch()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('library-systems', async (data) => {
+      console.log('start systems HOP')
+      await this.LibRoute.libManager.systemsContracts()
     })
 
     this.DataNetwork.on('hcores-active', () => {
@@ -197,7 +205,7 @@ class HOP extends EventEmitter {
   * @method processListen
   *
   */
-  processListen = function () {
+  processListen = async function () {
     this.BBRoute.liveBBAI.listenHolepunchLive()
     this.LibRoute.libManager.startLibrary()
   }
