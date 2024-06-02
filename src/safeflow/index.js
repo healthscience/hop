@@ -41,6 +41,7 @@ class SfRoute extends EventEmitter {
     } else if (message.action === 'networkexperiment') {
       await this.newSafeflow(message)
     } else if (message.action === 'updatenetworkexperiment') {
+      console.log('--------update to exisign ENITTY----')
       await this.updateSafeflow(message)
     }
   }
@@ -126,7 +127,24 @@ class SfRoute extends EventEmitter {
   *
   */
   updateSafeflow = async function (message) {
-    let ecsDataUpdate = await this.SafeFlow.startFlow(message.data)
+    // need to update module contracts, compute and visualise controls and settings most likely
+    console.log('HOPquery')
+    console.log(message.data.exp)
+    let modulesUpdate = message.data.update.modules
+    let changes = message.data.update.changes
+    console.log(modulesUpdate)
+    console.log(changes)
+    for (let mod of modulesUpdate) {
+      if (mod.value.style === 'compute') {
+        // update controls
+        console.log('compute')
+        console.log(mod.value)
+        mod.value.info.controls = changes.compute.controls
+        console.log('uupdudpdudpu')
+        console.log(mod.value)
+      }
+    }
+    await this.SafeFlow.startFlow(message.data)
   }
 
   /**
