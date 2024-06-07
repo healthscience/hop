@@ -154,6 +154,9 @@ class HOP extends EventEmitter {
     this.LibRoute.on('safeflow-query', async (data) => {
       await this.SafeRoute.newSafeflow(data)
     })
+    this.LibRoute.on('safeflow-update', async (data) => {
+      await this.SafeRoute.updateSafeflow(data)
+    })
     this.LibRoute.on('safeflow-systems', async (data) => {
       await this.SafeRoute.setSafeflowSystems(data)
     })
