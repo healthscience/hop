@@ -101,7 +101,6 @@ class BBRoute extends EventEmitter {
           bbReply.bbid = replyData.bbid
           this.bothSockets(JSON.stringify(bbReply))
       } else if (replyData.type === 'upload') {
-        // this.emit('library-query', replyData)
         let bbReply = {}
         bbReply.type = 'upload'
         bbReply.action = replyData.type
@@ -109,11 +108,17 @@ class BBRoute extends EventEmitter {
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))
       } else if (replyData.type === 'library-peerlibrary') {
-        // this.emit('library-query', replyData)
         let bbReply = {}
         bbReply.type = 'bbai-reply'
         bbReply.action = replyData.type
         bbReply.data = replyData
+        bbReply.bbid = replyData.bbid
+        this.bothSockets(JSON.stringify(bbReply))
+      } else if (replyData.type === 'query-no-data') {
+        let bbReply = {}
+        bbReply.type = 'bbai-reply'
+        bbReply.action = 'no-data'
+        bbReply.data = { text: 'No data for query'}
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))        
       } else {
