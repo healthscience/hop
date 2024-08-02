@@ -34,7 +34,7 @@
     "chrono-node": "^2.7.5",
     "corestore": "^6.2.0",
     "gpt4all": "^4.0.0",
-    "holepunch-hop": "^0.3.0",
+    "holepunch-hop": "^0.3.1",
     "hop-dml": "^0.0.2",
     "hop-message": "^0.1.2",
     "hop-query-builder": "^0.1.1",
