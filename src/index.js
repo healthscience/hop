@@ -241,6 +241,10 @@ class HOP extends EventEmitter {
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
     })
+
+    this.DataNetwork.on('drive-save-large', (data) => {
+      this.sendSocketMessage(JSON.stringify(data))
+    })
   }  
 
   /**
