@@ -108,12 +108,16 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('message', (msg) => {
         const o = JSON.parse(msg)
-        // console.log('message into HOP')
-        // console.log(o)
-        if (o.type.trim() === 'close') {
-          this.closeHOP()
+        console.log('message into HOP')
+        console.log(o)
+        if (o.jwt === '12358132134') {
+          if (o.type.trim() === 'close') {
+            this.closeHOP()
+          } else {
+          this.messageResponder(o)
+          }
         } else {
-         this.messageResponder(o)
+          console.log('NO ACCESS TO HOP')
         }
       })
 
