@@ -123,7 +123,7 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('close', ws => {
         console.log('close ws direct')
-        process.exit(0)
+        // process.exit(0)
       })
 
       this.wsocket.on('error', ws => {
@@ -287,7 +287,7 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = function () {
-    process.exit(1)
+    // process.exit(1)
   }
 
 }
