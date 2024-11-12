@@ -110,7 +110,7 @@ class HOP extends EventEmitter {
         const o = JSON.parse(msg)
         console.log('message into HOP')
         console.log(o)
-        if (o.jwt === '12358132134') {
+        if (o.jwt === '') {
           if (o.type.trim() === 'close') {
             this.closeHOP()
           } else {
@@ -254,7 +254,7 @@ class HOP extends EventEmitter {
   */
   //  = function (o) {
     messageResponder = (o) => {
-    // console.log('message in')
+    console.log('message resonse')
     // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
     // console.log(messageRoute)
