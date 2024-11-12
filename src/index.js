@@ -31,6 +31,7 @@ class HOP extends EventEmitter {
 
   constructor(options) {
     super()
+    this.hoptoken = ''
     this.options = options
     this.MessagesFlow = new MessageFlow()
     this.DataNetwork = new HolepunchHOP()
@@ -108,12 +109,20 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('message', (msg) => {
         const o = JSON.parse(msg)
-        // console.log('message into HOP')
-        // console.log(o)
-        if (o.type.trim() === 'close') {
-          this.closeHOP()
+        console.log('message into HOP')
+        console.log(o)
+        // check keys / pw and startup HOP if all secure
+        if (o.type.trim() === 'hop-auth') {
+          console.log('go through auth')
+          this.messageAuth()
         } else {
-         this.messageResponder(o)
+          if (this.hoptoken === o.jwt)
+          // listen of close messages
+          if (o.type.trim() === 'close') {
+            this.closeHOP()
+          } else {
+          this.messageResponder(o)
+          }
         }
       })
 
@@ -197,6 +206,12 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('hcores-active', () => {
+      this.hoptoken =  uuidv4()
+      let authMessage = {}
+      authMessage.type = 'account'
+      authMessage.action = 'hop-verify'
+      authMessage.data = { auth: true, jwt: this.hoptoken }
+      this.sendSocketMessage(JSON.stringify(authMessage))
       // allow other components have access to data
       this.processListen()
     })
@@ -246,6 +261,24 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(data))
     })
   }  
+
+  /**
+  * response to verify auth
+  * @method messageAuth
+  *
+  */
+  messageAuth = (o) => {
+    // TODO  schnorr sig verifty and setup
+    // bring store to life
+    this.DataNetwork.startStores()
+    // once store setup, then info BBox HOP ready
+    /* this.hoptoken =  uuidv4()
+    let authMessage = {}
+    authMessage.type = 'account'
+    authMessage.action = 'hop-verify'
+    authMessage.data = { auth: true, jwt: this.hoptoken }
+    this.sendSocketMessage(JSON.stringify(authMessage)) */
+  }
 
   /**
   * listen for outputs from SafeFlow
