@@ -100,6 +100,8 @@ class BBRoute extends EventEmitter {
           bbReply.data = 'HOP' // replyData
           bbReply.bbid = replyData.bbid
           this.bothSockets(JSON.stringify(bbReply))
+      } else if (replyData.type === 'oracle') {
+        this.bothSockets(JSON.stringify(replyData))
       } else if (replyData.type === 'upload') {
         let bbReply = {}
         bbReply.type = 'upload'
