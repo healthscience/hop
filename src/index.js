@@ -240,6 +240,10 @@ class HOP extends EventEmitter {
       // return vis data, like from SafeFlow
       this.SafeRoute.networkSFpeerdata(data)
     })
+
+    this.DataNetwork.on('cuespace-notification', (data) => {
+      this.BBRoute.liveBBAI.networkPeerSpace(data)
+    })
   
     this.DataNetwork.on('peer-incoming', (data) => {
       let peerId = {}
