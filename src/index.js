@@ -241,7 +241,7 @@ class HOP extends EventEmitter {
       this.SafeRoute.networkSFpeerdata(data)
     })
 
-    this.DataNetwork.on('cuespace-notification', (data) => {
+    this.DataNetwork.on('peer-cuespace', (data) => {
       this.BBRoute.liveBBAI.networkPeerSpace(data)
     })
   
