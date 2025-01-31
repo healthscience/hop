@@ -109,11 +109,8 @@ class HOP extends EventEmitter {
 
       this.wsocket.on('message', (msg) => {
         const o = JSON.parse(msg)
-        console.log('message into HOP')
-        console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
-          console.log('go through auth')
           this.messageAuth()
         } else {
           if (this.hoptoken === o.jwt)
@@ -195,13 +192,11 @@ class HOP extends EventEmitter {
   */
   listenSF = async function () {
     this.SafeRoute.on('sfauth', async (data) => {
-      console.log('sf aut complete listener')
       await this.setupHolepunch()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
     this.SafeRoute.on('library-systems', async (data) => {
-      console.log('start systems HOP')
       await this.LibRoute.libManager.systemsContracts()
     })
 
@@ -294,7 +289,6 @@ class HOP extends EventEmitter {
     // console.log('message in')
     // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
-    // console.log(messageRoute)
     if (messageRoute.type === 'bbai-reply') {
       this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
