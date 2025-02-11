@@ -240,10 +240,10 @@ class HOP extends EventEmitter {
       this.BBRoute.liveBBAI.networkPeerSpace(data)
     })
   
-    this.DataNetwork.on('peer-incoming', (data) => {
+    this.DataNetwork.on('peer-incoming-confirm', (data) => {
       let peerId = {}
       peerId.type = 'network-notification'
-      peerId.action = 'warm-peer-new'
+      peerId.action = 'warm-peer-connect'
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
     })
