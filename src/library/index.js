@@ -52,6 +52,7 @@ class LibraryRoute extends EventEmitter {
   */
   libraryListen =  function () {
     this.libManager.on('libmessage', (data) => {
+      console.log('libmessage-back to beebee bbds')
       this.bothSockets(data)
     })
     // message for SafeFlow

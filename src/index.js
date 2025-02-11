@@ -240,12 +240,24 @@ class HOP extends EventEmitter {
       this.BBRoute.liveBBAI.networkPeerSpace(data)
     })
   
-    this.DataNetwork.on('peer-incoming-confirm', (data) => {
-      let peerId = {}
+    this.DataNetwork.on('peer-incoming-confirm', async (data) => {
+      // save direct to library account contract, when save that will inform beeebee in BentoboxDS
+      console.log('incoming confirm')
+      console.log(data)
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'new-peer'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'PUT'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+      /* let peerId = {}
       peerId.type = 'network-notification'
       peerId.action = 'warm-peer-connect'
       peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId))
+      this.sendSocketMessage(JSON.stringify(peerId)) */
     })
   
     this.DataNetwork.on('peer-reconnect', (data) => {
@@ -254,6 +266,18 @@ class HOP extends EventEmitter {
       peerId.action = 'warm-peer-topic'
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
+    })
+
+    this.DataNetwork.on('peer-topic-save', async (data) => {
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'new-peer-topic'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'UPDATE'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
     })
 
     this.DataNetwork.on('beebee-publib-notification', (data) => {
@@ -293,7 +317,7 @@ class HOP extends EventEmitter {
   *
   */
   //  = function (o) {
-    messageResponder = (o) => {
+    messageResponder = async (o) => {
     // console.log('message in')
     // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
@@ -302,7 +326,7 @@ class HOP extends EventEmitter {
     } else if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
-      this.LibRoute.libManager.libraryManage(messageRoute)
+      await this.LibRoute.libManager.libraryManage(messageRoute)
       // this.LibRoute.libManager.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentobox') {
       this.LibRoute.libManager.bentoPath(messageRoute)
