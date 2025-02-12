@@ -52,8 +52,12 @@ class LibraryRoute extends EventEmitter {
   */
   libraryListen =  function () {
     this.libManager.on('libmessage', (data) => {
-      console.log('libmessage-back to beebee bbds')
       this.bothSockets(data)
+    })
+    // initial connection with warm peer
+    this.libManager.on('complete-warmpeer', (pubkey) => {
+      // pass on publick key of peer
+      this.liveHolepunch.warmPeerPrepare(pubkey)
     })
     // message for SafeFlow
     this.libManager.on('libsafeflow', (data) => {

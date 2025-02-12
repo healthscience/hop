@@ -242,8 +242,6 @@ class HOP extends EventEmitter {
   
     this.DataNetwork.on('peer-incoming-confirm', async (data) => {
       // save direct to library account contract, when save that will inform beeebee in BentoboxDS
-      console.log('incoming confirm')
-      console.log(data)
       let libMessageout = {}
       libMessageout.type = 'library'
       libMessageout.action = 'account'
