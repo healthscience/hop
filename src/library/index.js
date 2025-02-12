@@ -61,7 +61,6 @@ class LibraryRoute extends EventEmitter {
     })
     // invite topic for future reconnect update
     this.libManager.on('complete-topic-save', (data) => {
-      console.log('complete-topic-save', data)
       let peerTopic = {}
       peerTopic.type = 'account'
       peerTopic.action = 'peer-share-topic'
