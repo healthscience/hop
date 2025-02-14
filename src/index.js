@@ -230,10 +230,15 @@ class HOP extends EventEmitter {
   */
   listenNetwork = function () {
     this.DataNetwork.on('peer-topeer', (data) => {
-      // route to beebee for text message back to peer & prep bentobox
-      this.BBRoute.liveBBAI.networkPeerdirect(data)
-      // return vis data, like from SafeFlow
-      this.SafeRoute.networkSFpeerdata(data)
+      if (data.display === 'html') {
+        // route to beebee for text message back to peer & prep bentobox
+        this.BBRoute.liveBBAI.networkPeerdirect(data)
+        // return vis data, like from SafeFlow
+        this.SafeRoute.networkSFpeerdata(data) 
+      } else if (data.display === 'safeflow') {
+        // return vis data, like from SafeFlow
+        this.SafeRoute.networkSFpeerdata(data) 
+      }
     })
 
     this.DataNetwork.on('peer-cuespace', (data) => {

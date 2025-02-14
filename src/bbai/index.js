@@ -139,9 +139,8 @@ class BBRoute extends EventEmitter {
   * @method peerNetworklisten
   *
   */
-  peerNetworklisten = function (messagedata) {
+  peerNetworklisten = function () {
     this.liveBBAI.on('peer-bb-direct', (data) => {
-      console.log('beebee out to BB')
       if (data.action === 'chart') {
         this.bothSockets(JSON.stringify(data))
       } else if (data?.task === 'cale-evolution' || data.action === 'cale-evolution' || data.context?.task === 'cale-evolution') {

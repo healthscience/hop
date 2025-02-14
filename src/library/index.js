@@ -57,7 +57,7 @@ class LibraryRoute extends EventEmitter {
     // initial connection with warm peer
     this.libManager.on('complete-warmpeer', (pubkey) => {
       // pass on publick key of peer
-      this.liveHolepunch.warmPeerPrepare(pubkey)
+      this.liveHolepunch.warmPeerPrepare(pubkey, false)
     })
     // invite topic for future reconnect update
     this.libManager.on('complete-topic-save', (data) => {

@@ -125,7 +125,6 @@ class SfRoute extends EventEmitter {
   */
   updateSafeflow = async function (message) {
     // need to update module contracts, compute and visualise controls and settings most likely
-    console.log('HOPquery--update')
     await this.SafeFlow.startFlow(message.data)
   }
 
@@ -149,7 +148,6 @@ class SfRoute extends EventEmitter {
     // listenr for data back from ECS
     this.on('start-systems', (data) => {
       // ask library for systems
-      console.log('start systems SG listeen')
       this.emit('library-systems')
     })
     this.on('auth-response', (data) => {
