@@ -240,7 +240,7 @@ class HOP extends EventEmitter {
       this.BBRoute.liveBBAI.networkPeerSpace(data)
     })
   
-    this.DataNetwork.on('peer-incoming-confirm', async (data) => {
+    this.DataNetwork.on('peer-incoming-save', async (data) => {
       // save direct to library account contract, when save that will inform beeebee in BentoboxDS
       let libMessageout = {}
       libMessageout.type = 'library'
@@ -258,7 +258,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerId)) */
     })
   
-    this.DataNetwork.on('peer-reconnect', (data) => {
+    this.DataNetwork.on('peer-reconnect-topic', (data) => {
       let peerId = {}
       peerId.type = 'network-notification'
       peerId.action = 'warm-peer-topic'
