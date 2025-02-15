@@ -286,7 +286,7 @@ class HOP extends EventEmitter {
     this.DataNetwork.on('beebee-publib-notification', (data) => {
       let peerId = {}
       peerId.type = 'network-notification'
-      peerId.action = 'network-publib-board'
+      peerId.action = 'network-library-n1'
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
     })
