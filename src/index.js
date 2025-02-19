@@ -263,7 +263,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerId)) */
     })
   
-    this.DataNetwork.on('peer-reconnect-topic', (data) => {
+    this.DataNetwork.on('peer-reconnect-topic-notify', (data) => {
       let peerId = {}
       peerId.type = 'network-notification'
       peerId.action = 'warm-peer-topic'
@@ -271,7 +271,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerId))
     })
 
-    this.DataNetwork.on('peer-topic-save', async (data) => {
+    this.DataNetwork.on('peer-topic-update', async (data) => {
       let libMessageout = {}
       libMessageout.type = 'library'
       libMessageout.action = 'account'
