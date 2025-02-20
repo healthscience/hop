@@ -271,6 +271,18 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerId))
     })
 
+    this.DataNetwork.on('peer-topic-save', async (data) => {
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'new-peer-topic'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'PUT'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+    })
+
     this.DataNetwork.on('peer-topic-update', async (data) => {
       let libMessageout = {}
       libMessageout.type = 'library'
