@@ -100,11 +100,6 @@ class HOP extends EventEmitter {
       this.LibRoute.setWebsocket(ws)
       this.SafeRoute.setWebsocket(ws)
       this.BBRoute.setWebsocket(ws)
-      // this.socketCount++
-      // console.log('peer connected websocket')
-      // console.log(wsServer.clients)
-      // wsServer.clients.forEach(element => console.log(Object.keys(element)))
-      // console.log(wsServer.clients.size)
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', (msg) => {
@@ -271,14 +266,6 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerId))
     })
 
-    this.DataNetwork.on('codename-info-invite', (data) => {
-      let peerId = {}
-      peerId.type = 'network-notification'
-      peerId.action = 'warm-peer-codename'
-      peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
     this.DataNetwork.on('peer-topic-save', async (data) => {
       let libMessageout = {}
       libMessageout.type = 'library'
@@ -317,6 +304,14 @@ class HOP extends EventEmitter {
       peerNotify.action = 'network-peer-live'
       peerNotify.data = data
       this.sendSocketMessage(JSON.stringify(peerNotify))
+    })
+
+    this.DataNetwork.on('codename-info-invite', (data) => {
+      let peerId = {}
+      peerId.type = 'account'
+      peerId.action = 'warm-peer-codename'
+      peerId.data = data
+      this.sendSocketMessage(JSON.stringify(peerId))
     })
 
     this.DataNetwork.on('drive-save-large', (data) => {
