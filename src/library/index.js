@@ -75,6 +75,8 @@ class LibraryRoute extends EventEmitter {
       peerNotify.action = 'network-peer-name'
       peerNotify.data = data
       this.wsocket.send(JSON.stringify(peerNotify))
+      // write back to other peer
+      this.liveHolepunch.topicSaveReturn(data)
     })
     // message for SafeFlow
     this.libManager.on('libsafeflow', (data) => {
