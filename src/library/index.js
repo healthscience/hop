@@ -67,6 +67,15 @@ class LibraryRoute extends EventEmitter {
       peerTopic.data = data
       this.wsocket.send(JSON.stringify(peerTopic))
     })
+    // name match success inform bee
+    this.libManager.on('complete-name-updatesave', (data) => {
+      // inform beebee and peer name
+      let peerNotify = {}
+      peerNotify.type = 'account'
+      peerNotify.action = 'network-peer-name'
+      peerNotify.data = data
+      this.wsocket.send(JSON.stringify(peerNotify))
+    })
     // message for SafeFlow
     this.libManager.on('libsafeflow', (data) => {
       this.emit('safeflow-query', data)

@@ -251,11 +251,6 @@ class HOP extends EventEmitter {
       libMessageout.data = data
       libMessageout.bbid = ''
       await this.LibRoute.libManager.libraryManage(libMessageout)
-      /* let peerId = {}
-      peerId.type = 'network-notification'
-      peerId.action = 'warm-peer-connect'
-      peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId)) */
     })
   
     this.DataNetwork.on('peer-reconnect-topic-notify', (data) => {
@@ -283,6 +278,18 @@ class HOP extends EventEmitter {
       libMessageout.type = 'library'
       libMessageout.action = 'account'
       libMessageout.reftype = 'new-peer-topic'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'UPDATE'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+    })
+
+    this.DataNetwork.on('peer-codename-update', async (data) => {
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'update-peer-name'
       libMessageout.privacy = 'private'
       libMessageout.task = 'UPDATE'
       libMessageout.data = data
