@@ -275,7 +275,6 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('peer-topic-update', async (data) => {
-      console.log('topic 22222222222222222222222')
       let libMessageout = {}
       libMessageout.type = 'library'
       libMessageout.action = 'account'
@@ -288,7 +287,6 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('peer-codename-update', async (data) => {
-      console.log(' name update 33333333333')
       let libMessageout = {}
       libMessageout.type = 'library'
       libMessageout.action = 'account'
