@@ -1,7 +1,7 @@
 {
   "name": "hop-ecs",
   "description": "health oracle protocol",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "main": "src/index.js",
   "bin": "src/index.js",
   "type": "module",
