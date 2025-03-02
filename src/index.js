@@ -262,7 +262,6 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('peer-topic-save', async (data) => {
-      console.log('topic 11111111')
       let libMessageout = {}
       libMessageout.type = 'library'
       libMessageout.action = 'account'
