@@ -153,6 +153,10 @@ class BBRoute extends EventEmitter {
         this.bothSockets(JSON.stringify(data))
       }
     })
+
+    this.liveBBAI.on('peer-bb-models', (data) => {
+      this.bothSockets(JSON.stringify(data))
+    })
   }
 
 }

@@ -342,6 +342,8 @@ class HOP extends EventEmitter {
     authMessage.action = 'hop-verify'
     authMessage.data = { auth: true, jwt: this.hoptoken }
     this.sendSocketMessage(JSON.stringify(authMessage)) */
+    // auth verified -- get AI agent options
+    this.BBRoute.liveBBAI.hopLearn.openOrchestra()
   }
 
   /**
