@@ -63,7 +63,7 @@ class BBRoute extends EventEmitter {
       } else if (message.action === 'learn-agent-start') {
         await this.liveBBAI.beginAgents(message.data)
       } else if (message.action === 'learn-agent-stop') {
-        this.liveBBAI.stopAgents(message.data.model)
+        this.liveBBAI.stopAgents(message.data)
       } else if (message.action === 'agent-task') {
         await this.liveBBAI.coordinationAgents(message)
       } else if (message.action === 'agent-network-task') {

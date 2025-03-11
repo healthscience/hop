@@ -102,7 +102,7 @@ class HOP extends EventEmitter {
       this.BBRoute.setWebsocket(ws)
       this.wsocket.id = uuidv4()
 
-      this.wsocket.on('message', (msg) => {
+      this.wsocket.on('message', async (msg) => {
         const o = JSON.parse(msg)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
@@ -113,7 +113,7 @@ class HOP extends EventEmitter {
           if (o.type.trim() === 'close') {
             this.closeHOP()
           } else {
-          this.messageResponder(o)
+            await this.messageResponder(o)
           }
         }
       })
@@ -357,7 +357,7 @@ class HOP extends EventEmitter {
     // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
-      this.BBRoute.bbAIpath(messageRoute)
+      await this.BBRoute.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
