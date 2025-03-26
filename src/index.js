@@ -225,11 +225,13 @@ class HOP extends EventEmitter {
   */
   listenNetwork = async function () {
     this.DataNetwork.on('peer-topeer', (data) => {
-      if (data.display === 'html') {
+      console.log('notif network peer chart')
+      console.log(data)
+      if (data.data.display === 'html') {
         // route to beebee for text message back to peer & prep bentobox
         this.BBRoute.liveBBAI.networkPeerdirect(data)
         // return vis data, like from SafeFlow
-        this.SafeRoute.networkSFpeerdata(data) 
+        this.SafeRoute.networkSFpeerdata(data.data) 
       } else if (data.display === 'safeflow') {
         // return vis data, like from SafeFlow
         this.SafeRoute.networkSFpeerdata(data) 
