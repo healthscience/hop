@@ -385,6 +385,9 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = function () {
+    console.log('clos HOP beebee ')
+    // inform network peer has closed.
+    this.DataNetwork.networkPath({ type: 'network', action: 'peer-closed' })
     process.exit(1)
   }
 
