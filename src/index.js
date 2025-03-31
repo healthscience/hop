@@ -315,6 +315,15 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerNotify))
     })
 
+    this.DataNetwork.on('peer-disconnect-notify', (data) => {
+      let peerNotify = {}
+      peerNotify.type = 'account'
+      peerNotify.action = 'network-peer-disconnect'
+      peerNotify.data = data
+      this.sendSocketMessage(JSON.stringify(peerNotify))
+    })
+
+
     this.DataNetwork.on('invite-live-peer', (data) => {
       let peerId = {}
       peerId.type = 'account'
