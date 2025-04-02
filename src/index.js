@@ -225,8 +225,6 @@ class HOP extends EventEmitter {
   */
   listenNetwork = async function () {
     this.DataNetwork.on('peer-topeer', (data) => {
-      console.log('notif network peer chart')
-      console.log(data)
       if (data.data.display === 'html') {
         // route to beebee for text message back to peer & prep bentobox
         this.BBRoute.liveBBAI.networkPeerdirect(data)
