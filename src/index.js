@@ -400,7 +400,6 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = async function () {
-    console.log('clos HOP beebee ')
     // inform network peer has closed.
     await this.DataNetwork.networkPath({ type: 'network', action: 'peer-closed' })
     // process.exit(1)
