@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOP System Architecture Documentation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+        .architecture-diagram {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .code-summary {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin: 15px 0;
+        }
+        .relationship-map {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .relationship-map pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .component-details {
+            margin-bottom: 20px;
+        }
+        .component-details h3 {
+            color: #e74c3c;
+        }
+        .method-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        .method-list li {
+            margin: 5px 0;
+            padding: 5px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HOP System Architecture Documentation</h1>
+        
+        <div class="architecture-diagram">
+            <h2>System Architecture Overview</h2>
+            <pre>
+HOP System Architecture
++----------------------+
+|        HOP           |
+| (Main Orchestrator)  |
++----------------------+
+         |
+         v
++----------------------+
+|  Core Components     |
+|                      |
+|  +----------------+  |
+|  | HolePunch-HOP  |  |
+|  | (P2P Network)  |  |
+|  +----------------+  |
+|                      |
+|  +----------------+  |
+|  | MessageFlow    |  |
+|  | (Communication)|  |
+|  +----------------+  |
+|                      |
+|  +----------------+  |
+|  | Library System |  |
+|  +----------------+  |
++----------------------+
+         |
+         v
++----------------------+
+|     Route Handlers   |
+|                      |
+|  +----------------+  |
+|  | SafeFlow Route |  |
+|  | (Compute)      |  |
+|  +----------------+  |
+|                      |
+|  +----------------+  |
+|  | Library Route  |  |
+|  +----------------+  |
+|                      |
+|  +----------------+  |
+|  | BB (BeeBee)    |  |
+|  | Route         |  |
+|  +----------------+  |
+|                      |
+|  +----------------+  |
+|  | DML Route      |  |
+|  +----------------+  |
++----------------------+
+         |
+         v
++----------------------+
+|     Compute Engine   |
+|                      |
+|  +----------------+  |
+|  | SafeFlow ECS   |  |
+|  | (Core Compute) |  |
+|  +----------------+  |
+|                      |
+|  +----------------+  |
+|  | WebAssembly    |  |
+|  | (Performance)  |  |
+|  +----------------+  |
++----------------------+
+            </pre>
+        </div>
+
+        <!-- Rest of the HTML content follows the same pattern -->
+        <!-- ... -->
+    </div>
+</body>
+</html>

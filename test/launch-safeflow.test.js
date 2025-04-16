@@ -1,23 +1,55 @@
-import assert from 'assert'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import liveHOP from '../src/index.js'
-// need to mock websocket e.g. sinon TODO
+import { createServer } from 'http'
 
-describe('bring the protocol to life', function () {
-  it('connecting server, socket, safeflow', function () {
-    let options = {}
-    options.port = 9888
-    let hopECS = new liveHOP(options)
-    assert.equal(hopECS.options.port, 9888)
+// Helper function to find an available port
+describe('HOP Server Initialization', () => {
+  let hopECS
+  let serverPort
 
-    setTimeout(closeHOP, 3000000)
+  // Helper function to find an available port
+  async function findAvailablePort() {
+    return new Promise((resolve) => {
+      const server = createServer()
+      server.listen(0, () => {
+        const { port } = server.address()
+        server.close(() => resolve(port))
+      })
+    })
+  }
 
-    function closeHOP () {
-      let startHOP = {}
-      startHOP.reftype = 'ignore'
-      startHOP.type = 'launch'
-      let jsonStart = JSON.stringify(startHOP)
-      // ws.send(jsonStart)
-      // hopECS.closeHOP()
+  // Setup before each test
+  beforeEach(async () => {
+    try {
+      serverPort = await findAvailablePort()
+      const options = { port: serverPort }
+      hopECS = new liveHOP(options)
+    } catch (error) {
+      console.error('Error setting up test:', error)
+      throw error
     }
   })
+
+  // Cleanup after each test
+  afterEach(() => {
+    if (hopECS) {
+      try {
+        // Close the HOP server
+        hopECS.closeHOP()
+      } catch (error) {
+        console.error('Error closing server:', error)
+      }
+    }
+    hopECS = null
+  })
+
+  it('should initialize server with correct port', () => {
+    // Verify server is initialized with correct port
+    expect(hopECS.options.port).toBe(serverPort)
+    
+    // Verify server is running
+    // expect(hopECS.isRunning).toBe(true)
+  })
 })
+
+// Export nothing for now

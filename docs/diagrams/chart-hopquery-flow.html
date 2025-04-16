@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOP Query Processing Flow</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .diagram-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .explanation h3 {
+            color: #2c3e50;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .code-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+        }
+        .note {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            sequence: {
+                useMaxWidth: false,
+                actorMargin: 50,
+                noteMargin: 10
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>HOP Query Processing Flow</h1>
+        <p>Example: Processing a query for numbers [1, 2, 3] through the HOP system</p>
+
+        <div class="diagram-container">
+            <h2>Complete HOP Query Flow</h2>
+            <div class="mermaid">
+                sequenceDiagram
+                    participant Client as WebSocket Client
+                    participant Server as WebSocket Server
+                    participant MessageFlow as MessageFlow Layer
+                    participant BBRoute as BB Route Handler
+                    participant BBPath as BBPath Module
+                    participant NLP as NLP Flow
+                    participant AI as AI Modules
+                    participant Context as Context Helper
+                    participant Lib as Library System
+                    participant Manager as Hop Manager
+                    participant CE as Compute Engine
+                    participant Contract as Contract System
+                    participant Ledger as Coherence Ledger
+                    participant Query as Query Builder
+                    participant BB as BbAI
+                    participant Response as Response Holder
+                    
+                    Client->>Server: Connect
+                    Server->>Client: Connection Established
+                    
+                    Client->>Server: Send Query
+                    Server->>MessageFlow: Message Received
+                    MessageFlow->>BBRoute: Route BB Message
+                    BBRoute->>BBPath: bbAIpath
+                    BBPath->>NLP: Process NLP Flow
+                    NLP->>NLP: Check Input Type
+                    NLP->>AI: Process Numbers
+                    AI->>Context: inputLanguage()
+                    Context->>Context: analyzeContext()
+                    
+                    alt Chart Command
+                        Context->>Context: Set responseLength=1
+                        Context->>NLP: feedNLP()
+                        NLP->>NLP: Extract Context
+                        NLP->>NLP: Handle Calendar
+                        NLP->>NLP: Parse Data
+                        NLP->>NLP: Manage Sequences
+                        NLP->>Context: Context Ready
+                        Context->>Context: Prepare Chart Data
+                        Context->>Lib: getChartData()
+                        Lib->>Context: dataReady()
+                        Context->>Manager: emit hop-manager-response
+                    else Non-Chart Command
+                        Context->>Context: Set responseLength=2
+                        Context->>AI: coordinateAgents()
+                        AI->>AI: Process Agents
+                        AI->>NLP: feedNLP()
+                        NLP->>NLP: Extract Context
+                        NLP->>NLP: Handle Calendar
+                        NLP->>NLP: Parse Data
+                        NLP->>NLP: Manage Sequences
+                        NLP->>Context: Context Ready
+                        Context->>Context: Prepare Chart Data
+                        Context->>Lib: getChartData()
+                        Lib->>Context: dataReady()
+                        Context->>Manager: emit hop-manager-response
+                    end
+                    
+                    Manager->>Response: Store Response
+                    Manager->>Query: Build Query
+                    Query->>Query: Analyze Context
+                    Query->>Query: Build Query Structure
+                    Query->>Manager: Query Ready
+                    Manager->>Contract: Validate Contract
+                    Contract->>Manager: Contract Valid
+                    Manager->>CE: Load Appropriate Model
+                    CE->>CE: Verify Model
+                    CE->>CE: Process Numbers
+                    CE->>Ledger: Hash Results
+                    CE->>Manager: Results Ready
+                    Manager->>Manager: processResponse()
+                    Manager->>Manager: generateAssessment()
+                    Manager->>Response: Store Response
+                    
+                    alt Multiple Responses
+                        Response->>Context: Multiple Responses Ready
+                        Context->>Context: Assess Responses
+                        Context->>Context: Combine Responses
+                        Context->>Context: Form Response
+                        Context->>BB: emit assessed-response
+                        BB->>BB: outflowPrepare()
+                        BB->>BB: hyperdriveJSONsaveBlind()
+                        BB->>BB: process response
+                        BB->>BBRoute: Process Response
+                        BBRoute->>MessageFlow: sendResponse()
+                    else Single Response
+                        Response->>Context: Single Response Ready
+                        Context->>Context: Form Response
+                        Context->>BB: emit assessed-response
+                        BB->>BB: outflowPrepare()
+                        BB->>BB: hyperdriveJSONsaveBlind()
+                        BB->>BB: process response
+                        BB->>BBRoute: Process Response
+                        BBRoute->>MessageFlow: sendResponse()
+                    end
+                    
+                    MessageFlow->>Server: Send Response
+                    Server->>Client: Receive Response
+                    
+                    note over Client,Server: WebSocket Communication
+                    note over MessageFlow: Message Authentication & Routing
+                    note over BBRoute: BB Message Routing
+                    note over BBPath: bbAIpath Processing
+                    note over NLP: NLP Flow Processing
+                    note over AI: AI Module Operations
+                    note over Query: Query Analysis & Building
+                    note over CE: Compute Engine Operations
+                    note over Contract: Contract Validation
+                    note over Ledger: Result Hashing
+                    note over BB: BbAI Processing
+                    note over Response: Response Holder
+            </div>
+
+            <div class="explanation">
+                <h3>Complete Query Flow Details</h3>
+                <ol>
+                    <li>Client connects via WebSocket</li>
+                    <li>Query sent through WebSocket</li>
+                    <li>MessageFlow layer authenticates and routes message</li>
+                    <li>BB Route Handler receives BB message</li>
+                    <li>bbAIpath processes the message</li>
+                    <li>NLP Flow handles input type detection</li>
+                    <li>Numbers list processed by AI modules</li>
+                    <li>Context analysis and chart preparation</li>
+                    <li>Input type split:</li>
+                    <li>Chart commands: Direct NLP processing (responseLength=1)</li>
+                    <li>Non-chart: Agent coordination first (responseLength=2)</li>
+                    <li>NLP processing:</li>
+                    <li>Context extraction</li>
+                    <li>Calendar handling</li>
+                    <li>Data parsing</li>
+                    <li>Sequence management</li>
+                    <li>Query builder analyzes context and builds query</li>
+                    <li>Contract system validates compute operation</li>
+                    <li>Compute engine processes numbers</li>
+                    <li>Results are hashed and verified</li>
+                    <li>Responses are stored in holder</li>
+                    <li>Response assessment:</li>
+                    <li>Single response: Form response and emit</li>
+                    <li>Multiple responses: Combine and form response</li>
+                    <li>BbAI processes final response</li>
+                    <li>MessageFlow handles final response</li>
+                    <li>Client receives final response</li>
+                </ol>
+
+                <h3>Key Processing Stages</h3>
+                <div class="code-example">
+                    // Query Flow
+                    1. WebSocket Connection
+                    2. Message Authentication
+                    3. NLP Flow Processing
+                    4. Context Analysis
+                    5. Input Type Split
+                    6. NLP Processing
+                    7. Query Building
+                    8. Contract Validation
+                    9. Compute Operations
+                    10. Response Flow
+                    11. Response Assessment
+                    12. Final Response Processing
+
+                    // NLP Processing Flow
+                    feedNLP() {
+                        extractContext()
+                        handleCalendar()
+                        parseData()
+                        manageSequences()
+                    }
+
+                    // Response Assessment Logic
+                    assessResponses() {
+                        if (multiple responses) {
+                            combine responses
+                            form response
+                        } else {
+                            form response
+                        }
+                        emit assessed-response
+                    }
+
+                    // Response Flow
+                    processResponse()
+                    generateAssessment()
+                    emit assessed-response
+                    outflowPrepare()
+                    sendResponse()
+                </div>
+
+                <h3>Integration Points</h3>
+                <ul>
+                    <li>WebSocket Communication: Client-server connection</li>
+                    <li>MessageFlow: Message authentication and routing</li>
+                    <li>NLP Flow: Input type detection and processing</li>
+                    <li>Query Builder: Context analysis and query building</li>
+                    <li>Contract System: Operation validation</li>
+                    <li>Compute Engine: Model loading and processing</li>
+                    <li>Response Holder: Response storage and combination</li>
+                    <li>BbAI: Final response processing</li>
+                </ul>
+
+                <h3>Message Flow</h3>
+                <ol>
+                    <li>Client sends query</li>
+                    <li>MessageFlow authenticates message</li>
+                    <li>BB Route Handler routes message</li>
+                    <li>bbAIpath processes message</li>
+                    <li>NLP Flow handles input</li>
+                    <li>Input type split (chart vs non-chart)</li>
+                    <li>NLP processing (context, calendar, data)</li>
+                    <li>Query builder builds query</li>
+                    <li>Compute engine processes data</li>
+                    <li>Responses stored in holder</li>
+                    <li>Response assessment (single/multiple)</li>
+                    <li>BbAI processes response</li>
+                    <li>Response flows back through system</li>
+                    <li>Client receives final response</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

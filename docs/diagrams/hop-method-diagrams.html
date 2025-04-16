@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOP Method Relationship Diagrams</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+        .diagram-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .method-details {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .mermaid {
+            margin: 20px 0;
+        }
+        .code-example {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: false
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>HOP Method Relationship Diagrams</h1>
+
+        <h1>HOP System Architecture Documentation</h1>
+
+        <div class="relationship-map">
+            <h2>Function Flow Diagrams</h2>
+
+            <h3>1. Authentication Flow</h3>
+            <div class="mermaid">
+                graph TD
+                    A[Client Request] --> B[HOP System]
+                    B --> C[SafeFlow Route]
+                    C --> D[SafeFlow ECS]
+                    D --> E[Generate Token]
+                    E --> F[Send Auth Response]
+                    
+                    style A fill:#f9f,stroke:#333,stroke-width:2px
+                    style B fill:#bbf,stroke:#333,stroke-width:2px
+                    style C fill:#9cf,stroke:#333,stroke-width:2px
+                    style D fill:#9cf,stroke:#333,stroke-width:2px
+                    style E fill:#bbf,stroke:#333,stroke-width:2px
+                    style F fill:#f9f,stroke:#333,stroke-width:2px
+            </div>
+
+            <h3>2. Message Processing Flow</h3>
+            <div class="mermaid">
+                graph TD
+                    A[WebSocket Message] --> B[MessageAuth]
+                    B --> C[MessageRouter]
+                    C --> D[Component Handlers]
+                    D --> E[Response Handler]
+                    
+                    subgraph MessageFlow Layer
+                        B
+                        C
+                    end
+
+                    subgraph Component Layer
+                        D
+                    end
+
+                    style A fill:#f9f,stroke:#333,stroke-width:2px
+                    style B fill:#bbf,stroke:#333,stroke-width:2px
+                    style C fill:#bbf,stroke:#333,stroke-width:2px
+                    style D fill:#9cf,stroke:#333,stroke-width:2px
+                    style E fill:#f9f,stroke:#333,stroke-width:2px
+            </div>
+
+            <h3>3. Data Processing Pipeline</h3>
+            <div class="mermaid">
+                graph TD
+                    A[Library Data] --> B[BB System]
+                    B --> C[SafeFlow Route]
+                    C --> D[SafeFlow ECS]
+                    D --> E[Compute Engine]
+                    
+                    subgraph Library System
+                        A
+                    end
+
+                    subgraph BB System
+                        B
+                    end
+
+                    subgraph Compute System
+                        C
+                        D
+                        E
+                    end
+
+                    style A fill:#f9f,stroke:#333,stroke-width:2px
+                    style B fill:#bbf,stroke:#333,stroke-width:2px
+                    style C fill:#9cf,stroke:#333,stroke-width:2px
+                    style D fill:#9cf,stroke:#333,stroke-width:2px
+                    style E fill:#f9f,stroke:#333,stroke-width:2px
+            </div>
+
+            <h3>4. SafeFlow Route Operations</h3>
+            <div class="mermaid">
+                flowchart TD
+                    A[routeMessage] --> B{Is Auth?}
+                    B -->|Yes| C[newSafeflow]
+                    B -->|No| D[authHOP]
+                    
+                    C --> E[Start Compute]
+                    D --> F[Generate Token]
+                    F --> G[Send Auth Response]
+                    
+                    style A fill:#f9f,stroke:#333,stroke-width:2px
+                    style B fill:#bbf,stroke:#333,stroke-width:2px
+                    style C fill:#9cf,stroke:#333,stroke-width:2px
+                    style D fill:#9cf,stroke:#333,stroke-width:2px
+                    style E fill:#bbf,stroke:#333,stroke-width:2px
+                    style F fill:#bbf,stroke:#333,stroke-width:2px
+                    style G fill:#f9f,stroke:#333,stroke-width:2px
+            </div>
+
+            <div class="diagram-container">
+                <h2>5. WebSocket Communication Flow</h2>
+                <div class="mermaid">
+                    sequenceDiagram
+                        participant Client as WebSocket Client
+                        participant Server as WebSocket Server
+                        participant MessageFlow as MessageFlow Layer
+                        participant Components as Component Handlers
+                        
+                        Client->>Server: Connect
+                        Server->>MessageFlow: Message Received
+                        MessageFlow->>MessageFlow: Authenticate Message
+                        MessageFlow->>Components: Route Message
+                        Components->>MessageFlow: Processed Response
+                        MessageFlow->>Server: Send Response
+                        Server->>Client: Response
+                        
+                        style Client fill:#f9f,stroke:#333,stroke-width:2px
+                        style Server fill:#bbf,stroke:#333,stroke-width:2px
+                        style MessageFlow fill:#9cf,stroke:#333,stroke-width:2px
+                        style Components fill:#9cf,stroke:#333,stroke-width:2px
+                </div>
+
+                <div class="method-details">
+                    <h3>WebSocket Flow Details</h3>
+                    <ul>
+                        <li>Client-Server Connection</li>
+                        <li>Message Authentication</li>
+                        <li>Message Routing through MessageFlow</li>
+                        <li>Component Processing</li>
+                        <li>Response Handling</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="diagram-container">
+                <h2>6. Library System Methods</h2>
+                <div class="mermaid">
+                    graph TD
+                        A[Library Data] --> B[BB System]
+                        B --> C[SafeFlow Route]
+                        C --> D[SafeFlow ECS]
+                        D --> E[Compute Engine]
+                        
+                        subgraph Library System
+                            A
+                        end
+
+                        subgraph BB System
+                            B
+                        end
+
+                        subgraph Compute System
+                            C
+                            D
+                            E
+                        end
+
+                        style A fill:#f9f,stroke:#333,stroke-width:2px
+                        style B fill:#bbf,stroke:#333,stroke-width:2px
+                        style C fill:#9cf,stroke:#333,stroke-width:2px
+                        style D fill:#9cf,stroke:#333,stroke-width:2px
+                        style E fill:#f9f,stroke:#333,stroke-width:2px
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

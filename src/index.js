@@ -103,7 +103,9 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', async (msg) => {
+        // console.log('HOP message received')
         const o = JSON.parse(msg)
+        // console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
           this.messageAuth()
@@ -369,7 +371,7 @@ class HOP extends EventEmitter {
   *
   */
   //  = function (o) {
-    messageResponder = async (o) => {
+  messageResponder = async (o) => {
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
       await this.BBRoute.bbAIpath(messageRoute)
