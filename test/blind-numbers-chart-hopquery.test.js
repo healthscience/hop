@@ -77,6 +77,9 @@ afterAll(async () => {
     hopProcess.kill();
   }
 
+  // Add 3-second timeout to ensure proper shutdown
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   // Clean up ~/.test-hop-storage
   const storagePath = path.join(os.homedir(), '.test-hop-storage');
   try {

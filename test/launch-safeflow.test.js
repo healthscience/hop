@@ -27,6 +27,29 @@ describe('HOP Server Initialization', () => {
 // Stop the server and clean up after all tests
 afterAll(async () => {
   if (hopProcess) {
-    hopProcess.kill();
+    try {
+      // Send SIGTERM to gracefully terminate the process
+      hopProcess.kill('SIGTERM');
+      
+      // Wait for process to terminate
+      await new Promise((resolve) => {
+        let timeout = setTimeout(resolve, 10000);
+        hopProcess.on('exit', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+      
+      // Add extra delay to ensure all resources are released
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Force kill if still running
+      if (hopProcess.killed === false) {
+        console.log('Forcing process termination');
+        hopProcess.kill('SIGKILL');
+      }
+    } catch (error) {
+      console.error('Error during server cleanup:', error);
+    }
   }
 });
