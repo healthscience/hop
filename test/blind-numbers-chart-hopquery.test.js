@@ -18,7 +18,7 @@ let hopToken;
 // Start the HOP server and set up everything before all tests
 beforeAll(async () => {
   const baseHOPStepsUp = path.join(__dirname, '..');
-  hopProcess = spawn('npm', ['run', 'start'], { stdio: 'inherit', cwd: baseHOPStepsUp });
+  hopProcess = spawn('npm', ['run', 'start', '--', '--store-name=hop-storage-test'], { stdio: 'inherit', cwd: baseHOPStepsUp });
 
   // Wait for server to start
   await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -48,9 +48,7 @@ beforeAll(async () => {
       
       // Wait for JWT token response
       wsClient.on('message', (data) => {
-        // console.log('JWT token received');
         const message = JSON.parse(data);
-        // console.log(message)
         if (message.type === 'account' && message.action === 'hop-verify') {
           // set the token so can be use
           hopToken = message.data.jwt
