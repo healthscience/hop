@@ -173,6 +173,7 @@ class HOP extends EventEmitter {
   listenLibrary = async function () {
     this.LibRoute.on('library-data', async (data) => {
       // need to inform beebee and prepare HQB for SF
+      console.log('data in librayr now pass to safelfow ----')
       let bbMessage = {}
       bbMessage.type = 'bbai-reply'
       bbMessage.reftype = 'ignore'

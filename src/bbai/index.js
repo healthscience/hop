@@ -57,7 +57,7 @@ class BBRoute extends EventEmitter {
         // send to NPL rules
         await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'library') {
-        // replyData = await this.liveBBAI.nlpflow(message)
+        await this.liveBBAI.nlpflow(message)
       } else if (message.action === 'learn-agent-start') {
         await this.liveBBAI.beginAgents(message.data)
       } else if (message.action === 'learn-agent-stop') {
