@@ -116,6 +116,8 @@ describe('HOP Chart Query Flow', () => {
       const messageHandler = (data) => {
         try {
           const message = JSON.parse(data);
+          console.log('message222')
+          console.log(message)
           // Add your message type checks and assertions here
           if (message.type === 'sf-newEntityRange') {
             expect(message.data.data.chartPackage.datasets[0].data).toEqual(['1', '2', '3']);
