@@ -325,6 +325,8 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('peer-disconnect-notify', (data) => {
+      console.log('peer-disconnect-notify')
+      console.log(data)
       let peerNotify = {}
       peerNotify.type = 'account'
       peerNotify.action = 'network-peer-disconnect'
