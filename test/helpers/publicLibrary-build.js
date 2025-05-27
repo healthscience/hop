@@ -321,7 +321,8 @@ class LibraryUtility { //  extends EventEmitter {
       compSettings.description = 'source data'
       compSettings.dtprefix = 'null'
       compSettings.code = 'null'
-      compSettings.hash = 'null'
+      compSettings.hash = '9312bd607918af959a8f5ab1162c09351763ca956440d666901eff64e3ba30da'
+      compSettings.mode = 'javascript'
       refContract.data = compSettings
     } else if (contract === 'packaging') {
       refContract.data = {}
@@ -351,11 +352,12 @@ class LibraryUtility { //  extends EventEmitter {
     refContract.privacy = 'public'
     let compSettings = {}
     compSettings.primary = true
-    compSettings.name = 'average'
+    compSettings.name = 'average-statistics'
     compSettings.description = 'statistical mean'
     compSettings.dtprefix = 'null'
     compSettings.code = ''
-    compSettings.hash = ''
+    compSettings.hash = '064158be46a97526a800311ff339f0a0b37afd936c0d8859c07ee3b70cbabc0c'
+    compSettings.mode = 'wasm'
     refContract.data = compSettings
     return refContract
   }

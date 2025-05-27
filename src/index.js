@@ -30,6 +30,8 @@ import HolepunchHOP from 'holepunch-hop'
 class HOP extends EventEmitter {
 
   constructor(options) {
+    console.log('hop be')
+    console.log(options)
     super()
     this.hoptoken = ''
     this.options = options
@@ -413,5 +415,12 @@ class HOP extends EventEmitter {
 export default HOP
 let options = {}
 options.port = 9888
-options.storename = '' // 'hop-test-prime'
+// Pick up the storename parameter from the command line
+const args = process.argv.slice(2);
+if (args.length > 0) {
+  options.storename = args[0];
+} else {
+  // Default value if no argument is provided
+}
+
 new HOP(options)

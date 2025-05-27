@@ -92,36 +92,38 @@ afterAll(async () => {
   }
 });
 
-describe('HOP Chart Query Flow', () => {
-  it('should process chart command with numbers 1, 2, 3', async () => {
-    // Send chart command
-    const chartQuestion = { text: 'chart 1 2 3', compute: 'observation' }
-    const chartCommand = {
+describe('HOP Average Query Flow', () => {
+  it('should process average command with numbers 1, 2, 3, 4, 5', async () => {
+    // Send average command
+    const averageQuestion = { text: 'chart average 1 2 3 4 5', compute: 'average-statistics' }
+    const averageCommand = {
       type: 'bbai',
       reftype: 'ignore',
       action: 'question',
-      data: chartQuestion,
+      data: averageQuestion,
       bbid: 'test123456',
       jwt: hopToken
     };
-    wsClient.send(JSON.stringify(chartCommand));
+    wsClient.send(JSON.stringify(averageCommand));
 
     // Await and process responses as needed
     // Example: wait for a specific response or set of responses
     await new Promise((resolve, reject) => {
-      let chartDataReceived = false;
+      let averageDataReceived = false;
       let summaryReceived = false;
       let networkDataReceived = false;
 
       const messageHandler = (data) => {
         try {
           const message = JSON.parse(data);
-          console.log('message222')
-          console.log(message)
+          console.log('TEST info back from HOP----------')
+          // console.log(message)
           // Add your message type checks and assertions here
           if (message.type === 'sf-newEntityRange') {
-            expect(message.data.data.chartPackage.datasets[0].data).toEqual(['1', '2', '3']);
-            chartDataReceived = true;
+            console.log(message.data.data.chartPackage)
+            console.log(message.data.data.chartPackage.datasets)
+            expect(message.data.data.chartPackage.datasets[0].data).toEqual([3]);
+            averageDataReceived = true;
             resolve();
           }
           if (message.type === 'summary') {
@@ -131,7 +133,7 @@ describe('HOP Chart Query Flow', () => {
             networkDataReceived = true;
           }
           // Resolve when all expected messages and data are received
-          if (chartDataReceived && summaryReceived && networkDataReceived) {
+          if (averageDataReceived && summaryReceived && networkDataReceived) {
             wsClient.off('message', messageHandler);
             resolve();
           }
