@@ -416,9 +416,9 @@ export default HOP
 let options = {}
 options.port = 9888
 // Pick up the storename parameter from the command line
-const args = process.argv.slice(2);
+const args = process.argv.slice(2)
 if (args.length > 0) {
-  options.storename = args[0];
+  options.storename = args[0]
 } else {
   // Default value if no argument is provided
 }
