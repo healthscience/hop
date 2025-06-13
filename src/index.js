@@ -416,6 +416,7 @@ export default HOP
 let options = {}
 options.port = 9888
 // Pick up the storename parameter from the command line
+// example npm run start --store-name test-hop-storage
 const args = process.argv.slice(2)
 if (args.length > 0) {
   options.storename = args[0]

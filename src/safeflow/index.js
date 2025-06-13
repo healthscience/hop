@@ -184,7 +184,17 @@ class SfRoute extends EventEmitter {
     })
   
     this.SafeFlow.on('checkPeerResults', async (data) => {
-      const checkResults = await this.holepunchLive.BeeData.peerResultsItem(data)
+      // establish the proof of work KBLedger match resutls # and proof#
+      // then get results to use
+      let checkResults = {}
+      const checkKBledger = await this.holepunchLive.BeeData.peerLedgerProof(data)
+      console.log('ledger check=================')
+      console.log(checkKBledger)
+      if (checkKBledger !== null) {
+        checkResults = await this.holepunchLive.BeeData.peerResultsItem(data.resultuuid)
+      } else {
+        console.log('no ledger entry must be first time')
+      }
       this.resultsCallback(data, checkResults)
     })
   
@@ -199,15 +209,20 @@ class SfRoute extends EventEmitter {
   *
   */
    resultsCallback =  function (entity, data) {
+    console.log('results hbeee back for match')
+    console.log(entity)
+    console.log(data)
     // callbacks for datastores
     let resultMatch = {}
-    if (data !== null) {
+    if (Object.keys(data).length !== 0) {
       resultMatch.entity = entity
       resultMatch.data = data
     } else {
       resultMatch.entity = entity
       resultMatch.data = false
     }
+    console.log('matchfffffff')
+    console.log(resultMatch)
     this.SafeFlow.resultsFlow(resultMatch)
   }
 
