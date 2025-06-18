@@ -214,15 +214,19 @@ class SfRoute extends EventEmitter {
     console.log(data)
     // callbacks for datastores
     let resultMatch = {}
-    if (Object.keys(data).length !== 0) {
-      resultMatch.entity = entity
-      resultMatch.data = data
+    if (data !== null) {
+      console.log('pass')
+      if (Object.keys(data).length !== 0) {
+        resultMatch.entity = entity
+        resultMatch.data = data
+      } else {
+        resultMatch.entity = entity
+        resultMatch.data = false
+      }
     } else {
       resultMatch.entity = entity
       resultMatch.data = false
     }
-    console.log('matchfffffff')
-    console.log(resultMatch)
     this.SafeFlow.resultsFlow(resultMatch)
   }
 
