@@ -41,7 +41,7 @@
     "library-hop": "^0.2.7",
     "librarycomposer": "^0.3.9",
     "luxon": "^3.4.4",
-    "node-safeflow": "0.9.67",
+    "node-safeflow": "0.9.68",
     "object-hash": "^3.0.0",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.0",
