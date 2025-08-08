@@ -1,7 +1,7 @@
 {
   "name": "hop-ecs",
   "description": "health oracle protocol",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "main": "src/index.js",
   "bin": "src/index.js",
   "type": "module",
@@ -43,6 +43,7 @@
     "luxon": "^3.4.4",
     "node-safeflow": "0.9.68",
     "object-hash": "^3.0.0",
+    "simple-statistics": "^7.8.8",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.0",
     "ws": "^8.11.0"
