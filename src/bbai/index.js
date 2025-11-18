@@ -23,6 +23,17 @@ class BBRoute extends EventEmitter {
     this.wlist = []
     this.peerNetworklisten()
     this.listenBBresponse()
+    this.startBeeBeeAgent()
+  }
+
+  /**
+  * toolkit ai messages
+  * @method startBeeBeeAgent
+  *
+  */
+  startBeeBeeAgent = async function () {
+    console.log('starting beebee agent')
+    this.liveBBAI.startBeeBee()
   }
 
   /**
@@ -55,9 +66,9 @@ class BBRoute extends EventEmitter {
     if (message.reftype.trim() === 'ignore' && message.type.trim() === 'bbai-reply') {
       if (message.action === 'question') {
         // send to NPL rules
-        await this.liveBBAI.nlpflow(message)
+        await this.liveBBAI.beebeeFlow(message)
       } else if (message.action === 'library') {
-        await this.liveBBAI.nlpflow(message)
+        await this.liveBBAI.beebeeFlow(message)
       } else if (message.action === 'learn-agent-start') {
         await this.liveBBAI.beginAgents(message.data)
       } else if (message.action === 'learn-agent-stop') {
@@ -89,6 +100,14 @@ class BBRoute extends EventEmitter {
   *
   */
   listenBBresponse = function () {
+    this.liveBBAI.on('beebee-response-stream', (replyData) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-stream-reply'
+      bbReply.data = replyData
+      bbReply.bbid = replyData.bbidid
+      this.bothSockets(JSON.stringify(bbReply))
+    })
+
     this.liveBBAI.on('beebee-response', (replyData) => {
       if (replyData.query === true) {
           // need to pass to SafeFlow
