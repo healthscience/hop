@@ -94,6 +94,8 @@ class SfRoute extends EventEmitter {
   *
   */
   newSafeflow = async function (message) {
+    console.log('sfsfsfsfsfsfsfssfsf------------')
+    console.log(message)
     // send summary info that SafeFLow has received NXP bundle
     let ecsData = await this.SafeFlow.startFlow(message.data)
     let summaryECS = {}

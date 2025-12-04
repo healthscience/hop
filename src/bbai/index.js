@@ -70,16 +70,16 @@ class BBRoute extends EventEmitter {
       } else if (message.action === 'library') {
         await this.liveBBAI.beebeeFlow(message)
       } else if (message.action === 'learn-agent-start') {
-        await this.liveBBAI.beginAgents(message.data)
+        await this.liveBBAI.agentsCMP.beginAgents(message.data)
       } else if (message.action === 'learn-agent-stop') {
-        this.liveBBAI.stopAgents(message.data)
+        this.liveBBAI.agentsCMP.stopAgents(message.data)
       } else if (message.action === 'agent-task') {
-        await this.liveBBAI.coordinationAgents(message)
+        await this.liveBBAI.agentsCMP.coordinationAgents(message)
       } else if (message.action === 'agent-network-task') {
         // start build DML evidence here???
         console.log('dml path')
         console.log(message)
-        await this.liveBBAI.coordinationDML(message)
+        await this.liveBBAI.agentsCMP.coordinationDML(message)
       } else if (message.action === 'predict-future') {
         // handover to the model
         let processFdata = await this.liveBBAI.managePrediction(message)
@@ -92,6 +92,16 @@ class BBRoute extends EventEmitter {
         this.bothSockets(JSON.stringify(bbReply))
       } 
     }
+  }
+
+
+  /**
+  * message into beeebee
+  * @method messageBeeBee
+  *
+  */
+  messageBeeBee = function (message) {
+    this.liveBBAI('safeflow-success', message.data) 
   }
 
   /**
@@ -110,13 +120,15 @@ class BBRoute extends EventEmitter {
 
     this.liveBBAI.on('beebee-response', (replyData) => {
       if (replyData.query === true) {
-          // need to pass to SafeFlow
-          this.emit('safeflow-query', replyData)
-          let bbReply = {}
-          bbReply.type = 'bbai-reply'
-          bbReply.data = 'HOP' // replyData
-          bbReply.bbid = replyData.bbid
-          this.bothSockets(JSON.stringify(bbReply))
+        // need to pass to SafeFlow
+        console.log('safeflow QUERY')
+        console.log(replyData)
+        this.emit('safeflow-query', replyData)
+        let bbReply = {}
+        bbReply.type = 'bbai-reply'
+        bbReply.data = 'HOP' // replyData
+        bbReply.bbid = replyData.bbid
+        this.bothSockets(JSON.stringify(bbReply))
       } else if (replyData.type === 'oracle') {
         this.bothSockets(JSON.stringify(replyData))
       } else if (replyData.type === 'upload') {
