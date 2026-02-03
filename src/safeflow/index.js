@@ -18,12 +18,13 @@ import LibComposer from 'librarycomposer'
 
 class SfRoute extends EventEmitter {
 
-  constructor(Holepunch) {
+  constructor(Holepunch, HeliClock) {
     super()
     this.live = true
     this.wsocket = {}
     this.wlist = []
     this.holepunchLive = Holepunch
+    this.heliclock = HeliClock
     this.liveLibrary = new LibComposer()
     this.SafeFlow = new SafeFlowECS(Holepunch)
     this.SafeFlow.entityGetter()

@@ -25,7 +25,9 @@ import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
 import BBRoute from './bbai/index.js'
 import DmlRoute from './dml/index.js'
+import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
+import init, { HeliCore } from 'heliclock-hop'
 
 class HOP extends EventEmitter {
 
@@ -53,10 +55,21 @@ class HOP extends EventEmitter {
   *
   */
   startPtoPnetwork = async function  () {
+    // Initialize HeliClock WASM
+    try {
+      await init()
+    } catch (err) {
+      console.warn('HeliClock init failed or already initialized', err)
+    }
+    this.HeliClock = HeliCore
+    // Attach to DataNetwork for SafeFlow systems access
+    this.DataNetwork.heliclock = this.HeliClock
+
     this.LibRoute = new LibraryRoute(this.DataNetwork)
-    this.SafeRoute = new SfRoute(this.DataNetwork)
+    this.SafeRoute = new SfRoute(this.DataNetwork, this.HeliClock)
     this.DmlRoute = new DmlRoute(this.DataNetwork)
-    this.BBRoute = new BBRoute(this.LibRoute)
+    this.BesearchRoute = new BesearchRoute(this.DataNetwork, this.SafeRoute, this.HeliClock)
+    this.BBRoute = new BBRoute(this.LibRoute, this.BesearchRoute, this.HeliClock)
     await this.listenNetwork()
     await this.listenBeebee()
     await this.listenLibrary()
@@ -95,7 +108,6 @@ class HOP extends EventEmitter {
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
-  
       this.sockcount++ 
       this.wsocket = ws
       this.DataNetwork.setWebsocket(ws)
@@ -365,7 +377,7 @@ class HOP extends EventEmitter {
     authMessage.data = { auth: true, jwt: this.hoptoken }
     this.sendSocketMessage(JSON.stringify(authMessage)) */
     // auth verified -- get AI agent options
-    this.BBRoute.liveBBAI.agentsCMP.hopLearn.openOrchestra()
+    this.BBRoute.liveBBAI.hopLearn.openOrchestra()
   }
 
   /**

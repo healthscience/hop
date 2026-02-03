@@ -14,10 +14,12 @@ import BbAi from 'beebee-ai'
 
 class BBRoute extends EventEmitter {
 
-  constructor(Holepunch) {
+  constructor(Holepunch, Besearch, HeliClock) {
     super()
     this.live = true
     this.holepunchLive = Holepunch
+    this.liveBesearch = Besearch
+    this.heliclock = HeliClock
     this.liveBBAI = new BbAi(Holepunch)
     this.wsocket = {}
     this.wlist = []
@@ -33,7 +35,7 @@ class BBRoute extends EventEmitter {
   */
   startBeeBeeAgent = async function () {
     console.log('starting beebee agent')
-    this.liveBBAI.startBeeBee()
+    // this.liveBBAI.startBeeBee()
   }
 
   /**
