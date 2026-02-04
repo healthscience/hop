@@ -62,14 +62,34 @@ class HOP extends EventEmitter {
       console.warn('HeliClock init failed or already initialized', err)
     }
     this.HeliClock = HeliCore
-    // Attach to DataNetwork for SafeFlow systems access
-    this.DataNetwork.heliclock = this.HeliClock
+
+    // Build the Context Object (The Nervous System)
+    this.context = {
+      heliclock: this.HeliClock,
+      network: this.DataNetwork,
+      safeflow: null, // Assigned below
+      besearch: null, // Assigned below
+      bbai: null,     // Assigned below
+      library: null   // Assigned below
+    }
+
+    // Attach Context to DataNetwork for ECS visibility
+    this.DataNetwork.context = this.context
 
     this.LibRoute = new LibraryRoute(this.DataNetwork)
-    this.SafeRoute = new SfRoute(this.DataNetwork, this.HeliClock)
+    this.context.library = this.LibRoute
+
+    this.SafeRoute = new SfRoute(this.context)
+    this.context.safeflow = this.SafeRoute
+
     this.DmlRoute = new DmlRoute(this.DataNetwork)
-    this.BesearchRoute = new BesearchRoute(this.DataNetwork, this.SafeRoute, this.HeliClock)
-    this.BBRoute = new BBRoute(this.LibRoute, this.BesearchRoute, this.HeliClock)
+
+    this.BesearchRoute = new BesearchRoute(this.context)
+    this.context.besearch = this.BesearchRoute
+
+    this.BBRoute = new BBRoute(this.context)
+    this.context.bbai = this.BBRoute
+
     await this.listenNetwork()
     await this.listenBeebee()
     await this.listenLibrary()

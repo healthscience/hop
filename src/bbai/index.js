@@ -14,13 +14,14 @@ import BbAi from 'beebee-ai'
 
 class BBRoute extends EventEmitter {
 
-  constructor(Holepunch, Besearch, HeliClock) {
+  constructor(context) {
     super()
+    this.context = context
     this.live = true
-    this.holepunchLive = Holepunch
-    this.liveBesearch = Besearch
-    this.heliclock = HeliClock
-    this.liveBBAI = new BbAi(Holepunch)
+    this.holepunchLive = context.network
+    this.liveBesearch = context.besearch
+    this.heliclock = context.heliclock
+    this.liveBBAI = new BbAi(this.holepunchLive)
     this.wsocket = {}
     this.wlist = []
     this.peerNetworklisten()
