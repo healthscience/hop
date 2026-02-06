@@ -28,6 +28,7 @@ import DmlRoute from './dml/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
 import init, { HeliCore } from 'heliclock-hop'
+import initCrypto, { verify_coherence, initSync } from 'hop-crypto'
 
 class HOP extends EventEmitter {
 
@@ -63,9 +64,26 @@ class HOP extends EventEmitter {
     }
     this.HeliClock = HeliCore
 
+    // Initialize hop-crypto WASM
+    try {
+      if (typeof window === 'undefined') {
+        const wasmPath = new URL('../node_modules/hop-crypto/hop_crypto_bg.wasm', import.meta.url)
+        const wasmBuffer = fs.readFileSync(fileURLToPath(wasmPath))
+        initSync(wasmBuffer)
+        console.log('hop-crypto WASM initialized (Node.js)')
+      } else {
+        await initCrypto()
+        console.log('hop-crypto WASM initialized (Browser)')
+      }
+    } catch (err) {
+      console.warn('hop-crypto init failed or already initialized', err)
+    }
+    this.hopCrypto = { verify_coherence }
+
     // Build the Context Object (The Nervous System)
     this.context = {
       heliclock: this.HeliClock,
+      crypto: this.hopCrypto,
       network: this.DataNetwork,
       safeflow: null, // Assigned below
       besearch: null, // Assigned below
@@ -386,16 +404,32 @@ class HOP extends EventEmitter {
   *
   */
   messageAuth = (o) => {
-    // TODO  schnorr sig verifty and setup
+    // Schnorr sig verify and setup
+    if (o.data && o.data.pubkey && o.data.sig && o.data.msg) {
+      try {
+        const pubkey = new Uint8Array(Buffer.from(o.data.pubkey, 'hex'))
+        const sig = new Uint8Array(Buffer.from(o.data.sig, 'hex'))
+        const isValid = verify_coherence(pubkey, o.data.msg, sig)
+
+        if (!isValid) {
+          console.warn('Schnorr signature verification failed')
+          let authMessage = {
+            type: 'account',
+            action: 'hop-verify',
+            data: { auth: false, error: 'Invalid signature' }
+          }
+          this.sendSocketMessage(JSON.stringify(authMessage))
+          return
+        }
+        console.log('Schnorr signature verified successfully')
+      } catch (err) {
+        console.error('Error during signature verification:', err)
+        return
+      }
+    }
+
     // bring store to life
     this.DataNetwork.startStores()
-    // once store setup, then info BBox HOP ready
-    /* this.hoptoken =  uuidv4()
-    let authMessage = {}
-    authMessage.type = 'account'
-    authMessage.action = 'hop-verify'
-    authMessage.data = { auth: true, jwt: this.hoptoken }
-    this.sendSocketMessage(JSON.stringify(authMessage)) */
     // auth verified -- get AI agent options
     this.BBRoute.liveBBAI.hopLearn.openOrchestra()
   }
@@ -419,6 +453,29 @@ class HOP extends EventEmitter {
       this.LibRoute.libManager.bentoPath(messageRoute)
     } else if (messageRoute.type === 'network') {
       this.DataNetwork.networkPath(messageRoute)
+    } else if (messageRoute.type === 'crypto') {
+      this.cryptoPath(messageRoute)
+    }
+  }
+
+  /**
+  * handle crypto messages
+  * @method cryptoPath
+  *
+  */
+  cryptoPath = async (o) => {
+    if (o.action === 'verify') {
+      const pubkey = new Uint8Array(Buffer.from(o.data.pubkey, 'hex'))
+      const sig = new Uint8Array(Buffer.from(o.data.sig, 'hex'))
+      const isValid = verify_coherence(pubkey, o.data.msg, sig)
+      
+      let reply = {
+        type: 'crypto-reply',
+        action: 'verify',
+        data: { valid: isValid },
+        bbid: o.bbid
+      }
+      this.sendSocketMessage(JSON.stringify(reply))
     }
   }
 
