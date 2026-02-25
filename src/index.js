@@ -160,7 +160,7 @@ class HOP extends EventEmitter {
         // console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
-          this.messageAuth()
+          this.messageAuth(o)
         } else {
           if (this.hoptoken === o.jwt)
           // listen of close messages
@@ -384,7 +384,6 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerNotify))
     })
 
-
     this.DataNetwork.on('invite-live-peer', (data) => {
       let peerId = {}
       peerId.type = 'account'
@@ -404,6 +403,27 @@ class HOP extends EventEmitter {
   *
   */
   messageAuth = (o) => {
+    if (o.action === 'request-crypto-wasm') {
+      this.sendCryptoWasm(o)
+      return
+    }
+
+    if (o.action === 'sign-and-verify') {
+      // This is a placeholder for the sign-and-verify logic
+      // In a real scenario, we might sign the intent and then verify it
+      // For now, we'll just proceed to start stores if the intent is present
+      if (o.data && o.data.intent) {
+        console.log('Sign and verify intent:', o.data.intent)
+        let verifyMessage = {
+          type: 'account',
+          action: 'sign-verify-complete',
+          data: { verified: true, intent: o.data.intent },
+          bbid: o.bbid
+        }
+        this.sendSocketMessage(JSON.stringify(verifyMessage))
+      }
+    }
+
     // Schnorr sig verify and setup
     if (o.data && o.data.pubkey && o.data.sig && o.data.msg) {
       try {
@@ -432,6 +452,30 @@ class HOP extends EventEmitter {
     this.DataNetwork.startStores()
     // auth verified -- get AI agent options
     this.BBRoute.liveBBAI.hopLearn.openOrchestra()
+  }
+
+  /**
+  * send crypto wasm buffer to peer
+  * @method sendCryptoWasm
+  *
+  */
+  sendCryptoWasm = (o) => {
+    try {
+      const wasmPath = new URL('../node_modules/hop-crypto/hop_crypto_bg.wasm', import.meta.url);
+      const wasmBuffer = fs.readFileSync(fileURLToPath(wasmPath));
+      // Convert Buffer to Base64 String
+      const base64Wasm = wasmBuffer.toString('base64');
+      let wasmMessage = {
+        type: 'account',
+        action: 'crypto-wasm-binary',
+        data: base64Wasm, // Now a safe JSON string
+        bbid: o.bbid
+      };
+      
+      this.sendSocketMessage(JSON.stringify(wasmMessage));
+    } catch (err) {
+      console.error('Error sending crypto wasm:', err);
+    }
   }
 
   /**
