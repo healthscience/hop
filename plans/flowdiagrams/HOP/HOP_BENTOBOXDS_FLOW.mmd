@@ -1,0 +1,54 @@
+graph TB
+    subgraph "BentoBoxDS (The Peer Experience - Vue/ECS)"
+        direction TB
+        UI[OrbitView / CSS Grid]
+        BB((The BeeBee))
+        WC[World Switcher / Orchestrator]
+        WASM{Sovereign WASM Brain}
+        ECS[SafeFlow-ECS Engine]
+        
+        UI <--> BB
+        BB <--> WC
+        WC --> ECS
+        ECS <--> WASM
+    end
+
+    subgraph "Universal Transport Bridge"
+        direction LR
+        UTB{Emitter}
+        WS[WebSocket / Web]
+        BR[Bare-RPC / Desktop]
+        UTB --- WS
+        UTB --- BR
+    end
+
+    subgraph "HOP Node (The Sovereign Body - Bare/Node)"
+        direction TB
+        HD[(Hyperdrive - Raw Files)]
+        HB[(Hyperbee - Indexed Cues)]
+        DHT((Hyperswarm / P2P))
+        ING[Automated Ingest / Stitcher]
+        
+        ING --> HD
+        ING --> HB
+        HB <--> DHT
+    end
+
+    %% Flows
+    WASM -- "Authenticated Intent" --> UTB
+    UTB -- "Secure Payload" --> ING
+    HB -- "Resonance Pulse" --> UTB
+    UTB -- "Live Stream Entities" --> ECS
+    
+    %% Besearch Cycle Phases
+    subgraph "400IM Besearch Cycle"
+        P1[1. Context: Now]
+        P2[2. Learn: History]
+        P3[3. Evolve: Search Space]
+        P4[4. Flow: Emulation]
+    end
+
+    WC -.-> P1
+    WC -.-> P2
+    WC -.-> P3
+    WC -.-> P4

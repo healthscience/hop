@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant P as Peer (User)
+    participant B as beebee (1B LLM)
+    participant SF as node-safeflow (ECS)
+    participant RA as resonAgent (WASM)
+    participant NH as neat-hop (Evolution)
+
+    Note over P, B: 1. Input Cycle (Zero-Draft)
+    P->>B: Raw Input (Voice/Text)
+    B->>SF: Update Context (Entity Components)
+
+    Note over B, RA: 2. Assessment Cycle (Resonance)
+    B->>RA: Trigger Assessment (JSON-RPC)
+    SF-->>RA: Fetch Bio-Vocabulary (140 Markers)
+    RA->>RA: Run Physics Simulation
+    RA-->>B: Return Fitness Score
+
+    Note over B, NH: 3. Evolution Cycle (Pulse Improvement)
+    alt Fitness < Threshold
+        B->>NH: Request Mutation (HOP)
+        NH->>NH: GPU/CPU Mutation Loop
+        NH->>RA: Validate Candidate Pulses
+        RA-->>NH: Candidate Fitness
+        NH-->>SF: Update Genome (New Weights)
+    end
+
+    Note over SF, P: 4. Integration Cycle (The Weave)
+    SF-->>B: Check Consilience Weave (Conflict Triage)
+    B->>P: Natural Language Output ("Pulse Optimized")

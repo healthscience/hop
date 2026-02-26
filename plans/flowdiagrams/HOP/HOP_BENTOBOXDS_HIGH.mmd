@@ -1,0 +1,37 @@
+graph TD
+    %% The User Interface & Command Center
+    subgraph BentoBoxDS ["BentoBoxDS (The Habitat)"]
+        BBAI[beebee-ai Interface]
+        subgraph Tools ["Internal Tooling"]
+            BN[BbNexus]
+            RP[resonancePulse]
+            EM[Emulation/Worlds]
+        end
+    end
+
+    %% The Direct Command Path
+    BBAI -- "HOPquery" --> SF[safeFLOW-ecs]
+    BBAI -- "Direct Intent" --> RA[resonAgents]
+
+    %% The Intelligence & Network Fabric
+    subgraph Fabric ["The Resonant Fabric"]
+        RA <--> NH[neat-hop]
+        NH <--> P2P((P2P Mesh))
+    end
+
+    %% The Synthesis
+    subgraph Logic ["The Metabolism"]
+        SF <--> CW((Consilience Weave))
+        CW <--> CL[(Coherence Ledger)]
+        RA -- "Updates" --> CW
+    end
+
+    %% Feedback Loops
+    BN <--> BBAI
+    CW -. "Pulse Feed" .-> RP
+    CL -. "History" .-> EM
+
+    style BBAI fill:#2ecc71,stroke:#333,stroke-width:4px
+    style BN fill:#f1c40f,stroke:#333,stroke-width:2px
+    style RA fill:#bbf,stroke:#333,stroke-width:2px
+    style NH fill:#3498db,stroke:#fff,stroke-width:2px

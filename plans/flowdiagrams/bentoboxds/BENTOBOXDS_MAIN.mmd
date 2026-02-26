@@ -1,0 +1,46 @@
+graph TD
+    subgraph "BentoBoxDS Core (Vue 3)"
+        OV[OrbitView.vue]
+        MS[accountStore.js]
+        
+        subgraph "Interaction Hub"
+            BB((BeeBee Agent))
+            Nexus[[bbNexus Tool Icon]]
+        end
+        
+        subgraph "The World Switcher"
+            WS[WorldSwitcher.vue]
+            ACT{{activeComponent / Stage}}
+        end
+        
+        subgraph "Component Factory"
+            DCL[LiquidLoader.js]
+            Library[(Sovereign Tool Library)]
+        end
+    end
+
+    subgraph "Tools & Emulations (Liquid Components)"
+        STT[Sovereign Tech Tools: Keys/Contracts]
+        ING[Ingest Tool: Polar/SQLite]
+        DW[DaisyWorld: Emulation]
+        HR[HeartRiver: Emulation]
+    end
+
+    %% Human/Peer Interaction
+    Nexus -- "Manual Open" --> Library
+    BB -- "Auto Suggest" --> WS
+    
+    %% The Switching Logic
+    Library -- "Select Tool" --> WS
+    WS -- "Request Component" --> DCL
+    DCL -- "Hydrate" --> ACT
+    
+    %% Mapping to the Stage
+    ACT --- STT
+    ACT --- ING
+    ACT --- DW
+    ACT --- HR
+
+    %% Feedback Loop
+    MS -- "Context Pulse" --> BB
+    STT -- "Signed Intent" --> MS
