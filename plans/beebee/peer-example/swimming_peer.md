@@ -10,7 +10,7 @@ The Peer swims for exercise but lacks "Phase Coherence." Their stroke rate is er
 - **Inputs:** Wrist-worn accelerometer + Heart-rate sensor.
 - **Task:** The Reservoir identifies the "Micro-Rhythms" of the catch, pull, and recovery phases of the freestyle stroke. It ignores "noise" like splashing and focuses on the steady vibration of the glide.
 
-### Phase B: Prediction & Correction (Active Inference)
+### Phase B: Resonance & Correction (Active Inference)
 - **The Model:** BeeBee expects a specific "Buoyancy Vector" based on the Peer's body composition.
 - **The Gap:** If the Peer’s hips sink (detected via Z-axis tilt), Layer B detects "Surprise."
 - **The Intervention:** A haptic pulse or a post-lap `@teach` note: *"Your hips dropped at Arc 45°. Focus on core tension to restore the Glide Harmony."*
