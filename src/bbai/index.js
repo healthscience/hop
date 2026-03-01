@@ -35,8 +35,7 @@ class BBRoute extends EventEmitter {
   *
   */
   startBeeBeeAgent = async function () {
-    console.log('starting beebee agent')
-    // this.liveBBAI.startBeeBee()
+    this.liveBBAI.startBeeBee()
   }
 
   /**
@@ -97,7 +96,6 @@ class BBRoute extends EventEmitter {
     }
   }
 
-
   /**
   * message into beeebee
   * @method messageBeeBee
@@ -155,11 +153,18 @@ class BBRoute extends EventEmitter {
         bbReply.data = { text: 'No data for query'}
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))        
+      } else if (replyData.type === 'bbai-reply' && replyData.action === 'npl-reply') {
+        let bbReply = {}
+        bbReply.type = 'bbai-reply'
+        bbReply.action = 'npl-reply'
+        bbReply.data = replyData.data // This contains { text, lens }
+        bbReply.bbid = replyData.bbid
+        this.bothSockets(JSON.stringify(bbReply))
       } else {
         let bbReply = {}
         bbReply.type = 'bbai-reply'
         bbReply.action = replyData.type
-        bbReply.data = replyData.text
+        bbReply.data = replyData.text || replyData.data
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))
       }

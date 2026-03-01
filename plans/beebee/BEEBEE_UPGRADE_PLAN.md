@@ -9,12 +9,18 @@ Before beginning any implementation, the following resources **must** be consult
 3. **Task-Specific Markdown**: Any markdown file specific to the current task being implemented.
 4. **Flow Diagrams (`plans/flowdiagrams/`)**: Review the architectural flow diagrams for HOP and BentoBoxDS (e.g., `BEEBEE_RESONAGENT_NEAT.mmd`, `BENTOBOXDS_TOOLS.mmd`) to understand the intended data flow and component interactions.
 
-## Phase 1: The Three C's (Capacity, Context, Coherence)
-When a `life-strap` is created, we need to extract the Three C's from the peer's input.
-*   **Sub-goal 1.1:** Identify the exact message routing logic where a `life-strap` is created (likely in `src/bbai/index.js` or `src/library/index.js`).
-*   **Sub-goal 1.2:** Create specific system prompts designed to extract Capacity, Context, and Coherence from natural language input.
-*   **Sub-goal 1.3:** Implement logic within `beebee` to process the peer's input against these prompts and return a structured set of keywords for each of the Three C categories.
-*   **Sub-goal 1.4:** Write unit tests to validate the accurate extraction of Capacity, Context, and Coherence keywords from diverse peer inputs.
+## Phase 1: The Three C's (Capacity, Context, Coherence) & Prompt Stitcher
+Implement a Prompt Stitcher and Message Router to transform Natural Language input into structured Context, Capacity, and Coherence data using a Two-Stage Prompt Architecture (`[MASTER SYSTEM PROMPT] + [TASK-SPECIFIC WRAPPER] + [USER CONTEXT] = [STRUCTURED REPLY]`).
+
+**Note:** The core logic for this phase will be implemented in the `beebee-ai` repository (`../bbAI`), with integration updates made here in `hop-ecs`.
+
+*   **Sub-goal 1.1 (Prompt Storage - `beebee-ai` repo):** Create `prompts.js` to store the XML strings for the Master Prompt (Identity) and Task Prompts (Extraction & Routing).
+*   **Sub-goal 1.2 (Stitcher Service - `beebee-ai` repo):** Implement `stitcher.js` to combine the Master Prompt, Task Prompt, and User Context into a single string.
+*   **Sub-goal 1.3 (Message Handler - `beebee-ai` repo):** Implement `handler.js` (or update `beebeeFlow` in `src/index.js`) to process the stitched prompt via the LLM. It must detect Tool Routing tags (e.g., `[[MEDICAL]]`) and route to specialized agents if necessary.
+*   **Sub-goal 1.4 (Parsing & Extraction - `beebee-ai` repo):** Build regex parsers to extract the clean text response and parse the `<ui_data>` JSON block (containing the Three C's keywords) from the LLM's raw output.
+*   **Sub-goal 1.5 (Error Handling - `beebee-ai` repo):** Implement fallback logic to return a default "Neutral" lens state if the LLM fails to provide valid JSON, preventing UI breakage.
+*   **Sub-goal 1.6 (Integration - `hop-ecs` repo):** Update `src/bbai/index.js` in `hop-ecs` to route incoming natural language messages (from BentoBoxDS `inputBox.vue`) to the updated `beebee-ai` package and ensure the Egress flow returns the standardized JSON payload back to the frontend.
+*   **Sub-goal 1.7 (Testing):** Write unit tests in both repositories to validate the prompt stitching, regex parsing, routing logic, and integration.
 
 ## Phase 2: WASM Agents (`resonAgents` and `neat-hop`)
 Introduce two new WASM implementations to handle specialized tasks.

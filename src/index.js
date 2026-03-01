@@ -20,6 +20,7 @@ import { createServer } from 'https'
 import fs from 'fs'
 import { WebSocketServer } from 'ws'
 import { v4 as uuidv4 } from 'uuid'
+import AnchorDawn from './anchor/dawn.js'
 import MessageFlow from 'hop-message'
 import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
@@ -27,8 +28,7 @@ import BBRoute from './bbai/index.js'
 import DmlRoute from './dml/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
-import init, { HeliCore } from 'heliclock-hop'
-import initCrypto, { verify_coherence, initSync } from 'hop-crypto'
+import { SovereignKeypair } from 'hop-crypto'
 
 class HOP extends EventEmitter {
 
@@ -38,82 +38,102 @@ class HOP extends EventEmitter {
     super()
     this.hoptoken = ''
     this.options = options
+    this.anchorDawn = new AnchorDawn(this.options.storename)
     this.MessagesFlow = new MessageFlow()
-    this.DataNetwork = new HolepunchHOP(this.options.storename)
+    this.DataNetwork = {} // new HolepunchHOP(this.options.storename)
     this.wsocket = {}
     this.socketCount = 0
     this.BBRoute = {}
     this.SafeRoute = {}
     this.LibRoute = {}
     this.DmlRoute = {}
-    this.startPtoPnetwork()
+    this.origin
+    this.anchorState = false
+    this.hopConnect()
     this.sockcount = 0
   }
 
   /**
-  * start holepunch data infrastructure
-  * @method startPtoPnetwork
+  * check if encryption in place / integrity of HOP
+  * @method anchorHOP
   *
   */
-  startPtoPnetwork = async function  () {
-    // Initialize HeliClock WASM
-    try {
-      await init()
-    } catch (err) {
-      console.warn('HeliClock init failed or already initialized', err)
+  anchorHOP = async function  () {
+    let dawnStatus = await this.anchorDawn.initialize()
+    console.log('dawnStatus')
+    console.log(dawnStatus)
+    if (dawnStatus.type === 'STATUS_GENESIS') {
+      console.log('anchor genesis')
+      let anchorMessage = {}
+      anchorMessage.type = 'account'
+      anchorMessage.action = 'hop-anchor'
+      anchorMessage.data = { anchor: dawnStatus, jwt: this.hoptoken }
+      console.log('anchor message')
+      this.sendSocketMessage(JSON.stringify(anchorMessage))
+    } else if (dawnStatus.type === 'STATUS_LOCKED') {
+      let anchorMessage = {}
+      anchorMessage.type = 'account'
+      anchorMessage.action = 'hop-locked'
+      anchorMessage.data = { anchor: dawnStatus, jwt: this.hoptoken }
+      console.log('anchor message')
+      this.sendSocketMessage(JSON.stringify(anchorMessage))
     }
-    this.HeliClock = HeliCore
+  }
 
-    // Initialize hop-crypto WASM
+  /**
+   * unlock peer and start P2P network
+   * @method unlockPeer
+   *
+  */
+  unlockPeer = async function (password) {
     try {
-      if (typeof window === 'undefined') {
-        const wasmPath = new URL('../node_modules/hop-crypto/hop_crypto_bg.wasm', import.meta.url)
-        const wasmBuffer = fs.readFileSync(fileURLToPath(wasmPath))
-        initSync(wasmBuffer)
-        console.log('hop-crypto WASM initialized (Node.js)')
-      } else {
-        await initCrypto()
-        console.log('hop-crypto WASM initialized (Browser)')
+      const { pubKey, masterSeed } = await this.anchorDawn.unlockAndActivate(password)
+      this.HeliClock = this.anchorDawn.HeliClock
+      
+      // Initialize HolepunchHOP or other P2P logic here with masterSeed
+      this.DataNetwork = {} // new HolepunchHOP(this.options.storename, masterSeed)
+      
+      // Build the Context Object (The Nervous System)
+      const wasm = await import('hop-crypto')
+      this.context = {
+        heliclock: this.HeliClock,
+        crypto: { verify_coherence: wasm.verify_coherence },
+        network: this.DataNetwork,
+        safeflow: null,
+        besearch: null,
+        bbai: null,
+        library: null
       }
+
+      // Attach Context to DataNetwork for ECS visibility
+      this.DataNetwork.context = this.context
+
+      this.LibRoute = new LibraryRoute(this.DataNetwork)
+      this.context.library = this.LibRoute
+
+      this.SafeRoute = new SfRoute(this.context)
+      this.context.safeflow = this.SafeRoute
+
+      this.DmlRoute = new DmlRoute(this.DataNetwork)
+
+      this.BesearchRoute = new BesearchRoute(this.context)
+      this.context.besearch = this.BesearchRoute
+
+      this.BBRoute = new BBRoute(this.context)
+      this.context.bbai = this.BBRoute
+
+      // await this.listenNetwork()
+      await this.listenBeebee()
+      await this.listenLibrary()
+      await this.listenLibrarySF()
+      await this.listenSF()
+
+      console.log('Peer unlocked and P2P network ready:', pubKey)
+      return pubKey
     } catch (err) {
-      console.warn('hop-crypto init failed or already initialized', err)
+      console.error('Failed to unlock peer:', err)
+      throw err
     }
-    this.hopCrypto = { verify_coherence }
-
-    // Build the Context Object (The Nervous System)
-    this.context = {
-      heliclock: this.HeliClock,
-      crypto: this.hopCrypto,
-      network: this.DataNetwork,
-      safeflow: null, // Assigned below
-      besearch: null, // Assigned below
-      bbai: null,     // Assigned below
-      library: null   // Assigned below
-    }
-
-    // Attach Context to DataNetwork for ECS visibility
-    this.DataNetwork.context = this.context
-
-    this.LibRoute = new LibraryRoute(this.DataNetwork)
-    this.context.library = this.LibRoute
-
-    this.SafeRoute = new SfRoute(this.context)
-    this.context.safeflow = this.SafeRoute
-
-    this.DmlRoute = new DmlRoute(this.DataNetwork)
-
-    this.BesearchRoute = new BesearchRoute(this.context)
-    this.context.besearch = this.BesearchRoute
-
-    this.BBRoute = new BBRoute(this.context)
-    this.context.bbai = this.BBRoute
-
-    await this.listenNetwork()
-    await this.listenBeebee()
-    await this.listenLibrary()
-    await this.listenLibrarySF()
-    await this.listenSF()
-    this.hopConnect()
   }
 
   /**
@@ -122,11 +142,13 @@ class HOP extends EventEmitter {
   *
   */
    hopConnect = function () {
-
     const options = {
       key: fs.readFileSync(_dirname + '/key.pem'),
       cert: fs.readFileSync(_dirname + '/cert.pem')
     }
+
+    // 1. Define your allowed peer origin (BentoBoxDS location)
+    const ALLOWED_ORIGIN = 'https://localhost:5173'; // Change to your actual UI port
 
     const server = createServer(options, (request, response) => {
       // process HTTPS request. Since we're writing just WebSockets
@@ -137,27 +159,50 @@ class HOP extends EventEmitter {
       console.log('problem with request: ' + e.stack);
     })
 
-    server.listen(this.options.port, () => {
-      console.log('listening on *:' + this.options.port)
-      console.log(process.env.npm_package_version)
-    })
+    // 2. Upgrade to WebSocket with Origin Check
+    server.on('upgrade', (request, socket, head) => {
+      const origin = request.headers.origin;
 
-    const wsServer = new WebSocketServer({ server })
+      // SERIOUS INTENT: Strict Origin Check
+      if (origin !== ALLOWED_ORIGIN) {
+        console.error(`!!! SECURITY ALERT: Blocked unauthorized origin: ${origin}`);
+        socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+
+      // Origin is safe. Proceed to WebSocket upgrade.
+      wsServer.handleUpgrade(request, socket, head, (ws) => {
+        wsServer.emit('connection', ws, request);
+      });
+    });
+
+  server.listen(this.options.port, async () => {
+    console.log(`[HOP] Peer Gateway active on *:${this.options.port}`);
+  });
+
+    const wsServer = new WebSocketServer({ noServer: true })
 
     // WebSocket server
     wsServer.on('connection', async (ws) => {
       this.sockcount++ 
       this.wsocket = ws
-      this.DataNetwork.setWebsocket(ws)
-      this.LibRoute.setWebsocket(ws)
-      this.SafeRoute.setWebsocket(ws)
-      this.BBRoute.setWebsocket(ws)
+      // if first peer experience wait until anchoris complete
+      if (this.anchorState === true) {
+        this.DataNetwork.setWebsocket(ws)
+        this.LibRoute.setWebsocket(ws)
+        this.SafeRoute.setWebsocket(ws)
+        this.BBRoute.setWebsocket(ws)
+      } else {
+        console.log('Anchor is not ready')
+        await this.anchorHOP()
+      }
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', async (msg) => {
-        // console.log('HOP message received')
+        console.log('HOP message received')
         const o = JSON.parse(msg)
-        // console.log(o)
+        console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
           this.messageAuth(o)
@@ -250,7 +295,7 @@ class HOP extends EventEmitter {
       await this.LibRoute.libManager.systemsContracts()
     })
 
-    this.DataNetwork.on('hcores-active', () => {
+    /*this.DataNetwork.on('hcores-active', () => {
       this.hoptoken =  uuidv4()
       let authMessage = {}
       authMessage.type = 'account'
@@ -259,7 +304,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(authMessage))
       // allow other components have access to data
       this.processListen()
-    })
+    })*/
 
   }    
 
@@ -404,8 +449,12 @@ class HOP extends EventEmitter {
   */
   messageAuth = (o) => {
     if (o.action === 'request-crypto-wasm') {
-      this.sendCryptoWasm(o)
+      this.WASMcryptoID(o)
       return
+    }
+
+    if (o.action === 'verify-crypto-wasm') {
+      this.verifyAndConnect(o.data)
     }
 
     if (o.action === 'sign-and-verify') {
@@ -447,31 +496,23 @@ class HOP extends EventEmitter {
         return
       }
     }
-
-    // bring store to life
-    this.DataNetwork.startStores()
-    // auth verified -- get AI agent options
-    this.BBRoute.liveBBAI.hopLearn.openOrchestra()
   }
 
   /**
-  * send crypto wasm buffer to peer
-  * @method sendCryptoWasm
+  * build wasm and generate handshake
+  * @method WASMcryptoID
   *
   */
-  sendCryptoWasm = (o) => {
+  WASMcryptoID = (o) => {
     try {
-      const wasmPath = new URL('../node_modules/hop-crypto/hop_crypto_bg.wasm', import.meta.url);
-      const wasmBuffer = fs.readFileSync(fileURLToPath(wasmPath));
-      // Convert Buffer to Base64 String
-      const base64Wasm = wasmBuffer.toString('base64');
+      let genIdentity = this.anchorDawn.generateMasterIdentity(o.data.pwd, o.data.entropy)
+      console.log('genIdentity:', genIdentity)
       let wasmMessage = {
         type: 'account',
-        action: 'crypto-wasm-binary',
-        data: base64Wasm, // Now a safe JSON string
+        action: 'crypto-wasm-pubkey',
+        data: genIdentity, // Now a safe JSON string
         bbid: o.bbid
-      };
-      
+      }; 
       this.sendSocketMessage(JSON.stringify(wasmMessage));
     } catch (err) {
       console.error('Error sending crypto wasm:', err);
@@ -511,7 +552,8 @@ class HOP extends EventEmitter {
     if (o.action === 'verify') {
       const pubkey = new Uint8Array(Buffer.from(o.data.pubkey, 'hex'))
       const sig = new Uint8Array(Buffer.from(o.data.sig, 'hex'))
-      const isValid = verify_coherence(pubkey, o.data.msg, sig)
+      const wasm = await import('hop-crypto')
+      const isValid = wasm.verify_coherence(pubkey, o.data.msg, sig)
       
       let reply = {
         type: 'crypto-reply',
@@ -522,6 +564,59 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(reply))
     }
   }
+
+  verifyAndConnect = async (verData) => {
+    console.log('verifyAndConnect', verData)
+    const verDataObj = typeof verData === 'string' ? JSON.parse(verData) : verData
+    console.log('verData keys:', Object.keys(verDataObj))
+    
+    if (verDataObj.pwd) {
+      console.log('Unlocking peer with password...')
+      try {
+        const pubKey = await this.unlockPeer(verDataObj.pwd)
+        console.log('Peer unlocked successfully:', pubKey)
+        return true
+      } catch (err) {
+        console.error('Failed to unlock peer during connection:', err)
+        return false
+      }
+    }
+
+    const targetPubKey = verDataObj.pubkey || verDataObj.publicKey || verDataObj.key
+  // 1. Internal WASM Check: Does the hash match our loaded module?
+
+  // const internalHash = await getWasmHash();
+  // if (internalHash !== verData.wasmHash) throw new Error("WASM Tamper Detected");
+
+
+  // 2. Identity Check: Is this a valid Ed25519 key?
+  await this.anchorDawn.initWASM()
+  const dummySeed = new Uint8Array(32);
+  dummySeed.fill(1); // Ensure it's not all zeros
+  const keypair = new SovereignKeypair(dummySeed);
+  const pubkey = keypair.get_public_key();
+  console.log(pubkey)
+  const HOPkeyHex = Buffer.from(pubkey).toString('hex');
+  console.log(HOPkeyHex)
+  console.log(targetPubKey)
+  let isValid = false
+  if (HOPkeyHex === targetPubKey) {
+    isValid = true
+  };
+  console.log('valid trus???', isValid)
+  if (isValid === true) {
+    // bring store to life
+    this.DataNetwork = new HolepunchHOP(this.options.storename)
+    // this.DataNetwork.startStores()
+    // auth verified -- get AI agent options
+    // this.BBRoute.liveBBAI.hopLearn.openOrchestra()
+    // 3. Activation: ONLY NOW do we trigger the P2P flows
+    console.log('bring cog glue and PtoP plumbing to life')
+    // await startHolepunch(publicKey);
+    // await initiateLifeStrapSync(); // Cues, BESearch, etc.
+  }
+  return true;
+}
 
   /**
   * server & websocket
