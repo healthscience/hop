@@ -60,22 +60,17 @@ class HOP extends EventEmitter {
   */
   anchorHOP = async function  () {
     let dawnStatus = await this.anchorDawn.initialize()
-    console.log('dawnStatus')
-    console.log(dawnStatus)
     if (dawnStatus.type === 'STATUS_GENESIS') {
-      console.log('anchor genesis')
       let anchorMessage = {}
       anchorMessage.type = 'account'
       anchorMessage.action = 'hop-anchor'
       anchorMessage.data = { anchor: dawnStatus, jwt: this.hoptoken }
-      console.log('anchor message')
       this.sendSocketMessage(JSON.stringify(anchorMessage))
     } else if (dawnStatus.type === 'STATUS_LOCKED') {
       let anchorMessage = {}
       anchorMessage.type = 'account'
       anchorMessage.action = 'hop-locked'
       anchorMessage.data = { anchor: dawnStatus, jwt: this.hoptoken }
-      console.log('anchor message')
       this.sendSocketMessage(JSON.stringify(anchorMessage))
     }
   }
@@ -127,8 +122,6 @@ class HOP extends EventEmitter {
       await this.listenLibrary()
       await this.listenLibrarySF()
       await this.listenSF()
-
-      console.log('Peer unlocked and P2P network ready:', pubKey)
       return pubKey
     } catch (err) {
       console.error('Failed to unlock peer:', err)
@@ -194,15 +187,14 @@ class HOP extends EventEmitter {
         this.SafeRoute.setWebsocket(ws)
         this.BBRoute.setWebsocket(ws)
       } else {
-        console.log('Anchor is not ready')
         await this.anchorHOP()
       }
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', async (msg) => {
-        console.log('HOP message received')
+        // console.log('HOP message received')
         const o = JSON.parse(msg)
-        console.log(o)
+        // console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
           await this.messageAuth(o)
@@ -270,7 +262,6 @@ class HOP extends EventEmitter {
   listenLibrary = async function () {
     this.LibRoute.on('library-data', async (data) => {
       // need to inform beebee and prepare HQB for SF
-      console.log('data in librayr now pass to safelfow ----')
       let bbMessage = {}
       bbMessage.type = 'bbai-reply'
       bbMessage.reftype = 'ignore'
@@ -462,7 +453,6 @@ class HOP extends EventEmitter {
       // In a real scenario, we might sign the intent and then verify it
       // For now, we'll just proceed to start stores if the intent is present
       if (o.data && o.data.intent) {
-        console.log('Sign and verify intent:', o.data.intent)
         let verifyMessage = {
           type: 'account',
           action: 'sign-verify-complete',
@@ -490,7 +480,6 @@ class HOP extends EventEmitter {
           this.sendSocketMessage(JSON.stringify(authMessage))
           return
         }
-        console.log('Schnorr signature verified successfully')
       } catch (err) {
         console.error('Error during signature verification:', err)
         return
@@ -506,7 +495,6 @@ class HOP extends EventEmitter {
   WASMcryptoID = async(o) => {
     try {
       let genIdentity = await this.anchorDawn.generateMasterIdentity(o.data.pwd, o.data.entropy)
-      console.log('genIdentity:', genIdentity)
       let wasmMessage = {
         type: 'account',
         action: 'crypto-wasm-pubkey',
@@ -566,15 +554,11 @@ class HOP extends EventEmitter {
   }
 
   verifyAndConnect = async (verData) => {
-    console.log('verifyAndConnect', verData)
     const verDataObj = typeof verData === 'string' ? JSON.parse(verData) : verData
-    console.log('verData keys:', Object.keys(verDataObj))
     
     if (verDataObj.pwd) {
-      console.log('Unlocking peer with password...')
       try {
         const pubKey = await this.unlockPeer(verDataObj.pwd)
-        console.log('Peer unlocked successfully:', pubKey)
           let verifyMessage = {
           type: 'account',
           action: 'unlocked-verify-complete',
@@ -602,25 +586,16 @@ class HOP extends EventEmitter {
   dummySeed.fill(1); // Ensure it's not all zeros
   const keypair = new SovereignKeypair(dummySeed);
   const pubkey = keypair.get_public_key();
-  console.log(pubkey)
+
   const HOPkeyHex = Buffer.from(pubkey).toString('hex');
-  console.log(HOPkeyHex)
-  console.log(targetPubKey)
   let isValid = false
   if (HOPkeyHex === targetPubKey) {
     isValid = true
   };
-  console.log('valid trus???', isValid)
+
   if (isValid === true) {
     // bring store to life
     this.DataNetwork = new HolepunchHOP(this.options.storename)
-    // this.DataNetwork.startStores()
-    // auth verified -- get AI agent options
-    // this.BBRoute.liveBBAI.hopLearn.openOrchestra()
-    // 3. Activation: ONLY NOW do we trigger the P2P flows
-    console.log('bring cog glue and PtoP plumbing to life')
-    // await startHolepunch(publicKey);
-    // await initiateLifeStrapSync(); // Cues, BESearch, etc.
   }
   return true;
 }

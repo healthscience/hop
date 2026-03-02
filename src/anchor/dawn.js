@@ -61,7 +61,6 @@ class AnchorDawn extends EventEmitter {
         const wasmPath = new URL('../../node_modules/hop-crypto/hop_crypto_bg.wasm', import.meta.url)
         const wasmBuffer = await fs.readFile(fileURLToPath(wasmPath))
         const wasmExports = initSync({ module: wasmBuffer })
-        console.log('hop-crypto WASM initialized (Node.js)')
         if (wasmExports.init_panic_hook) wasmExports.init_panic_hook()
         return wasmExports
       } else {
@@ -125,7 +124,6 @@ class AnchorDawn extends EventEmitter {
   */
   generateMasterIdentity = async function (password, salt) {
     const IDENTITY_PATH = this.getIdentityPath()
-    console.log('IDENTITY_PATH', IDENTITY_PATH)
     // Security: Ensure we don't overwrite an existing seed
     try {
       await fs.access(IDENTITY_PATH)
@@ -149,7 +147,6 @@ class AnchorDawn extends EventEmitter {
     }
 
     const masterSeed = derive_master_seed(password, saltBuffer)
-    console.log('masterSeed length:', masterSeed.length, 'first 4 bytes:', masterSeed.subarray(0, 4))
     
     // 2. Identity Birth
     // Now we use that Seed to initialize the Sovereign Keypair
@@ -247,7 +244,6 @@ class AnchorDawn extends EventEmitter {
     }
 
     const encryptionKey = derive_master_seed(password, saltBuffer)
-    console.log('encryptionKey length:', encryptionKey.length)
 
     // 4. Decrypt
     const decipher = crypto.createDecipheriv('aes-256-gcm', encryptionKey, iv)
