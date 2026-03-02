@@ -91,7 +91,7 @@ class HOP extends EventEmitter {
       this.HeliClock = this.anchorDawn.HeliClock
       
       // Initialize HolepunchHOP or other P2P logic here with masterSeed
-      this.DataNetwork = {} // new HolepunchHOP(this.options.storename, masterSeed)
+      this.DataNetwork = new HolepunchHOP(this.options.storename, masterSeed)
       
       // Build the Context Object (The Nervous System)
       const wasm = await import('hop-crypto')
@@ -122,7 +122,7 @@ class HOP extends EventEmitter {
       this.BBRoute = new BBRoute(this.context)
       this.context.bbai = this.BBRoute
 
-      // await this.listenNetwork()
+      await this.listenNetwork()
       await this.listenBeebee()
       await this.listenLibrary()
       await this.listenLibrarySF()
@@ -205,7 +205,7 @@ class HOP extends EventEmitter {
         console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
-          this.messageAuth(o)
+          await this.messageAuth(o)
         } else {
           if (this.hoptoken === o.jwt)
           // listen of close messages
@@ -295,7 +295,7 @@ class HOP extends EventEmitter {
       await this.LibRoute.libManager.systemsContracts()
     })
 
-    /*this.DataNetwork.on('hcores-active', () => {
+    this.DataNetwork.on('hcores-active', () => {
       this.hoptoken =  uuidv4()
       let authMessage = {}
       authMessage.type = 'account'
@@ -304,7 +304,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(authMessage))
       // allow other components have access to data
       this.processListen()
-    })*/
+    })
 
   }    
 
@@ -447,9 +447,9 @@ class HOP extends EventEmitter {
   * @method messageAuth
   *
   */
-  messageAuth = (o) => {
+  messageAuth = async (o) => {
     if (o.action === 'request-crypto-wasm') {
-      this.WASMcryptoID(o)
+      await this.WASMcryptoID(o)
       return
     }
 
@@ -503,9 +503,9 @@ class HOP extends EventEmitter {
   * @method WASMcryptoID
   *
   */
-  WASMcryptoID = (o) => {
+  WASMcryptoID = async(o) => {
     try {
-      let genIdentity = this.anchorDawn.generateMasterIdentity(o.data.pwd, o.data.entropy)
+      let genIdentity = await this.anchorDawn.generateMasterIdentity(o.data.pwd, o.data.entropy)
       console.log('genIdentity:', genIdentity)
       let wasmMessage = {
         type: 'account',
@@ -575,6 +575,13 @@ class HOP extends EventEmitter {
       try {
         const pubKey = await this.unlockPeer(verDataObj.pwd)
         console.log('Peer unlocked successfully:', pubKey)
+          let verifyMessage = {
+          type: 'account',
+          action: 'unlocked-verify-complete',
+          data: { verified: true, unlocked: true },
+          bbid: ''
+        }
+        this.sendSocketMessage(JSON.stringify(verifyMessage))
         return true
       } catch (err) {
         console.error('Failed to unlock peer during connection:', err)

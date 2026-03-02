@@ -125,7 +125,7 @@ class AnchorDawn extends EventEmitter {
   */
   generateMasterIdentity = async function (password, salt) {
     const IDENTITY_PATH = this.getIdentityPath()
-
+    console.log('IDENTITY_PATH', IDENTITY_PATH)
     // Security: Ensure we don't overwrite an existing seed
     try {
       await fs.access(IDENTITY_PATH)
