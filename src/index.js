@@ -26,8 +26,10 @@ import SfRoute from './safeflow/index.js'
 import LibraryRoute from './library/index.js'
 import BBRoute from './bbai/index.js'
 import DmlRoute from './dml/index.js'
+import HeliRoute from './heliclock/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
+import HeliLocation from 'heliclock-hop'
 import { SovereignKeypair } from 'hop-crypto'
 
 class HOP extends EventEmitter {
@@ -38,19 +40,38 @@ class HOP extends EventEmitter {
     super()
     this.hoptoken = ''
     this.options = options
+    this.heliLocation = new HeliLocation()
+    this.HeliClock = {}
     this.anchorDawn = new AnchorDawn(this.options.storename)
     this.MessagesFlow = new MessageFlow()
-    this.DataNetwork = {} // new HolepunchHOP(this.options.storename)
+    this.DataNetwork = {}
     this.wsocket = {}
     this.socketCount = 0
     this.BBRoute = {}
     this.SafeRoute = {}
     this.LibRoute = {}
     this.DmlRoute = {}
+    this.HeliRoute = {}
     this.origin
     this.anchorState = false
+    this.initHeliClock()
     this.hopConnect()
     this.sockcount = 0
+  }
+
+  /**
+   * initialize HeliClock WASM
+   * @method initHeliClock
+   *
+  */
+  initHeliClock = async function () {
+    try {
+      await this.heliLocation.init()
+      this.HeliClock = this.heliLocation.getEngine()
+      this.anchorDawn.setHeliClock(this.HeliClock)
+    } catch (err) {
+      console.warn('HeliClock init failed or already initialized', err)
+    }
   }
 
   /**
@@ -87,11 +108,14 @@ class HOP extends EventEmitter {
       
       // Initialize HolepunchHOP or other P2P logic here with masterSeed
       this.DataNetwork = new HolepunchHOP(this.options.storename, masterSeed)
+      this.DataNetwork.setWebsocket(this.wsocket)
+      this.DataNetwork.startStores()
       
       // Build the Context Object (The Nervous System)
       const wasm = await import('hop-crypto')
       this.context = {
         heliclock: this.HeliClock,
+        heliLocation: this.heliLocation,
         crypto: { verify_coherence: wasm.verify_coherence },
         network: this.DataNetwork,
         safeflow: null,
@@ -116,6 +140,10 @@ class HOP extends EventEmitter {
 
       this.BBRoute = new BBRoute(this.context)
       this.context.bbai = this.BBRoute
+
+      this.HeliRoute = new HeliRoute(this.context)
+      this.HeliRoute.setWebsocket(this.wsocket)
+      // await this.HeliRoute.initHeliData()  // TODO REVIEW
 
       await this.listenNetwork()
       await this.listenBeebee()
@@ -180,7 +208,7 @@ class HOP extends EventEmitter {
     wsServer.on('connection', async (ws) => {
       this.sockcount++ 
       this.wsocket = ws
-      // if first peer experience wait until anchoris complete
+      // if first peer experience wait until anchor is complete
       if (this.anchorState === true) {
         this.DataNetwork.setWebsocket(ws)
         this.LibRoute.setWebsocket(ws)
@@ -192,15 +220,17 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', async (msg) => {
-        // console.log('HOP message received')
+        console.log('HOP message received')
         const o = JSON.parse(msg)
-        // console.log(o)
+        console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
           await this.messageAuth(o)
         } else {
+          console.log('hoptoken', this.hoptoken)
+          console.log('o.jwt', o.jwt)
           if (this.hoptoken === o.jwt)
-          // listen of close messages
+          // listen of close / messages
           if (o.type.trim() === 'close') {
             this.closeHOP()
           } else {
@@ -517,6 +547,8 @@ class HOP extends EventEmitter {
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
       await this.BBRoute.bbAIpath(messageRoute)
+    } else if (messageRoute.type === 'heliclock') {
+      await this.HeliRoute.heliPath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
       this.SafeRoute.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
@@ -596,6 +628,8 @@ class HOP extends EventEmitter {
   if (isValid === true) {
     // bring store to life
     this.DataNetwork = new HolepunchHOP(this.options.storename)
+    this.DataNetwork.setWebsocket(this.wsocket)
+    this.DataNetwork.startStores()
   }
   return true;
 }

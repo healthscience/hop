@@ -15,7 +15,6 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import crypto from 'crypto'
 import b4a from 'b4a'
-import initHeli, { HeliCore } from 'heliclock-hop'
 import initCrypto, { SovereignKeypair, initSync, derive_master_seed } from 'hop-crypto'
 
 class AnchorDawn extends EventEmitter {
@@ -26,6 +25,15 @@ class AnchorDawn extends EventEmitter {
     this.setStorename(storeName)
     this.wasmCrypto = {}
     this.HeliClock = {}
+  }
+
+  /**
+   * set HeliClock
+   * @method setHeliClock
+   *
+  */
+  setHeliClock = function (heliClock) {
+    this.HeliClock = heliClock
   }
 
   /**
@@ -47,14 +55,6 @@ class AnchorDawn extends EventEmitter {
    *
   */
   initWASM = async function () {
-    // Initialize HeliClock WASM
-    try {
-      await initHeli()
-      this.HeliClock = HeliCore
-    } catch (err) {
-      console.warn('HeliClock init failed or already initialized', err)
-    }
-
     // Initialize hop-crypto WASM
     try {
       if (typeof window === 'undefined') {
