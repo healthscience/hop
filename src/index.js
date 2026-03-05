@@ -143,8 +143,8 @@ class HOP extends EventEmitter {
 
       this.HeliRoute = new HeliRoute(this.context)
       this.HeliRoute.setWebsocket(this.wsocket)
-      // await this.HeliRoute.initHeliData()  // TODO REVIEW
 
+      await this.listenHeliclock()
       await this.listenNetwork()
       await this.listenBeebee()
       await this.listenLibrary()
@@ -227,8 +227,6 @@ class HOP extends EventEmitter {
         if (o.type.trim() === 'hop-auth') {
           await this.messageAuth(o)
         } else {
-          console.log('hoptoken', this.hoptoken)
-          console.log('o.jwt', o.jwt)
           if (this.hoptoken === o.jwt)
           // listen of close / messages
           if (o.type.trim() === 'close') {
@@ -257,6 +255,22 @@ class HOP extends EventEmitter {
   }
 
   /**
+  * on start gather heliclock data
+  * @method startDataHeliClock
+  *
+  */
+  startDataHeliClock = async function () {
+    let projectionArcs = await this.HeliRoute.initHeliData()
+    // 1 degree segment emitter
+    this.HeliRoute.heliLocation.updateHeliState()
+    let heliclockData = {}
+    heliclockData.type = 'heliclock'
+    heliclockData.action = 'peer-heli-signature'
+    heliclockData.data = projectionArcs
+    this.wsocket.send(JSON.stringify(heliclockData))
+  }
+
+  /**
   * listener from BeeBee router
   * @method listenBeebee
   *
@@ -267,6 +281,23 @@ class HOP extends EventEmitter {
     })
   }  
   
+  /**
+  * listener for HeliClock
+  * @method listenHeliclock
+  *
+  */
+  listenHeliclock = async function () {
+    this.HeliRoute.on('HELI_DEGREE_PULSE', (data) => {
+    let heliclockData = {}
+    heliclockData.type = 'heliclock'
+    heliclockData.action = 'peer-heli-wedge'
+    heliclockData.data = data
+    this.wsocket.send(JSON.stringify(heliclockData))
+    })
+  }  
+
+
+
   /**
   * listener from Library SF router
   * @method listenLibrarySF
@@ -316,7 +347,7 @@ class HOP extends EventEmitter {
       await this.LibRoute.libManager.systemsContracts()
     })
 
-    this.DataNetwork.on('hcores-active', () => {
+    this.DataNetwork.on('hcores-active', async () => {
       this.hoptoken =  uuidv4()
       let authMessage = {}
       authMessage.type = 'account'
@@ -325,6 +356,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(authMessage))
       // allow other components have access to data
       this.processListen()
+      await this.startDataHeliClock()
     })
 
   }    

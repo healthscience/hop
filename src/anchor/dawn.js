@@ -28,7 +28,7 @@ class AnchorDawn extends EventEmitter {
   }
 
   /**
-   * set HeliClock
+   * set HeliClock  passed in but not used. maybe to form time stamping with signature??? TODO
    * @method setHeliClock
    *
   */
