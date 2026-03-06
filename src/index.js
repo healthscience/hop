@@ -104,57 +104,64 @@ class HOP extends EventEmitter {
   unlockPeer = async function (password) {
     try {
       const { pubKey, masterSeed } = await this.anchorDawn.unlockAndActivate(password)
-      this.HeliClock = this.anchorDawn.HeliClock
+      console.log('check pubkey-------------------')
+      console.log(pubKey)
+      if (pubKey !== false) {
+        this.HeliClock = this.anchorDawn.HeliClock
+        
+        // Initialize HolepunchHOP or other P2P logic here with masterSeed
+        this.DataNetwork = new HolepunchHOP(this.options.storename, masterSeed)
+        this.DataNetwork.setWebsocket(this.wsocket)
+        this.DataNetwork.startStores()
+        
+        // Build the Context Object (The Nervous System)
+        const wasm = await import('hop-crypto')
+        this.context = {
+          heliclock: this.HeliClock,
+          heliLocation: this.heliLocation,
+          crypto: { verify_coherence: wasm.verify_coherence },
+          network: this.DataNetwork,
+          safeflow: null,
+          besearch: null,
+          bbai: null,
+          library: null
+        }
+
+        // Attach Context to DataNetwork for ECS visibility
+        this.DataNetwork.context = this.context
+
+        this.LibRoute = new LibraryRoute(this.DataNetwork)
+        this.context.library = this.LibRoute
+
+        this.SafeRoute = new SfRoute(this.context)
+        this.context.safeflow = this.SafeRoute
+
+        this.DmlRoute = new DmlRoute(this.DataNetwork)
+
+        this.BesearchRoute = new BesearchRoute(this.context)
+        this.context.besearch = this.BesearchRoute
+
+        this.BBRoute = new BBRoute(this.context)
+        this.context.bbai = this.BBRoute
+
+        this.HeliRoute = new HeliRoute(this.context)
+        this.HeliRoute.setWebsocket(this.wsocket)
+
+        await this.listenHeliclock()
+        await this.listenNetwork()
+        await this.listenBeebee()
+        await this.listenLibrary()
+        await this.listenLibrarySF()
+        await this.listenSF()
+        return pubKey
       
-      // Initialize HolepunchHOP or other P2P logic here with masterSeed
-      this.DataNetwork = new HolepunchHOP(this.options.storename, masterSeed)
-      this.DataNetwork.setWebsocket(this.wsocket)
-      this.DataNetwork.startStores()
-      
-      // Build the Context Object (The Nervous System)
-      const wasm = await import('hop-crypto')
-      this.context = {
-        heliclock: this.HeliClock,
-        heliLocation: this.heliLocation,
-        crypto: { verify_coherence: wasm.verify_coherence },
-        network: this.DataNetwork,
-        safeflow: null,
-        besearch: null,
-        bbai: null,
-        library: null
+      } else {
+        return false
       }
-
-      // Attach Context to DataNetwork for ECS visibility
-      this.DataNetwork.context = this.context
-
-      this.LibRoute = new LibraryRoute(this.DataNetwork)
-      this.context.library = this.LibRoute
-
-      this.SafeRoute = new SfRoute(this.context)
-      this.context.safeflow = this.SafeRoute
-
-      this.DmlRoute = new DmlRoute(this.DataNetwork)
-
-      this.BesearchRoute = new BesearchRoute(this.context)
-      this.context.besearch = this.BesearchRoute
-
-      this.BBRoute = new BBRoute(this.context)
-      this.context.bbai = this.BBRoute
-
-      this.HeliRoute = new HeliRoute(this.context)
-      this.HeliRoute.setWebsocket(this.wsocket)
-
-      await this.listenHeliclock()
-      await this.listenNetwork()
-      await this.listenBeebee()
-      await this.listenLibrary()
-      await this.listenLibrarySF()
-      await this.listenSF()
-      return pubKey
     } catch (err) {
-      console.error('Failed to unlock peer:', err)
-      throw err
-    }
+        console.error('Failed to unlock peer:', err)
+        throw err
+      }
   }
 
   /**
@@ -260,14 +267,10 @@ class HOP extends EventEmitter {
   *
   */
   startDataHeliClock = async function () {
+    console.log('start clcock')
     let projectionArcs = await this.HeliRoute.initHeliData()
     // 1 degree segment emitter
     this.HeliRoute.heliLocation.updateHeliState()
-    let heliclockData = {}
-    heliclockData.type = 'heliclock'
-    heliclockData.action = 'peer-heli-signature'
-    heliclockData.data = projectionArcs
-    this.wsocket.send(JSON.stringify(heliclockData))
   }
 
   /**
@@ -287,16 +290,30 @@ class HOP extends EventEmitter {
   *
   */
   listenHeliclock = async function () {
-    this.HeliRoute.on('HELI_DEGREE_PULSE', (data) => {
+    this.HeliRoute.heliLocation.on('HELI_DEGREE_PULSE', (data) => {
     let heliclockData = {}
     heliclockData.type = 'heliclock'
     heliclockData.action = 'peer-heli-wedge'
     heliclockData.data = data
     this.wsocket.send(JSON.stringify(heliclockData))
     })
+
+    this.HeliRoute.heliLocation.on('HELI_DEGREE_SIGNATURE', (data) => {
+    let heliclockData = {}
+    heliclockData.type = 'heliclock'
+    heliclockData.action = 'heli-birth-signature'
+    heliclockData.data = data
+    this.wsocket.send(JSON.stringify(heliclockData))
+    })
+
+    this.HeliRoute.on('heli-clock-start', (data) => {
+      let heliclockData = {}
+      heliclockData.type = 'heliclock'
+      heliclockData.action = 'peer-heli-signature'
+      heliclockData.data = projectionArcs
+      this.wsocket.send(JSON.stringify(heliclockData))
+    })
   }  
-
-
 
   /**
   * listener from Library SF router
@@ -623,11 +640,21 @@ class HOP extends EventEmitter {
     if (verDataObj.pwd) {
       try {
         const pubKey = await this.unlockPeer(verDataObj.pwd)
-          let verifyMessage = {
-          type: 'account',
-          action: 'unlocked-verify-complete',
-          data: { verified: true, unlocked: true },
-          bbid: ''
+        let verifyMessage = {}
+        if ( pubKey !== false) {
+          verifyMessage = {
+            type: 'account',
+            action: 'unlocked-verify-complete',
+            data: { verified: true, unlocked: true },
+            bbid: ''
+          } 
+        } else {
+          console.log('passsssword feedback for beebee bentoboxds')
+          let HOPgatekeeper = {}
+          HOPgatekeeper.type = 'account'
+          HOPgatekeeper.action = 'hop-wrong-password'
+          HOPgatekeeper.data = { feedback: 'Wrong password entered.' }
+          this.wsocket.send(JSON.stringify(HOPgatekeeper))
         }
         this.sendSocketMessage(JSON.stringify(verifyMessage))
         return true

@@ -243,29 +243,35 @@ class AnchorDawn extends EventEmitter {
       saltBuffer = (typeof salt === 'string') ? b4a.from(salt) : salt
     }
 
-    const encryptionKey = derive_master_seed(password, saltBuffer)
+    try {
+      const encryptionKey = derive_master_seed(password, saltBuffer)
 
-    // 4. Decrypt
-    const decipher = crypto.createDecipheriv('aes-256-gcm', encryptionKey, iv)
-    decipher.setAuthTag(authTag)
-    
-    let masterSeed = decipher.update(encryptedSeed)
-    masterSeed = Buffer.concat([masterSeed, decipher.final()])
+      // 4. Decrypt
+      const decipher = crypto.createDecipheriv('aes-256-gcm', encryptionKey, iv)
+      decipher.setAuthTag(authTag)
+      
+      let masterSeed = decipher.update(encryptedSeed)
+      masterSeed = Buffer.concat([masterSeed, decipher.final()])
 
-    // 5. Initialize Sovereign Keypair
-    const pair = new SovereignKeypair(masterSeed)
-    const pubKey = pair.get_public_key()
+      // 5. Initialize Sovereign Keypair
+      const pair = new SovereignKeypair(masterSeed)
+      const pubKey = pair.get_public_key()
 
-    // 6. Clean up
-    if (wasmExports.zeroize) {
-      wasmExports.zeroize(encryptionKey)
-    } else if (encryptionKey.fill) {
-      encryptionKey.fill(0)
+      // 6. Clean up
+      if (wasmExports.zeroize) {
+        wasmExports.zeroize(encryptionKey)
+      } else if (encryptionKey.fill) {
+        encryptionKey.fill(0)
+      }
+      // masterSeed.fill(0) // Keep if needed for P2P init, but usually we just need the pair
+
+      return { pubKey: b4a.toString(pubKey, 'hex'), masterSeed }
+    } catch (err) {
+      console.log('erreor cath')
+      return { pubKey: false }
     }
-    // masterSeed.fill(0) // Keep if needed for P2P init, but usually we just need the pair
-
-    return { pubKey: b4a.toString(pubKey, 'hex'), masterSeed }
   }
+
 
 }
 

@@ -83,28 +83,24 @@ class HeliRoute extends EventEmitter {
   * @method initHeliData
   *
   */
-  initHeliData = async function () {
-    try {
-      let heliClockStart = {}
-      // Get the clock state from Holepunch-HOP datastore
-      const clockState = await this.holepunchLive.BeeData.getHeliClock('peer/home')
-      if (clockState) {
-        console.log('clock state saved')
-        console.log(clockState)
-        // If we have a saved state, we might need to re-hydrate the WASM HeliClock
-        // this.heliclock.load_state(clockState)  NO SUCH FUNCTION
-        console.log('HeliClock state loaded')
-        heliClockStart.home = clockState
+  async initHeliData() {
+      try {
+          const clockState = await this.holepunchLive.BeeData.getHeliClock('peer/home');
+          
+          if (clockState) {
+              // HYDRATE THE ENGINE: Tell HeliLocation to start the pulse
+              this.heliLocation.activateSolarHeartbeat(clockState.value.data);
+              
+              // Return to UI
+              return {
+                  home: 'wait',
+                  projections: await this.holepunchLive.BeeData.getHeliClockHistory()
+              };
+          }
+          return null;
+      } catch (err) {
+          console.error('Failed to initialize HeliClock data', err);
       }
-
-      // Get project entries/projections
-      const projections = await this.holepunchLive.BeeData.getHeliClockHistory()
-      console.log('projection for heli clock and history')
-      heliClockStart.projections = projections
-      return heliClockStart
-    } catch (err) {
-      console.error('Failed to initialize HeliClock data', err)
-    }
   }
 
   /**
