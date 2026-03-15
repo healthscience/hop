@@ -96,8 +96,6 @@ class SfRoute extends EventEmitter {
   *
   */
   newSafeflow = async function (message) {
-    console.log('sfsfsfsfsfsfsfssfsf------------')
-    console.log(message)
     // send summary info that SafeFLow has received NXP bundle
     let ecsData = await this.SafeFlow.startFlow(message.data)
     let summaryECS = {}
@@ -192,8 +190,6 @@ class SfRoute extends EventEmitter {
       // then get results to use
       let checkResults = {}
       const checkKBledger = await this.holepunchLive.BeeData.peerLedgerProof(data)
-      console.log('ledger check=================')
-      console.log(checkKBledger)
       if (checkKBledger !== null) {
         checkResults = await this.holepunchLive.BeeData.peerResultsItem(data.resultuuid)
       } else {
@@ -213,9 +209,6 @@ class SfRoute extends EventEmitter {
   *
   */
    resultsCallback =  function (entity, data) {
-    console.log('results hbeee back for match')
-    console.log(entity)
-    console.log(data)
     // callbacks for datastores
     let resultMatch = {}
     if (data !== null) {

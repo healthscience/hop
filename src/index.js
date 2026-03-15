@@ -104,8 +104,6 @@ class HOP extends EventEmitter {
   unlockPeer = async function (password) {
     try {
       const { pubKey, masterSeed } = await this.anchorDawn.unlockAndActivate(password)
-      console.log('check pubkey-------------------')
-      console.log(pubKey)
       if (pubKey !== false) {
         this.HeliClock = this.anchorDawn.HeliClock
         
@@ -135,6 +133,7 @@ class HOP extends EventEmitter {
 
         this.SafeRoute = new SfRoute(this.context)
         this.context.safeflow = this.SafeRoute
+        this.SafeRoute.setWebsocket(this.wsocket)
 
         this.DmlRoute = new DmlRoute(this.DataNetwork)
 
@@ -143,6 +142,7 @@ class HOP extends EventEmitter {
 
         this.BBRoute = new BBRoute(this.context)
         this.context.bbai = this.BBRoute
+        this.BBRoute.setWebsocket(this.wsocket)
 
         this.HeliRoute = new HeliRoute(this.context)
         this.HeliRoute.setWebsocket(this.wsocket)

@@ -44,6 +44,7 @@ class BBRoute extends EventEmitter {
   *
   */
    setWebsocket = function (ws) {
+    console.log('set webcocket  beebee ai')
     this.wsocket = ws
     this.wlist.push(ws)
   }
@@ -120,6 +121,8 @@ class BBRoute extends EventEmitter {
     })
 
     this.liveBBAI.on('beebee-response', (replyData) => {
+      console.log('beebee-response --form websocket message')
+      console.log(replyData)
       if (replyData.query === true) {
         // need to pass to SafeFlow
         console.log('safeflow QUERY')
@@ -154,9 +157,11 @@ class BBRoute extends EventEmitter {
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))        
       } else if (replyData.type === 'bbai-reply' && replyData.action === 'npl-reply') {
+        console.log('gbeeebee lens reply')
         let bbReply = {}
         bbReply.type = 'bbai-reply'
         bbReply.action = 'npl-reply'
+        bbReply.task = replyData.task
         bbReply.data = replyData.data // This contains { text, lens }
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))
