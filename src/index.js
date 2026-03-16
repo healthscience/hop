@@ -130,6 +130,7 @@ class HOP extends EventEmitter {
 
         this.LibRoute = new LibraryRoute(this.DataNetwork)
         this.context.library = this.LibRoute
+        this.LibRoute.setWebsocket(this.wsocket)
 
         this.SafeRoute = new SfRoute(this.context)
         this.context.safeflow = this.SafeRoute

@@ -80,8 +80,6 @@ class BBRoute extends EventEmitter {
         await this.liveBBAI.agentsCMP.coordinationAgents(message)
       } else if (message.action === 'agent-network-task') {
         // start build DML evidence here???
-        console.log('dml path')
-        console.log(message)
         await this.liveBBAI.agentsCMP.coordinationDML(message)
       } else if (message.action === 'predict-future') {
         // handover to the model
@@ -121,12 +119,8 @@ class BBRoute extends EventEmitter {
     })
 
     this.liveBBAI.on('beebee-response', (replyData) => {
-      console.log('beebee-response --form websocket message')
-      console.log(replyData)
       if (replyData.query === true) {
         // need to pass to SafeFlow
-        console.log('safeflow QUERY')
-        console.log(replyData)
         this.emit('safeflow-query', replyData)
         let bbReply = {}
         bbReply.type = 'bbai-reply'
@@ -158,11 +152,13 @@ class BBRoute extends EventEmitter {
         this.bothSockets(JSON.stringify(bbReply))        
       } else if (replyData.type === 'bbai-reply' && replyData.action === 'npl-reply') {
         console.log('gbeeebee lens reply')
+        // use a template for beebee to deliver support / helpful info.
+        let beebeeInfo = {} // this.beebeeTempate('lens', replyData.data)
         let bbReply = {}
         bbReply.type = 'bbai-reply'
         bbReply.action = 'npl-reply'
         bbReply.task = replyData.task
-        bbReply.data = replyData.data // This contains { text, lens }
+        bbReply.data = replyData.data // TODO UPdate to beebeeInfo  extraction plus beebee message for diaglouge
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))
       } else {
