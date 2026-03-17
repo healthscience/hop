@@ -14,11 +14,11 @@ import LibraryManager from 'library-hop'
 
 class LibraryRoute extends EventEmitter {
 
-  constructor(Holepunch) {
+  constructor(contextAgents) {
     super()
     this.live = true
-    this.libManager = new LibraryManager(Holepunch)
-    this.liveHolepunch = Holepunch
+    this.holepunchLive = contextAgents.network
+    this.libManager = new LibraryManager(this.holepunchLive, contextAgents)
     this.wsocket = {}
     this.wlist = []
     this.libraryListen()
@@ -57,10 +57,10 @@ class LibraryRoute extends EventEmitter {
     // initial connection with warm peer
     this.libManager.on('complete-warmpeer', async (pubkey) => {
       // get latest list and pass on to holepunch-hop
-      let updatePeersNetwork = await this.liveHolepunch.BeeData.getPeersHistory()
-      this.liveHolepunch.Peers.latestPeerNetwork(updatePeersNetwork)
+      let updatePeersNetwork = await this.holepunchLive.BeeData.getPeersHistory()
+      this.holepunchLive.Peers.latestPeerNetwork(updatePeersNetwork)
       // pass on publick key of peer
-      this.liveHolepunch.warmPeerPrepare(pubkey, false)
+      this.holepunchLive.warmPeerPrepare(pubkey, false)
     })
     // invite topic for future reconnect update
     this.libManager.on('complete-topic-save', (data) => {
@@ -79,7 +79,7 @@ class LibraryRoute extends EventEmitter {
       peerNotify.data = data
       this.wsocket.send(JSON.stringify(peerNotify))
       // write back to other peer
-      this.liveHolepunch.topicSaveReturn(data)
+      holepunchLive.topicSaveReturn(data)
     })
     // message for SafeFlow
     this.libManager.on('libsafeflow', (data) => {

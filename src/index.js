@@ -106,54 +106,6 @@ class HOP extends EventEmitter {
       const { pubKey, masterSeed } = await this.anchorDawn.unlockAndActivate(password)
       if (pubKey !== false) {
         this.HeliClock = this.anchorDawn.HeliClock
-        
-        // Initialize HolepunchHOP or other P2P logic here with masterSeed
-        this.DataNetwork = new HolepunchHOP(this.options.storename, masterSeed)
-        this.DataNetwork.setWebsocket(this.wsocket)
-        this.DataNetwork.startStores()
-        
-        // Build the Context Object (The Nervous System)
-        const wasm = await import('hop-crypto')
-        this.context = {
-          heliclock: this.HeliClock,
-          heliLocation: this.heliLocation,
-          crypto: { verify_coherence: wasm.verify_coherence },
-          network: this.DataNetwork,
-          safeflow: null,
-          besearch: null,
-          bbai: null,
-          library: null
-        }
-
-        // Attach Context to DataNetwork for ECS visibility
-        this.DataNetwork.context = this.context
-
-        this.LibRoute = new LibraryRoute(this.DataNetwork)
-        this.context.library = this.LibRoute
-        this.LibRoute.setWebsocket(this.wsocket)
-
-        this.SafeRoute = new SfRoute(this.context)
-        this.context.safeflow = this.SafeRoute
-        this.SafeRoute.setWebsocket(this.wsocket)
-
-        this.DmlRoute = new DmlRoute(this.DataNetwork)
-
-        this.BesearchRoute = new BesearchRoute(this.context)
-        this.context.besearch = this.BesearchRoute
-
-        this.BBRoute = new BBRoute(this.context)
-        this.context.bbai = this.BBRoute
-        this.BBRoute.setWebsocket(this.wsocket)
-
-        this.HeliRoute = new HeliRoute(this.context)
-        this.HeliRoute.setWebsocket(this.wsocket)
-
-        await this.listenHeliclock()
-        await this.listenNetwork()
-        await this.listenBeebee()
-        await this.listenLibrary()
-        await this.listenLibrarySF()
-        await this.listenSF()
         return pubKey
       
       } else {
@@ -163,6 +115,57 @@ class HOP extends EventEmitter {
         console.error('Failed to unlock peer:', err)
         throw err
       }
+  }
+
+  /**
+   *  network personal store live, pass context around
+   *  @method contextAgent
+   *
+  */
+  contextAgent = async function () {
+    // Build the Context Object (The Nervous System)
+    const wasm = await import('hop-crypto')
+    this.context = {
+      heliclock: this.HeliClock,
+      heliLocation: this.heliLocation,
+      crypto: { verify_coherence: wasm.verify_coherence, Encryption },
+      network: this.DataNetwork,
+      safeflow: null,
+      besearch: null,
+      bbai: null,
+      library: null
+    }
+
+    // Attach Context to DataNetwork for ECS visibility
+    this.DataNetwork.context = this.context
+
+    this.LibRoute = new LibraryRoute(this.context)
+    this.context.library = this.LibRoute.libManager
+    this.LibRoute.setWebsocket(this.wsocket)
+
+    this.SafeRoute = new SfRoute(this.context)
+    this.context.safeflow = this.SafeRoute
+    this.SafeRoute.setWebsocket(this.wsocket)
+
+    this.DmlRoute = new DmlRoute(this.DataNetwork)
+
+    this.BesearchRoute = new BesearchRoute(this.context)
+    this.context.besearch = this.BesearchRoute
+
+
+    this.HeliRoute = new HeliRoute(this.context)
+    this.HeliRoute.setWebsocket(this.wsocket)
+
+    this.BBRoute = new BBRoute(this.context)
+    this.context.bbai = this.BBRoute
+    this.BBRoute.setWebsocket(this.wsocket)
+
+    await this.listenHeliclock()
+    await this.listenNetwork()
+    await this.listenBeebee()
+    await this.listenLibrary()
+    await this.listenLibrarySF()
+    await this.listenSF()
   }
 
   /**
@@ -228,9 +231,9 @@ class HOP extends EventEmitter {
       this.wsocket.id = uuidv4()
 
       this.wsocket.on('message', async (msg) => {
-        console.log('HOP message received')
+        // console.log('HOP message received')
         const o = JSON.parse(msg)
-        console.log(o)
+        // console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
           await this.messageAuth(o)
@@ -268,249 +271,9 @@ class HOP extends EventEmitter {
   *
   */
   startDataHeliClock = async function () {
-    console.log('start clcock')
     let projectionArcs = await this.HeliRoute.initHeliData()
     // 1 degree segment emitter
     this.HeliRoute.heliLocation.updateHeliState()
-  }
-
-  /**
-  * listener from BeeBee router
-  * @method listenBeebee
-  *
-  */
-  listenBeebee = async function () {
-    this.BBRoute.on('safeflow-query', async (data) => {
-      await this.SafeRoute.newSafeflow(data)
-    })
-  }  
-  
-  /**
-  * listener for HeliClock
-  * @method listenHeliclock
-  *
-  */
-  listenHeliclock = async function () {
-    this.HeliRoute.heliLocation.on('HELI_DEGREE_PULSE', (data) => {
-    let heliclockData = {}
-    heliclockData.type = 'heliclock'
-    heliclockData.action = 'peer-heli-wedge'
-    heliclockData.data = data
-    this.wsocket.send(JSON.stringify(heliclockData))
-    })
-
-    this.HeliRoute.heliLocation.on('HELI_DEGREE_SIGNATURE', (data) => {
-    let heliclockData = {}
-    heliclockData.type = 'heliclock'
-    heliclockData.action = 'heli-birth-signature'
-    heliclockData.data = data
-    this.wsocket.send(JSON.stringify(heliclockData))
-    })
-
-    this.HeliRoute.on('heli-clock-start', (data) => {
-      let heliclockData = {}
-      heliclockData.type = 'heliclock'
-      heliclockData.action = 'peer-heli-signature'
-      heliclockData.data = projectionArcs
-      this.wsocket.send(JSON.stringify(heliclockData))
-    })
-  }  
-
-  /**
-  * listener from Library SF router
-  * @method listenLibrarySF
-  *
-  */
-  listenLibrarySF = async function () {
-    this.LibRoute.on('safeflow-query', async (data) => {
-      await this.SafeRoute.newSafeflow(data)
-    })
-    this.LibRoute.on('safeflow-update', async (data) => {
-      await this.SafeRoute.updateSafeflow(data)
-    })
-    this.LibRoute.on('safeflow-systems', async (data) => {
-      await this.SafeRoute.setSafeflowSystems(data)
-    })
-  } 
-
-  /**
-  * listener from Library router
-  * @method listenLibrary
-  *
-  */
-  listenLibrary = async function () {
-    this.LibRoute.on('library-data', async (data) => {
-      // need to inform beebee and prepare HQB for SF
-      let bbMessage = {}
-      bbMessage.type = 'bbai-reply'
-      bbMessage.reftype = 'ignore'
-      bbMessage.action = 'library'
-      bbMessage.data = data
-      await this.BBRoute.bbAIpath(bbMessage)
-    })
-  }  
-
-  /**
-  * listener from SafeFLOW router
-  * @method listenSF
-  *
-  */
-  listenSF = async function () {
-    this.SafeRoute.on('sfauth', async (data) => {
-      await this.setupHolepunch()
-      data.type = 'auth-hop'
-      this.wsocket.send(JSON.stringify(data))
-    })
-    this.SafeRoute.on('library-systems', async (data) => {
-      await this.LibRoute.libManager.systemsContracts()
-    })
-
-    this.DataNetwork.on('hcores-active', async () => {
-      this.hoptoken =  uuidv4()
-      let authMessage = {}
-      authMessage.type = 'account'
-      authMessage.action = 'hop-verify'
-      authMessage.data = { auth: true, jwt: this.hoptoken }
-      this.sendSocketMessage(JSON.stringify(authMessage))
-      // allow other components have access to data
-      this.processListen()
-      await this.startDataHeliClock()
-    })
-
-  }    
-
-  /**
-  * listen holepunch
-  * @method processListen
-  *
-  */
-  processListen = async function () {
-    this.BBRoute.liveBBAI.listenHolepunchLive()
-    this.LibRoute.libManager.startLibrary()
-  }
-
-  /**
-  * listen ptop network messages
-  * @method listenNetwork
-  *
-  */
-  listenNetwork = async function () {
-    this.DataNetwork.on('peer-topeer', (data) => {
-      if (data.data.display === 'html') {
-        // route to beebee for text message back to peer & prep bentobox
-        this.BBRoute.liveBBAI.networkPeerdirect(data)
-        // return vis data, like from SafeFlow
-        this.SafeRoute.networkSFpeerdata(data.data) 
-      } else if (data.display === 'safeflow') {
-        // return vis data, like from SafeFlow
-        this.SafeRoute.networkSFpeerdata(data) 
-      }
-    })
-
-    this.DataNetwork.on('peer-cuespace', (data) => {
-      this.BBRoute.liveBBAI.networkPeerSpace(data)
-    })
-  
-    this.DataNetwork.on('peer-incoming-save', async (data) => {
-      // save direct to library account contract, when save that will inform beeebee in BentoboxDS
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'new-peer'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'PUT'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
-    })
-  
-    this.DataNetwork.on('peer-reconnect-topic-notify', (data) => {
-      let peerId = {}
-      peerId.type = 'network-notification'
-      peerId.action = 'warm-peer-topic'
-      peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
-    this.DataNetwork.on('peer-topic-save', async (data) => {
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'new-peer-topic'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'PUT'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
-    })
-
-    this.DataNetwork.on('peer-topic-update', async (data) => {
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'new-peer-topic'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'UPDATE'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
-    })
-
-    this.DataNetwork.on('peer-codename-update', async (data) => {
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'update-peer-name'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'UPDATE'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
-    })
-
-    this.DataNetwork.on('beebee-publib-notification', (data) => {
-      let peerId = {}
-      peerId.type = 'network-notification'
-      peerId.action = 'network-library-n1'
-      peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
-    this.DataNetwork.on('replicate-publib-notification', (data) => {
-      let peerId = {}
-      peerId.type = 'network-notification'
-      peerId.action = 'network-replicate-publiclibrary'
-      peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
-    this.DataNetwork.on('peer-live-notify', (data) => {
-      let peerNotify = {}
-      peerNotify.type = 'account'
-      peerNotify.action = 'network-peer-live'
-      peerNotify.data = data
-      this.sendSocketMessage(JSON.stringify(peerNotify))
-    })
-
-    this.DataNetwork.on('peer-disconnect-notify', (data) => {
-      let peerNotify = {}
-      peerNotify.type = 'account'
-      peerNotify.action = 'network-peer-disconnect'
-      peerNotify.data = data
-      this.sendSocketMessage(JSON.stringify(peerNotify))
-    })
-
-    this.DataNetwork.on('invite-live-peer', (data) => {
-      let peerId = {}
-      peerId.type = 'account'
-      peerId.action = 'invite-live-accepted'
-      peerId.data = data
-      this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
-    this.DataNetwork.on('drive-save-large', (data) => {
-      this.sendSocketMessage(JSON.stringify(data))
-    })
   }  
 
   /**
@@ -635,6 +398,11 @@ class HOP extends EventEmitter {
     }
   }
 
+  /**
+  * verify self and connect to hop
+  * @method cryptoPath
+  *
+  */
   verifyAndConnect = async (verData) => {
     const verDataObj = typeof verData === 'string' ? JSON.parse(verData) : verData
     
@@ -648,9 +416,10 @@ class HOP extends EventEmitter {
             action: 'unlocked-verify-complete',
             data: { verified: true, unlocked: true },
             bbid: ''
-          } 
+          }
+          // bring HOP fully to life
+          await this.HOPlife()
         } else {
-          console.log('passsssword feedback for beebee bentoboxds')
           let HOPgatekeeper = {}
           HOPgatekeeper.type = 'account'
           HOPgatekeeper.action = 'hop-wrong-password'
@@ -664,35 +433,269 @@ class HOP extends EventEmitter {
         return false
       }
     }
+  }
 
-    const targetPubKey = verDataObj.pubkey || verDataObj.publicKey || verDataObj.key
-  // 1. Internal WASM Check: Does the hash match our loaded module?
-
-  // const internalHash = await getWasmHash();
-  // if (internalHash !== verData.wasmHash) throw new Error("WASM Tamper Detected");
-
-
-  // 2. Identity Check: Is this a valid Ed25519 key?
-  await this.anchorDawn.initWASM()
-  const dummySeed = new Uint8Array(32);
-  dummySeed.fill(1); // Ensure it's not all zeros
-  const keypair = new SovereignKeypair(dummySeed);
-  const pubkey = keypair.get_public_key();
-
-  const HOPkeyHex = Buffer.from(pubkey).toString('hex');
-  let isValid = false
-  if (HOPkeyHex === targetPubKey) {
-    isValid = true
-  };
-
-  if (isValid === true) {
-    // bring store to life
+   /**
+  * HOP  all systems go
+  * @method HOPlife
+  *
+  */
+  HOPlife = async function () {
+    // bring to be
     this.DataNetwork = new HolepunchHOP(this.options.storename)
     this.DataNetwork.setWebsocket(this.wsocket)
     this.DataNetwork.startStores()
+    this.listenHP()
+    return true;
   }
-  return true;
-}
+
+  /**
+  * listen holepunch
+  * @method processListen
+  *
+  */
+  processListen = async function () {
+    this.BBRoute.liveBBAI.listenHolepunchLive()
+    this.LibRoute.libManager.startLibrary()
+  }
+
+  /**
+  * listener from BeeBee router
+  * @method listenBeebee
+  *
+  */
+  listenBeebee = async function () {
+    this.BBRoute.on('safeflow-query', async (data) => {
+      await this.SafeRoute.newSafeflow(data)
+    })
+  }  
+  
+  /**
+  * listener for HeliClock
+  * @method listenHeliclock
+  *
+  */
+  listenHeliclock = async function () {
+    this.HeliRoute.heliLocation.on('HELI_DEGREE_PULSE', (data) => {
+    let heliclockData = {}
+    heliclockData.type = 'heliclock'
+    heliclockData.action = 'peer-heli-wedge'
+    heliclockData.data = data
+    this.wsocket.send(JSON.stringify(heliclockData))
+    })
+
+    this.HeliRoute.heliLocation.on('HELI_DEGREE_SIGNATURE', (data) => {
+    let heliclockData = {}
+    heliclockData.type = 'heliclock'
+    heliclockData.action = 'heli-birth-signature'
+    heliclockData.data = data
+    this.wsocket.send(JSON.stringify(heliclockData))
+    })
+
+    this.HeliRoute.on('heli-clock-start', (data) => {
+      let heliclockData = {}
+      heliclockData.type = 'heliclock'
+      heliclockData.action = 'peer-heli-signature'
+      heliclockData.data = projectionArcs
+      this.wsocket.send(JSON.stringify(heliclockData))
+    })
+  }  
+
+  /**
+  * listener from Library SF router
+  * @method listenLibrarySF
+  *
+  */
+  listenLibrarySF = async function () {
+    this.LibRoute.on('safeflow-query', async (data) => {
+      await this.SafeRoute.newSafeflow(data)
+    })
+    this.LibRoute.on('safeflow-update', async (data) => {
+      await this.SafeRoute.updateSafeflow(data)
+    })
+    this.LibRoute.on('safeflow-systems', async (data) => {
+      await this.SafeRoute.setSafeflowSystems(data)
+    })
+  } 
+
+  /**
+  * listener from Library router
+  * @method listenLibrary
+  *
+  */
+  listenLibrary = async function () {
+    this.LibRoute.on('library-data', async (data) => {
+      // need to inform beebee and prepare HQB for SF
+      let bbMessage = {}
+      bbMessage.type = 'bbai-reply'
+      bbMessage.reftype = 'ignore'
+      bbMessage.action = 'library'
+      bbMessage.data = data
+      await this.BBRoute.bbAIpath(bbMessage)
+    })
+  }  
+
+  /**
+  * listener from SafeFLOW router
+  * @method listenSF
+  *
+  */
+  listenSF = async function () {
+    this.SafeRoute.on('sfauth', async (data) => {
+      await this.setupHolepunch()
+      data.type = 'auth-hop'
+      this.wsocket.send(JSON.stringify(data))
+    })
+    this.SafeRoute.on('library-systems', async (data) => {
+      await this.LibRoute.libManager.systemsContracts()
+    })
+  }
+
+  /**
+  * listener from DataNetwork events
+  * @method listenHP
+  *
+  */
+  listenHP = async function () {
+    this.DataNetwork.on('hcores-active', async () => {
+      // active contextAgent
+      await this.contextAgent()
+      this.hoptoken =  uuidv4()
+      let authMessage = {}
+      authMessage.type = 'account'
+      authMessage.action = 'hop-holepunch-live'
+      authMessage.data = { auth: true, jwt: this.hoptoken }
+      this.sendSocketMessage(JSON.stringify(authMessage))
+      // allow other components have access to data
+      this.processListen()
+      await this.startDataHeliClock()
+      // now pass on context
+    })
+  }  
+
+  /**
+  * listen ptop network messages
+  * @method listenNetwork
+  *
+  */
+  listenNetwork = async function () {
+    this.DataNetwork.on('peer-topeer', (data) => {
+      if (data.data.display === 'html') {
+        // route to beebee for text message back to peer & prep bentobox
+        this.BBRoute.liveBBAI.networkPeerdirect(data)
+        // return vis data, like from SafeFlow
+        this.SafeRoute.networkSFpeerdata(data.data) 
+      } else if (data.display === 'safeflow') {
+        // return vis data, like from SafeFlow
+        this.SafeRoute.networkSFpeerdata(data) 
+      }
+    })
+
+    this.DataNetwork.on('peer-cuespace', (data) => {
+      this.BBRoute.liveBBAI.networkPeerSpace(data)
+    })
+  
+    this.DataNetwork.on('peer-incoming-save', async (data) => {
+      // save direct to library account contract, when save that will inform beeebee in BentoboxDS
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'new-peer'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'PUT'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+    })
+  
+    this.DataNetwork.on('peer-reconnect-topic-notify', (data) => {
+      let peerId = {}
+      peerId.type = 'network-notification'
+      peerId.action = 'warm-peer-topic'
+      peerId.data = data
+      this.sendSocketMessage(JSON.stringify(peerId))
+    })
+
+    this.DataNetwork.on('peer-topic-save', async (data) => {
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'new-peer-topic'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'PUT'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+    })
+
+    this.DataNetwork.on('peer-topic-update', async (data) => {
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'new-peer-topic'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'UPDATE'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+    })
+
+    this.DataNetwork.on('peer-codename-update', async (data) => {
+      let libMessageout = {}
+      libMessageout.type = 'library'
+      libMessageout.action = 'account'
+      libMessageout.reftype = 'update-peer-name'
+      libMessageout.privacy = 'private'
+      libMessageout.task = 'UPDATE'
+      libMessageout.data = data
+      libMessageout.bbid = ''
+      await this.LibRoute.libManager.libraryManage(libMessageout)
+    })
+
+    this.DataNetwork.on('beebee-publib-notification', (data) => {
+      let peerId = {}
+      peerId.type = 'network-notification'
+      peerId.action = 'network-library-n1'
+      peerId.data = data
+      this.sendSocketMessage(JSON.stringify(peerId))
+    })
+
+    this.DataNetwork.on('replicate-publib-notification', (data) => {
+      let peerId = {}
+      peerId.type = 'network-notification'
+      peerId.action = 'network-replicate-publiclibrary'
+      peerId.data = data
+      this.sendSocketMessage(JSON.stringify(peerId))
+    })
+
+    this.DataNetwork.on('peer-live-notify', (data) => {
+      let peerNotify = {}
+      peerNotify.type = 'account'
+      peerNotify.action = 'network-peer-live'
+      peerNotify.data = data
+      this.sendSocketMessage(JSON.stringify(peerNotify))
+    })
+
+    this.DataNetwork.on('peer-disconnect-notify', (data) => {
+      let peerNotify = {}
+      peerNotify.type = 'account'
+      peerNotify.action = 'network-peer-disconnect'
+      peerNotify.data = data
+      this.sendSocketMessage(JSON.stringify(peerNotify))
+    })
+
+    this.DataNetwork.on('invite-live-peer', (data) => {
+      let peerId = {}
+      peerId.type = 'account'
+      peerId.action = 'invite-live-accepted'
+      peerId.data = data
+      this.sendSocketMessage(JSON.stringify(peerId))
+    })
+
+    this.DataNetwork.on('drive-save-large', (data) => {
+      this.sendSocketMessage(JSON.stringify(data))
+    })
+  }  
 
   /**
   * server & websocket

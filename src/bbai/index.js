@@ -14,13 +14,13 @@ import BbAi from 'beebee-ai'
 
 class BBRoute extends EventEmitter {
 
-  constructor(context) {
+  constructor(contextAgent) {
     super()
-    this.context = context
+    this.context = contextAgent
     this.live = true
-    this.holepunchLive = context.network
-    this.liveBesearch = context.besearch
-    this.heliclock = context.heliclock
+    this.holepunchLive = contextAgent.network
+    this.liveBesearch = contextAgent.besearch
+    this.heliclock = contextAgent.heliclock
     this.liveBBAI = new BbAi(this.holepunchLive)
     this.wsocket = {}
     this.wlist = []
@@ -44,7 +44,6 @@ class BBRoute extends EventEmitter {
   *
   */
    setWebsocket = function (ws) {
-    console.log('set webcocket  beebee ai')
     this.wsocket = ws
     this.wlist.push(ws)
   }
