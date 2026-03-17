@@ -20,6 +20,7 @@ import { createServer } from 'https'
 import fs from 'fs'
 import { WebSocketServer } from 'ws'
 import { v4 as uuidv4 } from 'uuid'
+import { Encryption } from 'hop-crypto/encryption'
 import AnchorDawn from './anchor/dawn.js'
 import MessageFlow from 'hop-message'
 import SfRoute from './safeflow/index.js'
@@ -30,7 +31,6 @@ import HeliRoute from './heliclock/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
 import HeliLocation from 'heliclock-hop'
-import { SovereignKeypair } from 'hop-crypto'
 
 class HOP extends EventEmitter {
 
@@ -151,7 +151,6 @@ class HOP extends EventEmitter {
 
     this.BesearchRoute = new BesearchRoute(this.context)
     this.context.besearch = this.BesearchRoute
-
 
     this.HeliRoute = new HeliRoute(this.context)
     this.HeliRoute.setWebsocket(this.wsocket)
