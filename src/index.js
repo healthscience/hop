@@ -128,7 +128,7 @@ class HOP extends EventEmitter {
     this.context = {
       heliclock: this.HeliClock,
       heliLocation: this.heliLocation,
-      crypto: { verify_coherence: wasm.verify_coherence, Encryption },
+      crypto: { verify_coherence: wasm.verify_coherence, Encryption: Encryption },
       network: this.DataNetwork,
       safeflow: null,
       besearch: null,

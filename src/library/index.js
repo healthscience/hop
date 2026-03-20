@@ -15,10 +15,11 @@ import LibraryManager from 'library-hop'
 class LibraryRoute extends EventEmitter {
 
   constructor(contextAgents) {
+    console.log('lib route')
     super()
     this.live = true
+    this.libManager = new LibraryManager(contextAgents)
     this.holepunchLive = contextAgents.network
-    this.libManager = new LibraryManager(this.holepunchLive, contextAgents)
     this.wsocket = {}
     this.wlist = []
     this.libraryListen()

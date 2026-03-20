@@ -90,7 +90,7 @@ class HeliRoute extends EventEmitter {
           if (clockState) {
               // HYDRATE THE ENGINE: Tell HeliLocation to start the pulse
               this.heliLocation.activateSolarHeartbeat(clockState.value.data);
-              
+               
               // Return to UI
               return {
                   home: 'wait',

@@ -26,7 +26,7 @@ class SfRoute extends EventEmitter {
     this.wlist = []
     this.holepunchLive = context.network
     this.heliclock = context.heliclock
-    this.liveLibrary = new LibComposer()
+    this.liveLibrary = new LibComposer(context)
     this.SafeFlow = new SafeFlowECS(this.holepunchLive)
     this.SafeFlow.entityGetter()
     this.sfListeners()
