@@ -126,15 +126,16 @@ class HOP extends EventEmitter {
     // Build the Context Object (The Nervous System)
     const wasm = await import('hop-crypto')
     this.context = {
-      heliclock: this.HeliClock,
+      heliclock: this.heliLocation,
       heliLocation: this.heliLocation,
-      crypto: { verify_coherence: wasm.verify_coherence, Encryption: Encryption },
+      crypto: new Encryption(),
       network: this.DataNetwork,
       safeflow: null,
       besearch: null,
       bbai: null,
       library: null
     }
+    this.context.crypto.verify_coherence = wasm.verify_coherence
 
     // Attach Context to DataNetwork for ECS visibility
     this.DataNetwork.context = this.context

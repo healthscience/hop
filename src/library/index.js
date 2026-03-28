@@ -52,6 +52,13 @@ class LibraryRoute extends EventEmitter {
   *
   */
   libraryListen = async function () {
+    this.libManager.on('lifestrap-genesis', (data) => {
+      console.log('lifestrap-genesis3333')
+      console.log(data)
+      //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
+      this.bringToBe(data)
+    })
+
     this.libManager.on('libmessage', (data) => {
       this.bothSockets(data)
     })
@@ -94,6 +101,21 @@ class LibraryRoute extends EventEmitter {
       this.emit('safeflow-systems', data)
     })
   }
+
+  /**
+   * bring to be
+   * @method bringToBe
+   */
+   bringToBe = function () {
+    // for life-strap  key
+
+    // same key for conversation ie chat
+
+    // bring resonAgent to be
+
+    // bring neat-hop to be
+    
+   }
 
 }
 
