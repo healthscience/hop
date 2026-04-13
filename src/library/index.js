@@ -53,10 +53,10 @@ class LibraryRoute extends EventEmitter {
   */
   libraryListen = async function () {
     this.libManager.on('lifestrap-genesis', (data) => {
-      console.log('lifestrap-genesis3333')
-      console.log(data)
       //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
-      this.bringToBe(data)
+      // this.bringToBe(data)
+      // keep beebee in bentoboxds 
+      this.wsocket.send(JSON.stringify(data))
     })
 
     this.libManager.on('libmessage', (data) => {
@@ -107,8 +107,13 @@ class LibraryRoute extends EventEmitter {
    * @method bringToBe
    */
    bringToBe = function () {
-    // for life-strap  key
-
+    console.log('bring to be routine')
+    // life-straps
+    let lifeStrapbe = {}
+    lifeStrapbe.type = 'bentoboxds'
+    lifeStrapbe.action = 'lifestrap-start'
+    this.libManager.bentoPathOperations(lifeStrapbe)
+    // next stitch together 
     // same key for conversation ie chat
 
     // bring resonAgent to be

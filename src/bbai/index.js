@@ -26,7 +26,6 @@ class BBRoute extends EventEmitter {
     this.wlist = []
     this.peerNetworklisten()
     this.listenBBresponse()
-    this.startBeeBeeAgent()
   }
 
   /**

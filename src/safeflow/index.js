@@ -15,7 +15,6 @@ import crypto from 'crypto'
 import SafeFlowECS from 'node-safeflow'
 import LibComposer from 'librarycomposer'
 
-
 class SfRoute extends EventEmitter {
 
   constructor(context) {

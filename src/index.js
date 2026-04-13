@@ -1,6 +1,6 @@
 'use strict'
 /**
-*  HOP bring to life
+*  HOP bring to be
 *
 *
 * @class HOP
@@ -31,6 +31,8 @@ import HeliRoute from './heliclock/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
 import HeliLocation from 'heliclock-hop'
+import { hopSwarm } from 'hop-resonagent'
+import { Cue, ConsilienceWeave } from 'cues-hop';
 
 class HOP extends EventEmitter {
 
@@ -44,7 +46,10 @@ class HOP extends EventEmitter {
     this.HeliClock = {}
     this.anchorDawn = new AnchorDawn(this.options.storename)
     this.MessagesFlow = new MessageFlow()
+    this.hopCrypto = {}
     this.DataNetwork = {}
+    this.resonAgents = hopSwarm
+    this.spine = {}
     this.wsocket = {}
     this.socketCount = 0
     this.BBRoute = {}
@@ -71,6 +76,25 @@ class HOP extends EventEmitter {
       this.anchorDawn.setHeliClock(this.HeliClock)
     } catch (err) {
       console.warn('HeliClock init failed or already initialized', err)
+    }
+  }
+
+  /**
+   * @method commitKnowledge
+   * @param {*} rawKnowledge 
+   */
+  commitKnowledge =  async function (rawKnowledge) {
+    const newCue = new Cue(rawKnowledge);
+    
+    // Workers in SafeFlow-ECS do the heavy lifting
+    const result = await ConsilienceWeave.evaluate(newCue, this.spine);
+
+    if (result.isValid) {
+      // The Hyperbee gets populated as valid cycles complete
+      await this.spine.put(`cue!${newCue.hash}`, newCue);
+      console.log(`Knowledge Committed: ${newCue.hash}`);
+    } else {
+      console.warn("Incoherent Signal Pruned.");
     }
   }
 
@@ -124,21 +148,17 @@ class HOP extends EventEmitter {
   */
   contextAgent = async function () {
     // Build the Context Object (The Nervous System)
-    const wasm = await import('hop-crypto')
     this.context = {
       heliclock: this.heliLocation,
       heliLocation: this.heliLocation,
-      crypto: new Encryption(),
+      crypto: this.hopCrypto,
       network: this.DataNetwork,
       safeflow: null,
       besearch: null,
       bbai: null,
       library: null
     }
-    this.context.crypto.verify_coherence = wasm.verify_coherence
-
-    // Attach Context to DataNetwork for ECS visibility
-    this.DataNetwork.context = this.context
+    // this.context.crypto.verify_coherence = wasm.verify_coherence
 
     this.LibRoute = new LibraryRoute(this.context)
     this.context.library = this.LibRoute.libManager
@@ -368,7 +388,7 @@ class HOP extends EventEmitter {
       await this.LibRoute.libManager.libraryManage(messageRoute)
       // this.LibRoute.libManager.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentobox') {
-      this.LibRoute.libManager.bentoPath(messageRoute)
+      this.LibRoute.libManager.bentoPathOperations(messageRoute)
     } else if (messageRoute.type === 'network') {
       this.DataNetwork.networkPath(messageRoute)
     } else if (messageRoute.type === 'crypto') {
@@ -558,6 +578,9 @@ class HOP extends EventEmitter {
   */
   listenHP = async function () {
     this.DataNetwork.on('hcores-active', async () => {
+      this.hopCrypto = new Encryption()
+      // Attach Context to DataNetwork for ECS visibility
+      this.DataNetwork.setHOPCrypto(this.hopCrypto)
       // active contextAgent
       await this.contextAgent()
       this.hoptoken =  uuidv4()
@@ -569,9 +592,10 @@ class HOP extends EventEmitter {
       // allow other components have access to data
       this.processListen()
       await this.startDataHeliClock()
-      // now pass on context
+      // bentoboxDS beebee bring to be routine memory
+      this.LibRoute.bringToBe()
     })
-  }  
+  }
 
   /**
   * listen ptop network messages
