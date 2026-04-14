@@ -153,6 +153,7 @@ class HOP extends EventEmitter {
       heliLocation: this.heliLocation,
       crypto: this.hopCrypto,
       network: this.DataNetwork,
+      resonagents: this.resonAgents,
       safeflow: null,
       besearch: null,
       bbai: null,
@@ -593,7 +594,7 @@ class HOP extends EventEmitter {
       this.processListen()
       await this.startDataHeliClock()
       // bentoboxDS beebee bring to be routine memory
-      this.LibRoute.bringToBe()
+      this.BBRoute.liveBBAI.bringToBe('awake')
     })
   }
 

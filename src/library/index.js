@@ -17,6 +17,7 @@ class LibraryRoute extends EventEmitter {
   constructor(contextAgents) {
     console.log('lib route')
     super()
+    this.context = contextAgents
     this.live = true
     this.libManager = new LibraryManager(contextAgents)
     this.holepunchLive = contextAgents.network
@@ -54,7 +55,17 @@ class LibraryRoute extends EventEmitter {
   libraryListen = async function () {
     this.libManager.on('lifestrap-genesis', (data) => {
       //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
-      // this.bringToBe(data)
+      this.context.bbai.liveBBAI.bringToBe('woken', data.data)
+      // keep beebee in bentoboxds 
+      this.wsocket.send(JSON.stringify(data))
+    })
+
+    this.libManager.on('lifestrap-awaken', (data) => {
+      //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
+      console.log('lib route awaken', data)
+      if (data.data.length > 0) {
+        this.context.bbai.liveBBAI.bringToBe('woken', data.data[0])
+      }
       // keep beebee in bentoboxds 
       this.wsocket.send(JSON.stringify(data))
     })
@@ -101,26 +112,6 @@ class LibraryRoute extends EventEmitter {
       this.emit('safeflow-systems', data)
     })
   }
-
-  /**
-   * bring to be
-   * @method bringToBe
-   */
-   bringToBe = function () {
-    console.log('bring to be routine')
-    // life-straps
-    let lifeStrapbe = {}
-    lifeStrapbe.type = 'bentoboxds'
-    lifeStrapbe.action = 'lifestrap-start'
-    this.libManager.bentoPathOperations(lifeStrapbe)
-    // next stitch together 
-    // same key for conversation ie chat
-
-    // bring resonAgent to be
-
-    // bring neat-hop to be
-    
-   }
 
 }
 

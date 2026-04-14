@@ -21,7 +21,7 @@ class BBRoute extends EventEmitter {
     this.holepunchLive = contextAgent.network
     this.liveBesearch = contextAgent.besearch
     this.heliclock = contextAgent.heliclock
-    this.liveBBAI = new BbAi(this.holepunchLive)
+    this.liveBBAI = new BbAi(this.context)
     this.wsocket = {}
     this.wlist = []
     this.peerNetworklisten()
@@ -56,6 +56,15 @@ class BBRoute extends EventEmitter {
     for (let ws of this.wlist) {
       ws.send(retmesg)
     }
+  }
+
+  /**
+   * 
+   * @method bringToBePath
+   * 
+  */
+  bringToBePath = async function () {
+    this.liveBBAI.bringToBe()
   }
 
   /**
