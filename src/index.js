@@ -40,6 +40,7 @@ class HOP extends EventEmitter {
     console.log('hop be')
     console.log(options)
     super()
+    this.wiring = {}
     this.hoptoken = ''
     this.options = options
     this.heliLocation = new HeliLocation()
@@ -52,9 +53,9 @@ class HOP extends EventEmitter {
     this.spine = {}
     this.wsocket = {}
     this.socketCount = 0
-    this.BBRoute = {}
-    this.SafeRoute = {}
-    this.LibRoute = {}
+    this.wiring.bbai = {}
+    this.wiring.safeflow = {}
+    this.wiring.library = {}
     this.DmlRoute = {}
     this.HeliRoute = {}
     this.origin
@@ -143,43 +144,44 @@ class HOP extends EventEmitter {
 
   /**
    *  network personal store live, pass context around
-   *  @method contextAgent
+   *  @method contextWiring
    *
   */
-  contextAgent = async function () {
+  contextWiring = async function () {
+    // this.wiring.crypto.verify_coherence = wasm.verify_coherence
+
     // Build the Context Object (The Nervous System)
-    this.context = {
+    this.wiring = {
       heliclock: this.heliLocation,
       heliLocation: this.heliLocation,
       crypto: this.hopCrypto,
       network: this.DataNetwork,
+      bbai: null,
       resonagents: this.resonAgents,
       safeflow: null,
       besearch: null,
-      bbai: null,
       library: null
     }
-    // this.context.crypto.verify_coherence = wasm.verify_coherence
 
-    this.LibRoute = new LibraryRoute(this.context)
-    this.context.library = this.LibRoute.libManager
-    this.LibRoute.setWebsocket(this.wsocket)
-
-    this.SafeRoute = new SfRoute(this.context)
-    this.context.safeflow = this.SafeRoute
-    this.SafeRoute.setWebsocket(this.wsocket)
-
+    // Phase 2: Wiring (Synapses)
+    // Pass the WHOLE context. Routes pull what they need from it.
+    this.wiring.bbai = new BBRoute(this.wiring)
+    this.wiring.safeflow = new SfRoute(this.wiring)
+    this.wiring.library = new LibraryRoute(this.wiring) 
+    // if wiring access to websocket (will be removed in v2)
+    this.wiring.bbai.setWebsocket(this.wsocket)
+    this.wiring.safeflow.setWebsocket(this.wsocket)
+    this.wiring.library.setWebsocket(this.wsocket)
+    
+    // need to re examine these
     this.DmlRoute = new DmlRoute(this.DataNetwork)
 
-    this.BesearchRoute = new BesearchRoute(this.context)
-    this.context.besearch = this.BesearchRoute
+    this.BesearchRoute = new BesearchRoute(this.wiring)
+    this.wiring.besearch = this.BesearchRoute
 
-    this.HeliRoute = new HeliRoute(this.context)
+    this.HeliRoute = new HeliRoute(this.wiring)
     this.HeliRoute.setWebsocket(this.wsocket)
 
-    this.BBRoute = new BBRoute(this.context)
-    this.context.bbai = this.BBRoute
-    this.BBRoute.setWebsocket(this.wsocket)
 
     await this.listenHeliclock()
     await this.listenNetwork()
@@ -243,9 +245,9 @@ class HOP extends EventEmitter {
       // if first peer experience wait until anchor is complete
       if (this.anchorState === true) {
         this.DataNetwork.setWebsocket(ws)
-        this.LibRoute.setWebsocket(ws)
-        this.SafeRoute.setWebsocket(ws)
-        this.BBRoute.setWebsocket(ws)
+        this.wiring.library.setWebsocket(ws)
+        this.wiring.safeflow.setWebsocket(ws)
+        this.wiring.bbai.setWebsocket(ws)
       } else {
         await this.anchorHOP()
       }
@@ -380,16 +382,16 @@ class HOP extends EventEmitter {
   messageResponder = async (o) => {
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
-      await this.BBRoute.bbAIpath(messageRoute)
+      await this.wiring.bbai.bbAIpath(messageRoute)
     } else if (messageRoute.type === 'heliclock') {
       await this.HeliRoute.heliPath(messageRoute)
     } else if (messageRoute.type === 'safeflow') {
-      this.SafeRoute.routeMessage(messageRoute)
+      this.wiring.safeflow.routeMessage(messageRoute)
     } else if (messageRoute.type === 'library') {
-      await this.LibRoute.libManager.libraryManage(messageRoute)
-      // this.LibRoute.libManager.libraryPath(messageRoute)
+      await this.wiring.library.libManager.libraryManage(messageRoute)
+      // this.wiring.library.libManager.libraryPath(messageRoute)
     } else if (messageRoute.type === 'bentobox') {
-      this.LibRoute.libManager.bentoPathOperations(messageRoute)
+      this.wiring.library.libManager.bentoPathOperations(messageRoute)
     } else if (messageRoute.type === 'network') {
       this.DataNetwork.networkPath(messageRoute)
     } else if (messageRoute.type === 'crypto') {
@@ -476,8 +478,8 @@ class HOP extends EventEmitter {
   *
   */
   processListen = async function () {
-    this.BBRoute.liveBBAI.listenHolepunchLive()
-    this.LibRoute.libManager.startLibrary()
+    this.wiring.bbai.liveBBAI.listenHolepunchLive()
+    this.wiring.library.libManager.startLibrary()
   }
 
   /**
@@ -486,8 +488,8 @@ class HOP extends EventEmitter {
   *
   */
   listenBeebee = async function () {
-    this.BBRoute.on('safeflow-query', async (data) => {
-      await this.SafeRoute.newSafeflow(data)
+    this.wiring.bbai.on('safeflow-query', async (data) => {
+      await this.wiring.safeflow.newSafeflow(data)
     })
   }  
   
@@ -528,14 +530,14 @@ class HOP extends EventEmitter {
   *
   */
   listenLibrarySF = async function () {
-    this.LibRoute.on('safeflow-query', async (data) => {
-      await this.SafeRoute.newSafeflow(data)
+    this.wiring.library.on('safeflow-query', async (data) => {
+      await this.wiring.safeflow.newSafeflow(data)
     })
-    this.LibRoute.on('safeflow-update', async (data) => {
-      await this.SafeRoute.updateSafeflow(data)
+    this.wiring.library.on('safeflow-update', async (data) => {
+      await this.wiring.safeflow.updateSafeflow(data)
     })
-    this.LibRoute.on('safeflow-systems', async (data) => {
-      await this.SafeRoute.setSafeflowSystems(data)
+    this.wiring.library.on('safeflow-systems', async (data) => {
+      await this.wiring.safeflow.setSafeflowSystems(data)
     })
   } 
 
@@ -545,14 +547,14 @@ class HOP extends EventEmitter {
   *
   */
   listenLibrary = async function () {
-    this.LibRoute.on('library-data', async (data) => {
+    this.wiring.library.on('library-data', async (data) => {
       // need to inform beebee and prepare HQB for SF
       let bbMessage = {}
       bbMessage.type = 'bbai-reply'
       bbMessage.reftype = 'ignore'
       bbMessage.action = 'library'
       bbMessage.data = data
-      await this.BBRoute.bbAIpath(bbMessage)
+      await this.wiring.bbai.bbAIpath(bbMessage)
     })
   }  
 
@@ -562,13 +564,13 @@ class HOP extends EventEmitter {
   *
   */
   listenSF = async function () {
-    this.SafeRoute.on('sfauth', async (data) => {
+    this.wiring.safeflow.on('sfauth', async (data) => {
       await this.setupHolepunch()
       data.type = 'auth-hop'
       this.wsocket.send(JSON.stringify(data))
     })
-    this.SafeRoute.on('library-systems', async (data) => {
-      await this.LibRoute.libManager.systemsContracts()
+    this.wiring.safeflow.on('library-systems', async (data) => {
+      await this.wiring.library.libManager.systemsContracts()
     })
   }
 
@@ -582,8 +584,8 @@ class HOP extends EventEmitter {
       this.hopCrypto = new Encryption()
       // Attach Context to DataNetwork for ECS visibility
       this.DataNetwork.setHOPCrypto(this.hopCrypto)
-      // active contextAgent
-      await this.contextAgent()
+      // active nervous system context wiring
+      await this.contextWiring()
       this.hoptoken =  uuidv4()
       let authMessage = {}
       authMessage.type = 'account'
@@ -594,7 +596,7 @@ class HOP extends EventEmitter {
       this.processListen()
       await this.startDataHeliClock()
       // bentoboxDS beebee bring to be routine memory
-      this.BBRoute.liveBBAI.bringToBe('awake')
+      this.wiring.bbai.liveBBAI.bringToBe('awake')
     })
   }
 
@@ -607,17 +609,17 @@ class HOP extends EventEmitter {
     this.DataNetwork.on('peer-topeer', (data) => {
       if (data.data.display === 'html') {
         // route to beebee for text message back to peer & prep bentobox
-        this.BBRoute.liveBBAI.networkPeerdirect(data)
+        this.wiring.bbai.liveBBAI.networkPeerdirect(data)
         // return vis data, like from SafeFlow
-        this.SafeRoute.networkSFpeerdata(data.data) 
+        this.wiring.safeflow.networkSFpeerdata(data.data) 
       } else if (data.display === 'safeflow') {
         // return vis data, like from SafeFlow
-        this.SafeRoute.networkSFpeerdata(data) 
+        this.wiring.safeflow.networkSFpeerdata(data) 
       }
     })
 
     this.DataNetwork.on('peer-cuespace', (data) => {
-      this.BBRoute.liveBBAI.networkPeerSpace(data)
+      this.wiring.bbai.liveBBAI.networkPeerSpace(data)
     })
   
     this.DataNetwork.on('peer-incoming-save', async (data) => {
@@ -630,7 +632,7 @@ class HOP extends EventEmitter {
       libMessageout.task = 'PUT'
       libMessageout.data = data
       libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
+      await this.wiring.library.libManager.libraryManage(libMessageout)
     })
   
     this.DataNetwork.on('peer-reconnect-topic-notify', (data) => {
@@ -650,7 +652,7 @@ class HOP extends EventEmitter {
       libMessageout.task = 'PUT'
       libMessageout.data = data
       libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
+      await this.wiring.library.libManager.libraryManage(libMessageout)
     })
 
     this.DataNetwork.on('peer-topic-update', async (data) => {
@@ -662,7 +664,7 @@ class HOP extends EventEmitter {
       libMessageout.task = 'UPDATE'
       libMessageout.data = data
       libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
+      await this.wiring.library.libManager.libraryManage(libMessageout)
     })
 
     this.DataNetwork.on('peer-codename-update', async (data) => {
@@ -674,7 +676,7 @@ class HOP extends EventEmitter {
       libMessageout.task = 'UPDATE'
       libMessageout.data = data
       libMessageout.bbid = ''
-      await this.LibRoute.libManager.libraryManage(libMessageout)
+      await this.wiring.library.libManager.libraryManage(libMessageout)
     })
 
     this.DataNetwork.on('beebee-publib-notification', (data) => {

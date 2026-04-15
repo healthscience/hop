@@ -14,14 +14,14 @@ import BbAi from 'beebee-ai'
 
 class BBRoute extends EventEmitter {
 
-  constructor(contextAgent) {
+  constructor(wiringIn) {
     super()
-    this.context = contextAgent
+    this.wiring = wiringIn
     this.live = true
-    this.holepunchLive = contextAgent.network
-    this.liveBesearch = contextAgent.besearch
-    this.heliclock = contextAgent.heliclock
-    this.liveBBAI = new BbAi(this.context)
+    this.holepunchLive = this.wiring.network
+    this.liveBesearch = this.wiring.besearch
+    this.heliclock = this.wiring.heliclock
+    this.liveBBAI = new BbAi(this.wiring)
     this.wsocket = {}
     this.wlist = []
     this.peerNetworklisten()

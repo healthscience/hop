@@ -12,12 +12,12 @@ import EventEmitter from 'events'
 
 class HeliRoute extends EventEmitter {
 
-  constructor(context) {
+  constructor(wiringIn) {
     super()
-    this.context = context
-    this.heliclock = context.heliclock
-    this.heliLocation = context.heliLocation
-    this.holepunchLive = context.network
+    this.wiring = wiringIn
+    this.heliclock = this.wiring.heliclock
+    this.heliLocation = this.wiring.heliLocation
+    this.holepunchLive = this.wiring.network
     this.wsocket = {}
     this.wlist = []
   }

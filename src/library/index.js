@@ -14,13 +14,13 @@ import LibraryManager from 'library-hop'
 
 class LibraryRoute extends EventEmitter {
 
-  constructor(contextAgents) {
+  constructor(wiringIn) {
     console.log('lib route')
     super()
-    this.context = contextAgents
+    this.wiring = wiringIn
     this.live = true
-    this.libManager = new LibraryManager(contextAgents)
-    this.holepunchLive = contextAgents.network
+    this.libManager = new LibraryManager(this.wiring)
+    this.holepunchLive = this.wiring.network
     this.wsocket = {}
     this.wlist = []
     this.libraryListen()
@@ -55,7 +55,7 @@ class LibraryRoute extends EventEmitter {
   libraryListen = async function () {
     this.libManager.on('lifestrap-genesis', (data) => {
       //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
-      this.context.bbai.liveBBAI.bringToBe('woken', data.data)
+      this.wiring.bbai.liveBBAI.bringToBe('woken', data.data)
       // keep beebee in bentoboxds 
       this.wsocket.send(JSON.stringify(data))
     })
@@ -64,7 +64,7 @@ class LibraryRoute extends EventEmitter {
       //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
       console.log('lib route awaken', data)
       if (data.data.length > 0) {
-        this.context.bbai.liveBBAI.bringToBe('woken', data.data[0])
+        this.wiring.bbai.liveBBAI.bringToBe('woken', data.data[0])
       }
       // keep beebee in bentoboxds 
       this.wsocket.send(JSON.stringify(data))
