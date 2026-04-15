@@ -49,7 +49,7 @@ class HOP extends EventEmitter {
     this.MessagesFlow = new MessageFlow()
     this.hopCrypto = {}
     this.DataNetwork = {}
-    this.resonAgents = hopSwarm
+    this.resonAgents = null
     this.spine = {}
     this.wsocket = {}
     this.socketCount = 0
@@ -152,22 +152,26 @@ class HOP extends EventEmitter {
 
     // Build the Context Object (The Nervous System)
     this.wiring = {
-      heliclock: this.heliLocation,
-      heliLocation: this.heliLocation,
-      crypto: this.hopCrypto,
-      network: this.DataNetwork,
-      bbai: null,
-      resonagents: this.resonAgents,
-      safeflow: null,
-      besearch: null,
-      library: null
+      heliclock: this.HeliClock,
+      heliLocation: this.heliLocation, // The Geospatial Constraint
+      crypto: this.hopCrypto,          // Single source of cryptographic truth
+      network: this.DataNetwork,      // The Holepunch Substrate
+      // The active 'Thinking' units
+      bbai: null,                    // The Orchestrator (BBRoute)
+      resonagents: hopSwarm, // The Cell Nursery (ResonSwarmManager)
+      // The 'Sensory' and 'Memory' routes
+      safeflow: null,                // The Bio-Synapse
+      besearch: null,                // The Discovery-Synapse
+      library: null                  // The Cultural-Synapse
     }
 
     // Phase 2: Wiring (Synapses)
     // Pass the WHOLE context. Routes pull what they need from it.
     this.wiring.bbai = new BBRoute(this.wiring)
     this.wiring.safeflow = new SfRoute(this.wiring)
-    this.wiring.library = new LibraryRoute(this.wiring) 
+    this.wiring.library = new LibraryRoute(this.wiring)
+    this.wiring.resonagents.wiring = this.wiring
+    this.resonAgents = this.wiring.resonagents
     // if wiring access to websocket (will be removed in v2)
     this.wiring.bbai.setWebsocket(this.wsocket)
     this.wiring.safeflow.setWebsocket(this.wsocket)
@@ -182,6 +186,8 @@ class HOP extends EventEmitter {
     this.HeliRoute = new HeliRoute(this.wiring)
     this.HeliRoute.setWebsocket(this.wsocket)
 
+    // bring resonAgents to be
+    // await this.wiring.bbai.igniteTrinity()
 
     await this.listenHeliclock()
     await this.listenNetwork()

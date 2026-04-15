@@ -55,18 +55,18 @@ class LibraryRoute extends EventEmitter {
   libraryListen = async function () {
     this.libManager.on('lifestrap-genesis', (data) => {
       //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
-      this.wiring.bbai.liveBBAI.bringToBe('woken', data.data)
+      this.wiring.bbai.liveBBAI.bringToBe('genesis', data.data)
       // keep beebee in bentoboxds 
       this.wsocket.send(JSON.stringify(data))
     })
 
     this.libManager.on('lifestrap-awaken', (data) => {
       //  bring to be  key ids, life-strap, dialogue, make be resonAgent and its neat-hop  But get lifestap key back first quickly
-      console.log('lib route awaken', data)
       if (data.data.length > 0) {
         this.wiring.bbai.liveBBAI.bringToBe('woken', data.data[0])
       }
-      // keep beebee in bentoboxds 
+      // keep beebee in bentoboxds
+      console.log('lifestrap-awaken  prep ssend')
       this.wsocket.send(JSON.stringify(data))
     })
 

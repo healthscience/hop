@@ -26,6 +26,30 @@ class BBRoute extends EventEmitter {
     this.wlist = []
     this.peerNetworklisten()
     this.listenBBresponse()
+    this.trinity = { physics: null, language: null, pattern: null };
+  }
+
+  /**
+   * bring three resonAgents to be
+   * @method igniteTrinity
+   */
+  igniteTrinity = async function() {
+    // 1. Check if the Synapse is ready
+    if (!this.wiring.safeflow) {
+      throw new Error("Cannot ignite Trinity: safeFLOW synapse not found.");
+    }
+
+    // 2. Birth the Cells (resonAgents)
+    // These are initialized within the Synapse's scope
+    this.trinity.physics = await this.wiring.resonagents.birthAgent('physics', 'live');
+
+    // 3. Direct Feed (Zero-Draft Routing)
+    // We bypass the global brain for high-speed sensor data
+    this.wiring.safeflow.on('biomarker_tick', (data) => {
+      // The Synapse feeds the Cell directly
+      this.wiring.resonagents.syncLedger(data); 
+    });
+    console.log("[Synapse] Trinity ignited and short-circuited to safeFLOW.");
   }
 
   /**
