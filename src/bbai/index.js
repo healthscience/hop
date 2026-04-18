@@ -141,6 +141,16 @@ class BBRoute extends EventEmitter {
   *
   */
   listenBBresponse = function () {
+
+    this.liveBBAI.on('ls-pattern', (pattern) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'ls-pattern'
+      bbReply.data = pattern
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
+
     this.liveBBAI.on('beebee-response-stream', (replyData) => {
       let bbReply = {}
       bbReply.type = 'bbai-stream-reply'
