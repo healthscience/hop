@@ -1,7 +1,7 @@
 {
   "name": "hop-ecs",
   "description": "health oracle protocol",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "main": "src/index.js",
   "bin": "src/index.js",
   "type": "module",
@@ -36,7 +36,7 @@
     "corestore": "^6.2.0",
     "cues-hop": "^0.0.2",
     "gpt4all": "^4.0.0",
-    "heliclock-hop": "^0.2.4",
+    "heliclock-hop": "^0.2.5",
     "holepunch-hop": "^0.7.4",
     "hop-crypto": "^0.1.5",
     "hop-dml": "^0.0.3",
