@@ -50,6 +50,11 @@ class HeliRoute extends EventEmitter {
   */
   heliPath = async function (message) {
     switch (message.action) {
+      case 'default-location-search':
+        let locationQueryDefault = message.data.town
+        const locationDefault = await this.heliLocation.search(locationQueryDefault);
+        this.bothSockets(JSON.stringify({ type: 'heliclock', action: 'heliclock-location-default', data: locationDefault }))
+        break
       case 'birth-location-search':
         let locationQuery = message.data.town
         const locationBirth = await this.heliLocation.search(locationQuery);
