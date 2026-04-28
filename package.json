@@ -36,7 +36,7 @@
     "corestore": "^6.2.0",
     "cues-hop": "^0.0.2",
     "gpt4all": "^4.0.0",
-    "heliclock-hop": "^0.2.7",
+    "heliclock-hop": "^0.2.8",
     "holepunch-hop": "^0.7.5",
     "hop-crypto": "^0.1.5",
     "hop-dml": "^0.0.3",
