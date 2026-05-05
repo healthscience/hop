@@ -101,6 +101,8 @@ class BBRoute extends EventEmitter {
       if (message.action === 'question') {
         // send to NPL rules
         await this.liveBBAI.beebeeFlow(message)
+      } else if (message.action === 'fetch-whole-loom') {
+        this.liveBBAI.bringToBe('loom', message.data)
       } else if (message.action === 'library') {
         await this.liveBBAI.beebeeFlow(message)
       } else if (message.action === 'learn-agent-start') {
@@ -141,6 +143,24 @@ class BBRoute extends EventEmitter {
   *
   */
   listenBBresponse = function () {
+
+    this.liveBBAI.on('ls-whole', (lifestrap, whole) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'ls-whole'
+      bbReply.data = { lifestrap: lifestrap, whole: whole }
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
+
+    this.liveBBAI.on('ls-whole-loom', (lifestrapKey, whole) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'ls-whole-loom'
+      bbReply.data = { lifestrap: lifestrapKey, whole: whole }
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
 
     this.liveBBAI.on('ls-pattern', (pattern) => {
       let bbReply = {}
@@ -192,7 +212,6 @@ class BBRoute extends EventEmitter {
         bbReply.bbid = replyData.bbid
         this.bothSockets(JSON.stringify(bbReply))        
       } else if (replyData.type === 'bbai-reply' && replyData.action === 'npl-reply') {
-        console.log('gbeeebee lens reply')
         // use a template for beebee to deliver support / helpful info.
         let beebeeInfo = {} // this.beebeeTempate('lens', replyData.data)
         let bbReply = {}
