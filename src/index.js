@@ -443,7 +443,7 @@ class HOP extends EventEmitter {
           verifyMessage = {
             type: 'account',
             action: 'unlocked-verify-complete',
-            data: { verified: true, unlocked: true },
+            data: { verified: true, unlocked: true, pubKey: pubKey },
             bbid: ''
           }
           // bring HOP fully to life
