@@ -144,6 +144,15 @@ class BBRoute extends EventEmitter {
   */
   listenBBresponse = function () {
 
+    this.liveBBAI.on('seed-library', (seedLib) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'seed-library'
+      bbReply.data = seedLib
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
+
     this.liveBBAI.on('ls-whole', (lifestrap, whole) => {
       let bbReply = {}
       bbReply.type = 'bbai-reply'
@@ -163,6 +172,7 @@ class BBRoute extends EventEmitter {
     })
 
     this.liveBBAI.on('ls-pattern', (pattern) => {
+      console.log('ls-pattern')
       let bbReply = {}
       bbReply.type = 'bbai-reply'
       bbReply.action = 'ls-pattern'
