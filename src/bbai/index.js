@@ -171,6 +171,15 @@ class BBRoute extends EventEmitter {
       this.wsocket.send(JSON.stringify(bbReply))
     })
 
+    this.liveBBAI.on('warm-peers-begin', (seedLib) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'warm-peers-begin'
+      bbReply.data = seedLib
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
+
     this.liveBBAI.on('ls-pattern', (pattern) => {
       console.log('ls-pattern')
       let bbReply = {}

@@ -73,10 +73,17 @@ class LibraryRoute extends EventEmitter {
     this.libManager.on('libmessage', (data) => {
       this.bothSockets(data)
     })
+    // keep track of warm peer live
+    this.libManager.on('set-warmpeer', (data) => {
+      this.holepunchLive.setWarmPeers(data.data)
+    })
+
     // initial connection with warm peer
     this.libManager.on('complete-warmpeer', async (pubkey) => {
+      console.log('complete-warmpeer after saving)))))))')
+      console.log(pubkey)
       // get latest list and pass on to holepunch-hop
-      let updatePeersNetwork = await this.holepunchLive.BeeData.getPeersHistory('peer')
+      let updatePeersNetwork = await this.holepunchLive.BeeData.getPeersHistory('hopeer')
       this.holepunchLive.Peers.latestPeerNetwork(updatePeersNetwork)
       // pass on publick key of peer
       this.holepunchLive.warmPeerPrepare(pubkey, false)
