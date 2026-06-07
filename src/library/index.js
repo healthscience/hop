@@ -15,7 +15,6 @@ import LibraryManager from 'library-hop'
 class LibraryRoute extends EventEmitter {
 
   constructor(wiringIn) {
-    console.log('lib route')
     super()
     this.wiring = wiringIn
     this.live = true
@@ -66,7 +65,6 @@ class LibraryRoute extends EventEmitter {
         this.wiring.bbai.liveBBAI.bringToBe('woken', data.data[0])
       }
       // keep beebee in bentoboxds
-      console.log('lifestrap-awaken  prep ssend')
       this.wsocket.send(JSON.stringify(data))
     })
 
