@@ -94,6 +94,13 @@ class LibraryRoute extends EventEmitter {
       peerTopic.data = data
       this.wsocket.send(JSON.stringify(peerTopic))
     })
+
+    this.libManager.on('complete-peer-contract', (data) => {
+      // update topic now name match is complete
+      this.holepunchLive.topicSaveReturn(data)
+    })
+
+
     // name match success inform bee
     this.libManager.on('complete-name-updatesave', (data) => {
       // inform beebee and peer name
@@ -102,8 +109,6 @@ class LibraryRoute extends EventEmitter {
       peerNotify.action = 'network-peer-name'
       peerNotify.data = data
       this.wsocket.send(JSON.stringify(peerNotify))
-      // write back to other peer
-      // holepunchLive.topicSaveReturn(data)
     })
     // message for SafeFlow
     this.libManager.on('libsafeflow', (data) => {

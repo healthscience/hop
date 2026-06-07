@@ -655,7 +655,7 @@ class HOP extends EventEmitter {
       libMessageout.action = 'account'
       libMessageout.reftype = 'new-peer-topic'
       libMessageout.privacy = 'private'
-      libMessageout.task = 'PUT'
+      libMessageout.task = 'UPDATE'
       libMessageout.data = data
       libMessageout.bbid = ''
       await this.wiring.library.libManager.libraryManage(libMessageout)
