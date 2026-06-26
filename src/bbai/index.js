@@ -83,15 +83,6 @@ class BBRoute extends EventEmitter {
   }
 
   /**
-   * 
-   * @method bringToBePath
-   * 
-  */
-  bringToBePath = async function () {
-    this.liveBBAI.bringToBe()
-  }
-
-  /**
   * toolkit ai messages
   * @method bbAIpath
   *
@@ -181,7 +172,6 @@ class BBRoute extends EventEmitter {
     })
 
     this.liveBBAI.on('ls-pattern', (pattern) => {
-      console.log('ls-pattern')
       let bbReply = {}
       bbReply.type = 'bbai-reply'
       bbReply.action = 'ls-pattern'

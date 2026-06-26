@@ -384,7 +384,6 @@ class HOP extends EventEmitter {
   * @method messageResponder
   *
   */
-  //  = function (o) {
   messageResponder = async (o) => {
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
