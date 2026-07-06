@@ -317,6 +317,7 @@ class HOP extends EventEmitter {
     }
 
     if (o.action === 'verify-crypto-wasm') {
+      console.log('password path')
       this.verifyAndConnect(o.data)
     }
 
@@ -385,6 +386,8 @@ class HOP extends EventEmitter {
   *
   */
   messageResponder = async (o) => {
+    // console.log('message responseer')
+    // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
       await this.wiring.bbai.bbAIpath(messageRoute)
@@ -433,7 +436,6 @@ class HOP extends EventEmitter {
   */
   verifyAndConnect = async (verData) => {
     const verDataObj = typeof verData === 'string' ? JSON.parse(verData) : verData
-    
     if (verDataObj.pwd) {
       try {
         const pubKey = await this.unlockPeer(verDataObj.pwd)
@@ -454,6 +456,7 @@ class HOP extends EventEmitter {
           HOPgatekeeper.data = { feedback: 'Wrong password entered.' }
           this.wsocket.send(JSON.stringify(HOPgatekeeper))
         }
+
         this.sendSocketMessage(JSON.stringify(verifyMessage))
         return true
       } catch (err) {
@@ -763,4 +766,6 @@ if (args.length > 0) {
   // Default value if no argument is provided
 }
 
-new HOP(options)
+const liveHOPInstance = new HOP(options)
+
+export { liveHOPInstance }

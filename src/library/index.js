@@ -71,6 +71,7 @@ class LibraryRoute extends EventEmitter {
     this.libManager.on('libmessage', (data) => {
       this.bothSockets(data)
     })
+    
     // keep track of warm peer live
     this.libManager.on('set-warmpeer', (data) => {
       this.holepunchLive.setWarmPeers(data.data)
