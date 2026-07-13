@@ -17,16 +17,16 @@ import LibComposer from 'librarycomposer'
 
 class SfRoute extends EventEmitter {
 
-  constructor(context) {
+  constructor(wiring) {
     super()
-    this.context = context
+    this.wiring = wiring
     this.live = true
     this.wsocket = {}
     this.wlist = []
-    this.holepunchLive = context.network
-    this.heliclock = context.heliclock
-    this.liveLibrary = new LibComposer(context)
-    this.SafeFlow = new SafeFlowECS(this.holepunchLive)
+    this.holepunchLive = wiring.network
+    this.heliclock = wiring.heliclock
+    this.liveLibrary = new LibComposer(wiring)
+    this.SafeFlow = new SafeFlowECS(wiring)
     this.SafeFlow.entityGetter()
     this.sfListeners()
   }
@@ -166,8 +166,8 @@ class SfRoute extends EventEmitter {
       data.type = 'sf-updateEntity'
       this.bothSockets(JSON.stringify(data))
     })
-    this.SafeFlow.on('displayUpdateEntityRange', (data) => {
-      data.type = 'sf-updateEntityRange'
+    this.SafeFlow.on('sf-displayUpdateEntityRange', (data) => {
+      data.type = 'safeflow-ecs'
       this.bothSockets(JSON.stringify(data))
     })
     this.SafeFlow.on('displayEmpty', (data) => {
