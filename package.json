@@ -38,7 +38,7 @@
     "corestore": "^6.2.0",
     "cues-hop": "^0.0.2",
     "heliclock-hop": "^0.3.2",
-    "holepunch-hop": "^0.8.1",
+    "holepunch-hop": "file:../holepunch-hop/holepunch-hop-0.8.2.tgz",
     "hop-crypto": "^0.1.6",
     "hop-dml": "^0.0.3",
     "hop-message": "^0.3.0",

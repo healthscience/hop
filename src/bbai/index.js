@@ -144,6 +144,15 @@ class BBRoute extends EventEmitter {
       this.wsocket.send(JSON.stringify(bbReply))
     })
 
+    this.liveBBAI.on('graft-library', (graftLib) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'graft-library'
+      bbReply.data = graftLib
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
+
     this.liveBBAI.on('ls-whole', (lifestrap, whole) => {
       let bbReply = {}
       bbReply.type = 'bbai-reply'

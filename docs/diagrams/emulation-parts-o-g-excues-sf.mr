@@ -1,0 +1,31 @@
+graph TD
+    %% Source Layers
+    subgraph Lab [Sculpting Lab / Peer Layer]
+        A[Orgo/Gelle Creator] --> B[Contract Library]
+        B --> C[Heli Identity/Time Stamp]
+        D[exoCue Assembler] 
+    end
+
+    %% Processing Layer
+    subgraph ECS [SafeFlow-ECS: The Logic Resolver]
+        E[Object Registry: 5x Independent Orgo/Gelle Nodes]
+        F[Constraint Processor: exoCue Graph]
+        G[Coherence Loop: Resolver]
+    end
+
+    %% Presentation Layer
+    subgraph DS [BentoBoxDS: The Emulation Stage]
+        H[View Engine]
+    end
+
+    %% Connections
+    C -->|Signed Contract Entry| E
+    D -->|Bind Nodes via exoCues| F
+    E --> F
+    F --> G
+    G -->|State Ledger Update| H
+    H -->|Local Render| DS
+
+    style ECS fill:#222,stroke:#00ffc8,stroke-width:2px,color:#fff
+    style Lab fill:#fdfcfb,stroke:#00796b
+    style DS fill:#fdfcfb,stroke:#00796b

@@ -1,0 +1,32 @@
+graph TD
+    %% Synchronization
+    Heli[Heli: Solar Day Pulse] -.->|Tick| ResonAgents
+    Heli -.->|Tick| ECS
+
+    %% Source
+    Input[Sculpting Lab / HOPquery] -->|Raw Instruction| Agent1
+
+    %% The Trinity of ResonAgents
+    subgraph ResonAgents [Trinity of resonAgents]
+        Agent1[Agent 1: Orgo/Structural Synthesizer]
+        Agent2[Agent 2: Gelle/Adaptive Weaver]
+        Agent3[Agent 3: exoCue/Relational Architect]
+    end
+
+    %% Processing
+    Agent1 -->|Validated Contracts| ECS
+    Agent2 -->|Validated Contracts| ECS
+    Agent3 -->|Constraint Graph| ECS
+
+    %% Execution Fabric
+    subgraph ExecutionFabric [safeflow-ecs]
+        ECS[Constraint & Coherence Engine]
+    end
+
+    %% Feedback & Emulation
+    ECS -->|Coherent Ledger State| DS[BentoBoxDS Emulation]
+    DS -->|Peer Input/Mutation| Input
+
+    style ExecutionFabric fill:#1a1a1a,stroke:#00ffc8,stroke-width:2px,color:#fff
+    style ResonAgents fill:#fdfcfb,stroke:#00796b
+    style Heli fill:#fff9c4,stroke:#fbc02d
