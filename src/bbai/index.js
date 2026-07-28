@@ -248,6 +248,10 @@ class BBRoute extends EventEmitter {
         this.bothSockets(JSON.stringify(bbReply))
       }
     })
+
+    this.liveBBAI.on('beebee-safeflow', (replyData) => {
+      this.bothSockets(JSON.stringify(replyData))
+    })
   }
 
   /**

@@ -167,9 +167,10 @@ class HOP extends EventEmitter {
 
     // Phase 2: Wiring (Synapses)
     // Pass the WHOLE context. Routes pull what they need from it.
-    this.wiring.bbai = new BBRoute(this.wiring)
+
     this.wiring.safeflow = new SfRoute(this.wiring)
     this.wiring.library = new LibraryRoute(this.wiring)
+    this.wiring.bbai = new BBRoute(this.wiring)
     this.wiring.resonagents.wiring = this.wiring
     this.resonAgents = this.wiring.resonagents
     // if wiring access to websocket (will be removed in v2)
@@ -197,7 +198,7 @@ class HOP extends EventEmitter {
     await this.listenSF()
   }
 
-  /**
+  /**currentFile
   * server & websocket
   * @method hopConnect
   *
@@ -217,7 +218,7 @@ class HOP extends EventEmitter {
     })
 
     server.on('error', function(e) {
-      console.log('problem with request: ' + e.stack);
+      console.log('problith request: ' + e.stack);
     })
 
     // 2. Upgrade to WebSocket with Origin Check

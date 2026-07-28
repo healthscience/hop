@@ -72,6 +72,10 @@ class LibraryRoute extends EventEmitter {
       this.bothSockets(data)
     })
     
+    this.libManager.on('beebee-sf', (data) => {
+      this.wiring.bbai.liveBBAI.processHOPstory(data)
+    })
+
     // keep track of warm peer live
     this.libManager.on('set-warmpeer', (data) => {
       this.holepunchLive.setWarmPeers(data.data)
