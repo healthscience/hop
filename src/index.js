@@ -167,9 +167,10 @@ class HOP extends EventEmitter {
 
     // Phase 2: Wiring (Synapses)
     // Pass the WHOLE context. Routes pull what they need from it.
-
     this.wiring.safeflow = new SfRoute(this.wiring)
     this.wiring.library = new LibraryRoute(this.wiring)
+    // set library in SafeFlow
+    this.wiring.safeflow.SafeFlow.setWiring(this.wiring)
     this.wiring.bbai = new BBRoute(this.wiring)
     this.wiring.resonagents.wiring = this.wiring
     this.resonAgents = this.wiring.resonagents

@@ -19,6 +19,7 @@ class SfRoute extends EventEmitter {
 
   constructor(wiring) {
     super()
+    console.log('HOP SF start')
     this.wiring = wiring
     this.live = true
     this.wsocket = {}

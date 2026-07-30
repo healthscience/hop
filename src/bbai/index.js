@@ -96,6 +96,8 @@ class BBRoute extends EventEmitter {
         this.liveBBAI.bringToBe('loom', message.data)
       } else if (message.action === 'library') {
         await this.liveBBAI.beebeeFlow(message)
+      } else if (message.action === 'hopstory') {
+        this.liveBBAI.expandHOPstory(message)
       } else if (message.action === 'learn-agent-start') {
         await this.liveBBAI.agentsCMP.beginAgents(message.data)
       } else if (message.action === 'learn-agent-stop') {
