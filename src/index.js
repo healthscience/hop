@@ -148,6 +148,7 @@ class HOP extends EventEmitter {
    *
   */
   contextWiring = async function () {
+    console.log('context wiring forming')
     // this.wiring.crypto.verify_coherence = wasm.verify_coherence
 
     // Build the Context Object (The Nervous System)
@@ -477,6 +478,7 @@ class HOP extends EventEmitter {
     // bring to be
     this.DataNetwork = new HolepunchHOP(this.options.storename)
     this.DataNetwork.setWebsocket(this.wsocket)
+    console.log('start store')
     this.DataNetwork.startStores()
     this.listenHP()
     return true;
@@ -591,6 +593,7 @@ class HOP extends EventEmitter {
   */
   listenHP = async function () {
     this.DataNetwork.on('hcores-active', async () => {
+      console.log('start HP')
       this.hopCrypto = new Encryption()
       // Attach Context to DataNetwork for ECS visibility
       this.DataNetwork.setHOPCrypto(this.hopCrypto)

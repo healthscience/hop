@@ -173,6 +173,16 @@ class BBRoute extends EventEmitter {
       this.wsocket.send(JSON.stringify(bbReply))
     })
 
+    this.liveBBAI.on('drive-index', (driveIndex) => {
+      let bbReply = {}
+      bbReply.type = 'bbai-reply'
+      bbReply.action = 'drive-index'
+      bbReply.data = { private: driveIndex, pubilc: {} }
+      bbReply.bbid = ''
+      this.wsocket.send(JSON.stringify(bbReply))
+    })
+
+
     this.liveBBAI.on('warm-peers-begin', (seedLib) => {
       let bbReply = {}
       bbReply.type = 'bbai-reply'
