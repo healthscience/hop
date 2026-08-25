@@ -31,6 +31,7 @@ import HeliRoute from './heliclock/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
 import HeliLocation from 'heliclock-hop'
+import createOsmosisMembrane from 'hop-osmosis'
 import { hopSwarm } from 'hop-resonagent'
 import { Cue, ConsilienceWeave } from 'cues-hop';
 
@@ -43,12 +44,13 @@ class HOP extends EventEmitter {
     this.wiring = {}
     this.hoptoken = ''
     this.options = options
+    this.DataNetwork = {}
+    this.osmosis = {}
     this.heliLocation = new HeliLocation()
     this.HeliClock = {}
     this.anchorDawn = new AnchorDawn(this.options.storename)
     this.MessagesFlow = new MessageFlow()
     this.hopCrypto = {}
-    this.DataNetwork = {}
     this.resonAgents = null
     this.spine = {}
     this.wsocket = {}
@@ -56,6 +58,7 @@ class HOP extends EventEmitter {
     this.wiring.bbai = {}
     this.wiring.safeflow = {}
     this.wiring.library = {}
+    this.wiring.osmosis = {}
     this.DmlRoute = {}
     this.HeliRoute = {}
     this.origin
@@ -149,7 +152,9 @@ class HOP extends EventEmitter {
   */
   contextWiring = async function () {
     console.log('context wiring forming')
-    // this.wiring.crypto.verify_coherence = wasm.verify_coherence
+    const networkOptions = { swarm: this.DataNetwork.swarm }
+    const localEnergyBudget = 100 // Local energy budget threshold
+    this.osmosis = createOsmosisMembrane(networkOptions, localEnergyBudget)
 
     // Build the Context Object (The Nervous System)
     this.wiring = {
@@ -163,7 +168,8 @@ class HOP extends EventEmitter {
       // The 'Sensory' and 'Memory' routes
       safeflow: null,                // The Bio-Synapse
       besearch: null,                // The Discovery-Synapse
-      library: null                  // The Cultural-Synapse
+      library: null,                // The Cultural-Synapse
+      osmosis: null
     }
 
     // Phase 2: Wiring (Synapses)
@@ -172,6 +178,12 @@ class HOP extends EventEmitter {
     this.wiring.library = new LibraryRoute(this.wiring)
     // set library in SafeFlow
     this.wiring.safeflow.SafeFlow.setWiring(this.wiring)
+    this.wiring.osmosis = this.osmosis
+    // reset listeners
+    // Attach route listeners now that objects exist
+    await this.listenLibrarySF()
+    await this.listenLibrary()
+
     this.wiring.bbai = new BBRoute(this.wiring)
     this.wiring.resonagents.wiring = this.wiring
     this.resonAgents = this.wiring.resonagents
@@ -179,6 +191,7 @@ class HOP extends EventEmitter {
     this.wiring.bbai.setWebsocket(this.wsocket)
     this.wiring.safeflow.setWebsocket(this.wsocket)
     this.wiring.library.setWebsocket(this.wsocket)
+
     
     // need to re examine these
     this.DmlRoute = new DmlRoute(this.DataNetwork)
@@ -469,8 +482,8 @@ class HOP extends EventEmitter {
     }
   }
 
-   /**
-  * HOP  all systems go
+  /**
+  * HOP all systems go
   * @method HOPlife
   *
   */
@@ -478,6 +491,10 @@ class HOP extends EventEmitter {
     // bring to be
     this.DataNetwork = new HolepunchHOP(this.options.storename)
     this.DataNetwork.setWebsocket(this.wsocket)
+    
+    // Wire network listeners immediately now that DataNetwork is initialized
+    await this.listenNetwork()
+
     console.log('start store')
     this.DataNetwork.startStores()
     this.listenHP()
@@ -505,43 +522,63 @@ class HOP extends EventEmitter {
     })
   }  
   
-  /**
-  * listener for HeliClock
+/**
+  * listener for HeliClock driving solar orbital phase alignment
   * @method listenHeliclock
   *
   */
   listenHeliclock = async function () {
-    this.HeliRoute.heliLocation.on('HELI_DEGREE_PULSE', (data) => {
-    let heliclockData = {}
-    heliclockData.type = 'heliclock'
-    heliclockData.action = 'peer-heli-wedge'
-    heliclockData.data = data
-    this.wsocket.send(JSON.stringify(heliclockData))
+    this.HeliRoute.heliLocation.on('HELI_DEGREE_PULSE', async (data) => {
+      // 1. Solar orbital angle step from Heli Clock
+      const currentAngle = data.degree || data
+
+      // 2. Membrane Ingestion (Story -> Simulation buffer)
+      if (this.osmosis && typeof this.osmosis.drainApprovedBuffer === 'function') {
+        const ingestBatch = await this.osmosis.drainApprovedBuffer()
+        if (ingestBatch && ingestBatch.length > 0) {
+          // 3. Forward batch to safeflow-ecs via SfRoute
+          await this.wiring.safeflow.ingestSolarBatch(ingestBatch, currentAngle)
+        }
+      }
+
+      // 4. Broadcast degree pulse to OrbitHUD / WebSocket
+      let heliclockData = {
+        type: 'heliclock',
+        action: 'peer-heli-wedge',
+        data: data
+      }
+      this.sendSocketMessage(JSON.stringify(heliclockData))
     })
 
     this.HeliRoute.heliLocation.on('HELI_DEGREE_SIGNATURE', (data) => {
-    let heliclockData = {}
-    heliclockData.type = 'heliclock'
-    heliclockData.action = 'heli-birth-signature'
-    heliclockData.data = data
-    this.wsocket.send(JSON.stringify(heliclockData))
+      let heliclockData = {
+        type: 'heliclock',
+        action: 'heli-birth-signature',
+        data: data
+      }
+      this.sendSocketMessage(JSON.stringify(heliclockData))
     })
 
     this.HeliRoute.on('heli-clock-start', (data) => {
-      let heliclockData = {}
-      heliclockData.type = 'heliclock'
-      heliclockData.action = 'peer-heli-signature'
-      heliclockData.data = projectionArcs
-      this.wsocket.send(JSON.stringify(heliclockData))
+      let heliclockData = {
+        type: 'heliclock',
+        action: 'peer-heli-signature',
+        data: projectionArcs
+      }
+      this.sendSocketMessage(JSON.stringify(heliclockData))
     })
-  }  
+  } 
+
 
   /**
   * listener from Library SF router
   * @method listenLibrarySF
-  *
   */
   listenLibrarySF = async function () {
+    if (!this.wiring?.library || typeof this.wiring.library.on !== 'function') {
+      return
+    }
+
     this.wiring.library.on('safeflow-query', async (data) => {
       await this.wiring.safeflow.newSafeflow(data)
     })
@@ -551,7 +588,7 @@ class HOP extends EventEmitter {
     this.wiring.library.on('safeflow-systems', async (data) => {
       await this.wiring.safeflow.setSafeflowSystems(data)
     })
-  } 
+  }
 
   /**
   * listener from Library router
@@ -619,14 +656,16 @@ class HOP extends EventEmitter {
   *
   */
   listenNetwork = async function () {
+
+    if (!this.DataNetwork || typeof this.DataNetwork.on !== 'function') {
+      return
+    }
+
     this.DataNetwork.on('peer-topeer', (data) => {
-      if (data.data.display === 'html') {
-        // route to beebee for text message back to peer & prep bentobox
+      if (data?.data?.display === 'html') {
         this.wiring.bbai.liveBBAI.networkPeerdirect(data)
-        // return vis data, like from SafeFlow
         this.wiring.safeflow.networkSFpeerdata(data.data) 
-      } else if (data.display === 'safeflow') {
-        // return vis data, like from SafeFlow
+      } else if (data?.display === 'safeflow') {
         this.wiring.safeflow.networkSFpeerdata(data) 
       }
     })
@@ -752,11 +791,12 @@ class HOP extends EventEmitter {
   *
   */
   closeHOP = async function () {
-    // inform network peer has closed.
-    await this.DataNetwork.networkPath({ type: 'network', action: 'peer-closed' })
-    // process.exit(1)
+    if (typeof this.DataNetwork?.networkPath === 'function') {
+      await this.DataNetwork.networkPath({ type: 'network', action: 'peer-close' })
+    } else if (typeof this.DataNetwork?.close === 'function') {
+      await this.DataNetwork.close()
+    }
   }
-
 }
 
 export default HOP

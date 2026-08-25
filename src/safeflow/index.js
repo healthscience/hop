@@ -142,6 +142,27 @@ class SfRoute extends EventEmitter {
   }
 
   /**
+  * Ingest approved osmosis batch into safeflow-ecs aligned to solar orbital angle
+  * @method ingestSolarBatch
+  * @param {Array} batch - Filtered cues from hop-osmosis membrane
+  * @param {number} angle - Current solar orbital angle from Heli Clock
+  */
+  ingestSolarBatch = async function (batch, angle) {
+    if (!batch || batch.length === 0) return
+
+    // Pass batch & solar angle into node-safeflow (Simulation phase)
+    if (typeof this.SafeFlow.ingestSolarBatch === 'function') {
+      await this.SafeFlow.ingestSolarBatch(batch, angle)
+    } else {
+      await this.SafeFlow.startFlow({
+        cues: batch,
+        solarAngle: angle,
+        phase: 'simulation'
+      })
+    }
+  }
+
+  /**
   * listen for outputs from SafeFlow
   * @method sfListeners
   *
