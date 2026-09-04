@@ -50,7 +50,7 @@ class HOP extends EventEmitter {
     this.HeliClock = {}
     this.anchorDawn = new AnchorDawn(this.options.storename)
     this.MessagesFlow = new MessageFlow()
-    this.hopCrypto = {}
+    this.hopCrypto = new Encryption()
     this.resonAgents = null
     this.spine = {}
     this.wsocket = {}
@@ -278,17 +278,23 @@ class HOP extends EventEmitter {
       this.wsocket.on('message', async (msg) => {
         // console.log('HOP message received')
         const o = JSON.parse(msg)
-        // console.log(o)
         // check keys / pw and startup HOP if all secure
         if (o.type.trim() === 'hop-auth') {
           await this.messageAuth(o)
         } else {
-          if (this.hoptoken === o.jwt)
-          // listen of close / messages
-          if (o.type.trim() === 'close') {
-            this.closeHOP()
+          // HOP jwt must be set and matched
+          if (this.hoptoken.length > 12) {
+            if (this.hoptoken === o.jwt) {
+              console.log('pass JWT')
+              // listen of close / messages
+              if (o.type.trim() === 'close') {
+                this.closeHOP()
+              } else {
+                await this.messageResponder(o)
+              }
+            }
           } else {
-            await this.messageResponder(o)
+            console.log('no JWT set in HOP')
           }
         }
       })
@@ -333,7 +339,7 @@ class HOP extends EventEmitter {
     }
 
     if (o.action === 'verify-crypto-wasm') {
-      console.log('password path')
+      console.log('HOP password path')
       this.verifyAndConnect(o.data)
     }
 
@@ -488,16 +494,18 @@ class HOP extends EventEmitter {
   *
   */
   HOPlife = async function () {
+    console.log('HOP  HOPlife start')
     // bring to be
     this.DataNetwork = new HolepunchHOP(this.options.storename)
     this.DataNetwork.setWebsocket(this.wsocket)
-    
+    // Attach Context to DataNetwork for ECS visibility
+    this.DataNetwork.setHOPCrypto(this.hopCrypto)
+    this.listenHP()
     // Wire network listeners immediately now that DataNetwork is initialized
     await this.listenNetwork()
 
-    console.log('start store')
-    this.DataNetwork.startStores()
-    this.listenHP()
+    await this.DataNetwork.startStores()
+
     return true;
   }
 
@@ -629,8 +637,9 @@ class HOP extends EventEmitter {
   *
   */
   listenHP = async function () {
+    console.log('HOP lisen live---------------')
     this.DataNetwork.on('hcores-active', async () => {
-      console.log('start HP')
+      console.log('HOP start HP=======')
       this.hopCrypto = new Encryption()
       // Attach Context to DataNetwork for ECS visibility
       this.DataNetwork.setHOPCrypto(this.hopCrypto)
@@ -732,9 +741,11 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('beebee-publib-notification', (data) => {
+      console.log('data from network replication or direct')
+      console.log(data)
       let peerId = {}
       peerId.type = 'network-notification'
-      peerId.action = 'network-library-n1'
+      peerId.action = 'osmosis-replication'
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
     })
@@ -807,6 +818,7 @@ options.port = 9888
 const args = process.argv.slice(2)
 if (args.length > 0) {
   options.storename = args[0]
+  options.port = args[1] || 9888
 } else {
   // Default value if no argument is provided
 }
