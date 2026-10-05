@@ -31,7 +31,6 @@ import HeliRoute from './heliclock/index.js'
 import BesearchRoute from 'besearch-hop'
 import HolepunchHOP from 'holepunch-hop'
 import HeliLocation from 'heliclock-hop'
-import createOsmosisMembrane from 'hop-osmosis'
 import { hopSwarm } from 'hop-resonagent'
 import { Cue, ConsilienceWeave } from 'cues-hop';
 
@@ -151,11 +150,6 @@ class HOP extends EventEmitter {
    *
   */
   contextWiring = async function () {
-    console.log('context wiring forming')
-    const networkOptions = { swarm: this.DataNetwork.swarm }
-    const localEnergyBudget = 100 // Local energy budget threshold
-    this.osmosis = createOsmosisMembrane(networkOptions, localEnergyBudget)
-
     // Build the Context Object (The Nervous System)
     this.wiring = {
       heliclock: this.HeliClock,
@@ -178,7 +172,7 @@ class HOP extends EventEmitter {
     this.wiring.library = new LibraryRoute(this.wiring)
     // set library in SafeFlow
     this.wiring.safeflow.SafeFlow.setWiring(this.wiring)
-    this.wiring.osmosis = this.osmosis
+    this.wiring.osmosis = this.DataNetwork.osmosis
     // reset listeners
     // Attach route listeners now that objects exist
     await this.listenLibrarySF()
@@ -540,11 +534,16 @@ class HOP extends EventEmitter {
       // 1. Solar orbital angle step from Heli Clock
       const currentAngle = data.degree || data
 
-      // 2. Membrane Ingestion (Story -> Simulation buffer)
-      if (this.osmosis && typeof this.osmosis.drainApprovedBuffer === 'function') {
-        const ingestBatch = await this.osmosis.drainApprovedBuffer()
+      // 2. Membrane Ingestion (Story -> Interplay buffer via DataNetwork transport)
+      if (typeof this.DataNetwork?.drainApprovedBuffer === 'function') {
+        const ingestBatch = await this.DataNetwork.drainApprovedBuffer()
         if (ingestBatch && ingestBatch.length > 0) {
           // 3. Forward batch to safeflow-ecs via SfRoute
+          await this.wiring.safeflow.ingestSolarBatch(ingestBatch, currentAngle)
+        }
+      } else if (typeof this.DataNetwork?.osmosis?.drainApprovedBuffer === 'function') {
+        const ingestBatch = await this.DataNetwork.osmosis.drainApprovedBuffer()
+        if (ingestBatch && ingestBatch.length > 0) {
           await this.wiring.safeflow.ingestSolarBatch(ingestBatch, currentAngle)
         }
       }
@@ -575,7 +574,7 @@ class HOP extends EventEmitter {
       }
       this.sendSocketMessage(JSON.stringify(heliclockData))
     })
-  } 
+  }
 
 
   /**
