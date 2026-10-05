@@ -7,6 +7,7 @@ import EventEmitter from 'events';
 
 import { createInviteBundle } from './inviteUtility.js';
 
+
 export async function setupHopTestEnvironment(options) {
   const { enginePath, port, storename, passphrase } = options;
 
@@ -199,11 +200,22 @@ const acceptInvite = async (base64InviteCode) => {
     return await waitForMessage((msg) => msg.action === 'osmosis-complete', 30000);
   };
 
-  /* const getHyperbeeCount = async () => {
+  const getHyperbeeCount = async () => {
     send({ type: 'library', action: 'cues', task: 'GET', privacy: 'public', data: 'common' });
-    const countMsg = await waitForMessage((msg) => msg.action === 'cues-history', 500000);
-    return countMsg?.data?.count || 0;
-  }; */
+    const countMsg = await waitForMessage((msg) => {
+      if (msg.type !== 'safeflow-ecs') {
+        // console.log('HELPER mes get cues___________')
+        // console.log(msg)
+      }
+        if (msg.action === 'cues-history') {
+
+          console.log('TEST cues back history-----')
+          console.log(msg)
+          return true
+        }
+      })
+    return countMsg;
+  };
 
  // Add inside setupHopTestEnvironment
   const waitForEvent = (actionName, timeoutMs = 150000) => {
@@ -227,8 +239,8 @@ const acceptInvite = async (base64InviteCode) => {
     generateInvite,
     sendInvite,
     acceptInvite,
-    requestOsmosis
-    // getHyperbeeCount
+    requestOsmosis,
+    getHyperbeeCount
   };
 }
 

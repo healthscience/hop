@@ -741,8 +741,8 @@ class HOP extends EventEmitter {
     })
 
     this.DataNetwork.on('beebee-publib-notification', (data) => {
-      console.log('data from network replication or direct')
-      console.log(data)
+      // console.log('++++data from network replication or direct')
+      // console.log(data)
       let peerId = {}
       peerId.type = 'network-notification'
       peerId.action = 'osmosis-replication'

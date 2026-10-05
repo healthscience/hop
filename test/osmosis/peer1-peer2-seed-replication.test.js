@@ -5,8 +5,8 @@ import os from 'os';
 
 import { setupHopTestEnvironment, teardownHopTestEnvironment } from '../helpers/ws-hop-osmosis.js';
 
-// peer 1 seed library info
-let count = null
+let count = null;
+let peer1PublicKey = ''
 
 describe('Dual Peer Osmosis Replication', () => {
   let peer1, peer2;
@@ -25,24 +25,6 @@ describe('Dual Peer Osmosis Replication', () => {
       storename: 'test-peer2-21',
       passphrase: 'testbee'
     });
-
-    /*
-
-    peer 1 installs the genesis seed library
-
-    peer 1 need to generate an invite and peer 2 needs to accept
-
-    TEST  test that peer 1 is connected to peer2. 
-    TEST test that peer 2 is connected to peer1.
-
-    Then peer 2 should have a beebee message.  Peer 1 has seed library open for osmosis.
-
-    Peer 2 clicks yes, start osmosis.  Peer 2 knows peer 1 public library e.g. cues hyperbee.  So it inform HOP that osmosis should start on the that hyperbee address.
-
-    TEST    test that peer two has same number of entries in their cues hyperbee as peer 1  cues hyperbee.
-
-    */
-
   }, 120000);
 
   afterAll(async () => {
@@ -52,7 +34,6 @@ describe('Dual Peer Osmosis Replication', () => {
 
   it('provisions isolated store directories and seed files for both peers', () => {
     const peer1SeedPath = path.join(os.homedir(), '.test-peer1-20', 'dawn', 'seed.enc');
-    // console.log(peer1SeedPath);
     const peer2SeedPath = path.join(os.homedir(), '.test-peer2-21', 'dawn', 'seed.enc');
 
     expect(fs.existsSync(peer1SeedPath)).toBe(true);
@@ -62,35 +43,24 @@ describe('Dual Peer Osmosis Replication', () => {
     expect(fs.statSync(peer2SeedPath).size).toBeGreaterThan(0);
   });
 
-// (Assuming setupHopTestEnvironment has already run in beforeAll)  
-  
   it('Peer 1 seeds the genesis library', async () => {  
-    // Only Peer 1 does this
-    let seedLibrary = await peer1.seedGenesisLibrary();
-    count = seedLibrary.data.cueContracts.length
+    const seedLibrary = await peer1.seedGenesisLibrary();
+    count = seedLibrary.data.cueContracts.length;
     expect(count).toBeGreaterThan(0);  
-  }, 1200000);
+  }, 120000);
 
 
-it('Peer 1 generates invite and Peer 2 accepts it', async () => {  
-    // 1. Peer 1 generates the invite bundle (Real world: Peer 1 creates and emails it)
-    let peerPubkey = peer1.swarmPubkey;
+  it('Peer 1 generates invite and Peer 2 accepts it', async () => {  
     const inviteBundle = await peer1.generateInvite('peer1-test');
     
-    console.log('peer invite back');
-    // console.log(inviteBundle);
-
     expect(inviteBundle).toBeDefined();  
     expect(inviteBundle.base64String).toBeDefined();
     
-    // set hop address
-    let hopInvite = 'hop:' + inviteBundle.bundle.publickey + inviteBundle.bundle.codename;
+    const hopInvite = 'hop:' + inviteBundle.bundle.publickey + inviteBundle.bundle.codename;
   
-    // 2. Set up Peer 1 to listen for the incoming connection BEFORE Peer 2 submits it.
-    // Based on your logs, HOP sends this as msg.type === 'peer-codename-inform'
     const peer1IncomingPromise = peer1.waitForMessage((msg) => {
       if (msg.type !== 'safeflow-ecs' && msg.action !== 'seed-progress') {
-        console.log('peer1 incomeing========')
+        console.log('peer1 listening +++++++++')
         console.log(msg)
       }
       return (
@@ -101,9 +71,17 @@ it('Peer 1 generates invite and Peer 2 accepts it', async () => {
       );
     }, 150000);
 
+    // keep track peer 1 public key as in peer 2 we need it (no ui to select peer)
+    const peer1PUBKEYPromise = peer1.waitForMessage((msg) => {
+      return (
+        msg.action === 'network-keys'
+      );
+    }, 150000);
+
     const peer2IncomingPromise = peer2.waitForMessage((msg) => {
-      if (msg.type !== 'safeflow-ecs') {
-        console.log('peer2 incomeing+++++++')
+
+      if (msg.type !== 'safeflow-ecs' && msg.action !== 'seed-progress') {
+        console.log('peer2 listening----------------')
         console.log(msg)
       }
       return (
@@ -111,48 +89,68 @@ it('Peer 1 generates invite and Peer 2 accepts it', async () => {
         msg.action === 'invite-live-accepted' || 
         msg.action === 'network-peer-live' ||
         msg.type === 'peer-codename-inform' ||
+        msg.type === 'network-notification' ||
         msg.action === 'osmosis-replication'
       );
     }, 150000);
 
-    // 3. ONLY NOW does Peer 2 accept it  
-    const connectionSuccess = await peer2.acceptInvite(hopInvite);
-    console.log('peer2 now input invite and waits peer 1 connection');
-    console.log(connectionSuccess);
-    
-    // 4. Peer 1 confirms the code name
-    const peer1Confirm = await peer1IncomingPromise;
-    console.log('Peer 1 received confirmation from Peer 2:');
-    console.log(peer1Confirm);
 
+    const connectionSuccess = await peer2.acceptInvite(hopInvite);
+
+    const peer1Confirm = await peer1IncomingPromise;
+    const peer1Pubkey = await peer1PUBKEYPromise;
+    const peer2Confirm = await peer2IncomingPromise;
+    console.log('confirmation of wwwwwwwwwwaaaaaaaarmmm connectoin')
+    console.log('peer111111111111')
+    console.log(peer1Confirm)
+    peer1PublicKey = peer1Pubkey.data.publickey
+    console.log(peer2Confirm)
+    console.log(peer1PublicKey)
 
     expect(connectionSuccess).toBeDefined();
-    // test peer 1 received peer 2
     expect(peer1Confirm).toBeDefined();
-    expect(peer1Confirm.action).toBe('invite-live-accepted')
-
-    
-    const peer2Confirm = await peer2IncomingPromise;
-    console.log('Peer 2 received messages 2222222222:');
-    console.log(peer2Confirm);
-    
-
+    expect(peer1Confirm.action).toBe('invite-live-accepted');
+    expect(peer2Confirm).toBeDefined();
   }, 150000);
-  
 
 
-  it('Peer 2 requests osmosis replication from Peer 1', async () => {  
-    
-    console.log('peer 1 count')
-    console.log(count)
-  
-    // Peer 2 asks to start replication using Peer 1's identifier  
-    const peer2FinalCount = {} // await peer2.requestOsmosis();  
-    console.log('peer two replication over=============')
-    // console.log(peer2)
-    // Verify Peer 2 now has the same data count as Peer 1  
-    // const peer2FinalCount = await peer2.getHyperbeeCount();  
-    expect(peer2FinalCount?.data?.cueContracts).toEqual(count);  
-  });
+it('Peer 2 explicitly start its own osmosis replication from Peer 1 manifest received on warm connection', async () => {
 
-});
+    console.log('bento cues library public key osmosis start message-----------')
+    // 1. Send Osmosis replication request from Peer 2 targeting Peer 1
+    peer2.send({
+      type: 'network',
+      action: 'osmosis-request-replication',
+      data: {
+        targetPeerKey: peer1PublicKey,
+        stores: ['bentocues']
+      }
+    })
+
+    console.log(`[osmosis:test] Awaiting full replication for target count: ${count}`)
+
+    // 2. Block until Peer 2 receives the completion signal
+    const completionSignal = await peer2.waitForMessage((msg) => {
+      if (msg.type !== 'safeflow-ecs') {
+        console.log('completion watiing peer 2')
+        console.log(msg)
+      }
+      return (
+        msg.type === 'osmosis' &&
+        msg.action === 'osmosis-replication-complete' &&
+        (msg.store === 'bentocues' || (Array.isArray(msg.stores) && msg.stores.includes('bentocues')))
+      )
+    }, 150000)
+
+    console.log('notification of peer 2  success omosis from peer 1')
+    console.log(completionSignal)
+    expect(completionSignal).toBeDefined()
+
+    // 3. Query local bentocues count after replication finishes
+    const peer2FinalCount = await peer2.getHyperbeeCount('bentocues')
+
+    console.log(`[osmosis:test] Final bentocues count -> Peer 2: ${peer2FinalCount?.data?.length} | Peer 1 Target: ${count}`)
+    expect(peer2FinalCount?.data?.length).toEqual(count)
+  }, 150000)
+
+})
