@@ -17,11 +17,11 @@ export async function setupHopTestEnvironment(options) {
   const child = spawn('/usr/bin/npm', ['run', 'start', '--test-storage-name', String(storename), '--port', String(port)], { cwd: baseHOPStepsUp });
 
   child.stdout.on('data', (data) => {
-    console.log(`[Peer:${port}] ${data.toString().trim()}`);
+    console.log(`[TESTPeer:${port}] ${data.toString().trim()}`);
   });
 
   child.stderr.on('data', (data) => {
-    console.error(`[Peer:${port} ERR] ${data.toString().trim()}`);
+    console.error(`[TESTPeer:${port} ERR] ${data.toString().trim()}`);
   });
 
   await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -157,8 +157,19 @@ export async function setupHopTestEnvironment(options) {
     return await waitForMessage((msg) => msg.action === 'seed-base-biology', 150000);
   };
 
-  const generateInvite = async (peerName) => {
+const generateInvite = async (peerName) => {
     const { bundle, base64String } = await createInviteBundle(peerName, swarmPubkey);
+    
+    // Atomically register the codename intent with Peer 1's HOP backend
+    send({
+      type: 'network',
+      action: 'share',
+      task: 'peer-share-codename',
+      reftype: null,
+      privacy: 'private',
+      data: bundle
+    });
+
     return { bundle, base64String };
   };
 
@@ -174,14 +185,23 @@ export async function setupHopTestEnvironment(options) {
     return await waitForMessage((msg) => msg.action === 'codename-shared', 150000);
   };
 
-const acceptInvite = async (base64InviteCode) => {
+const acceptInvite = async (peerName, base64InviteCode) => {
+
+    let peerPair = {}
+    peerPair.publickey = base64InviteCode
+    peerPair.name = peerName
+    peerPair.longterm = true
+    peerPair.topic = ''
+    peerPair.settopic = false
+    peerPair.live = false
+
     send({
       type: 'network',
       action: 'share',
       task: 'peer-share-invite',
       reftype: null,
       privacy: 'private',
-      data: { invite: base64InviteCode }
+      data: peerPair
     });
 
     // Since Peer 2's WebSocket doesn't receive any connection confirmation message (only periodic safeflow-ecs ticks), 
@@ -242,6 +262,16 @@ const acceptInvite = async (base64InviteCode) => {
     requestOsmosis,
     getHyperbeeCount
   };
+}
+
+export async function stopPeer(peer) {
+  if (peer?.wsClient && peer.wsClient.readyState === WebSocket.OPEN) {
+    peer.wsClient.close();
+  }
+  if (peer?.instance && typeof peer.instance.kill === 'function') {
+    peer.instance.kill('SIGTERM');
+  }
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 export function teardownHopTestEnvironment(wsClient, instance, storename) {

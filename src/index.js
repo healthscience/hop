@@ -681,62 +681,13 @@ class HOP extends EventEmitter {
     this.DataNetwork.on('peer-cuespace', (data) => {
       this.wiring.bbai.liveBBAI.networkPeerSpace(data)
     })
-  
-    this.DataNetwork.on('peer-incoming-save', async (data) => {
-      // save direct to library account contract, when save that will inform beeebee in BentoboxDS
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'new-peer'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'PUT'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.wiring.library.libManager.libraryManage(libMessageout)
-    })
-  
+
     this.DataNetwork.on('peer-reconnect-topic-notify', (data) => {
       let peerId = {}
       peerId.type = 'network-notification'
       peerId.action = 'warm-peer-topic'
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
-    this.DataNetwork.on('peer-topic-save', async (data) => {
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'new-peer-topic'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'UPDATE'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.wiring.library.libManager.libraryManage(libMessageout)
-    })
-
-    this.DataNetwork.on('peer-topic-update', async (data) => {
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'new-peer-topic'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'UPDATE'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.wiring.library.libManager.libraryManage(libMessageout)
-    })
-
-    this.DataNetwork.on('peer-codename-update', async (data) => {
-      let libMessageout = {}
-      libMessageout.type = 'library'
-      libMessageout.action = 'account'
-      libMessageout.reftype = 'update-peer-name'
-      libMessageout.privacy = 'private'
-      libMessageout.task = 'UPDATE'
-      libMessageout.data = data
-      libMessageout.bbid = ''
-      await this.wiring.library.libManager.libraryManage(libMessageout)
     })
 
     this.DataNetwork.on('beebee-publib-notification', (data) => {
@@ -748,15 +699,15 @@ class HOP extends EventEmitter {
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
     })
-
+    
     this.DataNetwork.on('replicate-publib-notification', (data) => {
       let peerId = {}
       peerId.type = 'network-notification'
       peerId.action = 'network-replicate-publiclibrary'
       peerId.data = data
       this.sendSocketMessage(JSON.stringify(peerId))
-    })
-
+    }) 
+  
     this.DataNetwork.on('peer-live-notify', (data) => {
       let peerNotify = {}
       peerNotify.type = 'account'
@@ -773,7 +724,7 @@ class HOP extends EventEmitter {
       this.sendSocketMessage(JSON.stringify(peerNotify))
     })
 
-    this.DataNetwork.on('invite-live-peer', (data) => {
+        this.DataNetwork.on('invite-live-peer', (data) => {
       let peerId = {}
       peerId.type = 'account'
       peerId.action = 'invite-live-accepted'
@@ -784,6 +735,7 @@ class HOP extends EventEmitter {
     this.DataNetwork.on('drive-save-large', (data) => {
       this.sendSocketMessage(JSON.stringify(data))
     })
+
   }  
 
   /**

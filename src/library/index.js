@@ -87,7 +87,7 @@ class LibraryRoute extends EventEmitter {
       let updatePeersNetwork = await this.holepunchLive.BeeData.getPeersHistory('hopeer')
       this.holepunchLive.Peers.latestPeerNetwork(updatePeersNetwork)
       // pass on publick key of peer
-      this.holepunchLive.warmPeerPrepare(pubkey, false)
+      // this.holepunchLive.warmPeerIdentityPrepare(pubkey, false)
     })
     // invite topic for future reconnect update
     this.libManager.on('complete-topic-save', (data) => {
