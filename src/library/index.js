@@ -78,7 +78,12 @@ class LibraryRoute extends EventEmitter {
 
     // keep track of warm peer live
     this.libManager.on('set-warmpeer', (data) => {
-      this.holepunchLive.setWarmPeers(data.data)
+      // notify beebee bentobox peer saved
+      let peerContract = {}
+      peerContract.type = 'account'
+      peerContract.action = 'peer-record-saved'
+      peerContract.data = data.data
+      this.wsocket.send(JSON.stringify(peerContract))
     })
 
     // initial connection with warm peer
