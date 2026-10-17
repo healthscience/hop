@@ -60,14 +60,11 @@ describe('Dual Peer Osmosis Replication', () => {
   
     const peer1IncomingPromise = peer1.waitForMessage((msg) => {
       if (msg.type !== 'safeflow-ecs' && msg.action !== 'seed-progress') {
-        console.log('peer1 listening +++++++++')
-        console.log(msg)
+        // console.log('peer1 listening +++++++++')
+        // console.log(msg)
       }
       return (
-        msg.action === 'warm-peer-topic' ||
-        msg.action === 'invite-live-accepted' || 
-        msg.action === 'network-peer-live' ||
-        msg.type === 'peer-codename-inform'
+        msg.action === 'peer-record-saved'
       );
     }, 150000);
 
@@ -81,35 +78,28 @@ describe('Dual Peer Osmosis Replication', () => {
     const peer2IncomingPromise = peer2.waitForMessage((msg) => {
 
       if (msg.type !== 'safeflow-ecs' && msg.action !== 'seed-progress') {
-        console.log('peer2 listening----------------')
-        console.log(msg)
+        // console.log('peer2 listening----------------')
+        // console.log(msg)
       }
       return (
-        msg.action === 'warm-peer-topic' ||
-        msg.action === 'invite-live-accepted' || 
-        msg.action === 'network-peer-live' ||
-        msg.type === 'peer-codename-inform' ||
+        msg.action === 'peer-record-saved' ||
         msg.type === 'network-notification' ||
         msg.action === 'osmosis-replication'
       );
     }, 150000);
 
 
-    const connectionSuccess = await peer2.acceptInvite(hopInvite);
+    const connectionSuccess = await peer2.acceptInvite('peer2-test', hopInvite);
 
     const peer1Confirm = await peer1IncomingPromise;
     const peer1Pubkey = await peer1PUBKEYPromise;
     const peer2Confirm = await peer2IncomingPromise;
-    console.log('confirmation of wwwwwwwwwwaaaaaaaarmmm connectoin')
-    console.log('peer111111111111')
-    console.log(peer1Confirm)
+    
     peer1PublicKey = peer1Pubkey.data.publickey
-    console.log(peer2Confirm)
-    console.log(peer1PublicKey)
 
     expect(connectionSuccess).toBeDefined();
     expect(peer1Confirm).toBeDefined();
-    expect(peer1Confirm.action).toBe('invite-live-accepted');
+    expect(peer1Confirm.action).toBe('peer-record-saved');
     expect(peer2Confirm).toBeDefined();
   }, 150000);
 
@@ -132,8 +122,8 @@ it('Peer 2 explicitly start its own osmosis replication from Peer 1 manifest rec
     // 2. Block until Peer 2 receives the completion signal
     const completionSignal = await peer2.waitForMessage((msg) => {
       if (msg.type !== 'safeflow-ecs') {
-        console.log('completion watiing peer 2')
-        console.log(msg)
+        // console.log('completion watiing peer 2')
+        // console.log(msg)
       }
       return (
         msg.type === 'osmosis' &&
@@ -142,8 +132,6 @@ it('Peer 2 explicitly start its own osmosis replication from Peer 1 manifest rec
       )
     }, 150000)
 
-    console.log('notification of peer 2  success omosis from peer 1')
-    console.log(completionSignal)
     expect(completionSignal).toBeDefined()
 
     // 3. Query local bentocues count after replication finishes

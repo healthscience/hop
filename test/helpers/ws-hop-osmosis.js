@@ -220,20 +220,32 @@ const acceptInvite = async (peerName, base64InviteCode) => {
     return await waitForMessage((msg) => msg.action === 'osmosis-complete', 30000);
   };
 
-  const getHyperbeeCount = async () => {
-    send({ type: 'library', action: 'cues', task: 'GET', privacy: 'public', data: 'common' });
+  const getHyperbeeCount = async (libStore) => {
+    let pubLibRoute = ''
+    let dtSeedorPeer = 'common'
+    if (libStore === 'bentocues') {
+      pubLibRoute = 'cues'
+    } else if (libStore === 'publiclibrary-ref') {
+      pubLibRoute = 'contracts'
+      dtSeedorPeer = 'common'
+    }
+
+    let sendMessage = { type: 'library', action: pubLibRoute, task: 'GET', privacy: 'public', data: dtSeedorPeer }
+    console.log('form message to get pub library type')
+    console.log(sendMessage)
+
+    send(sendMessage);
+
     const countMsg = await waitForMessage((msg) => {
       if (msg.type !== 'safeflow-ecs') {
-        // console.log('HELPER mes get cues___________')
-        // console.log(msg)
       }
-        if (msg.action === 'cues-history') {
+      if (libStore === 'bentocues') {
+        return msg.action === 'cues-history'
+      } else if (msg.action === 'publiclibrary-ref') {
+        return true
+      }
+    }, 150000)
 
-          console.log('TEST cues back history-----')
-          console.log(msg)
-          return true
-        }
-      })
     return countMsg;
   };
 
