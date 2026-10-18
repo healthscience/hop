@@ -131,7 +131,7 @@ describe('Dual Peer Osmosis Replication - Multi-Library', () => {
    console.log(refLibCount)
    const peer2RefLibCount = await peer2.getHyperbeeCount('publiclibrary-ref')
       console.log(peer2RefLibCount)
-   console.log(`[osmosis:test] Final publiclibrary-ref count -> Peer 2: ${peer2RefLibCount?.data?.length} | Peer 1 Target: ${refLibCount}`)
+   console.log(`[osmosis:test] Final publiclibrary-ref count -> Peer 2: ${peer2RefLibCount?.referenceContracts?.length} | Peer 1 Target: ${refLibCount}`)
    expect(peer2RefLibCount?.referenceContracts?.length).toEqual(refLibCount)
   }, 150000)
 

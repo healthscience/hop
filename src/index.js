@@ -37,7 +37,7 @@ import { Cue, ConsilienceWeave } from 'cues-hop';
 class HOP extends EventEmitter {
 
   constructor(options) {
-    console.log('hop be')
+    console.log('hop  be')
     console.log(options)
     super()
     this.wiring = {}
