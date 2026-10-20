@@ -254,6 +254,12 @@ const acceptInvite = async (peerName, base64InviteCode) => {
     return waitForMessage((msg) => msg.action === actionName, timeoutMs);
   };
 
+  const getStoreStats = async (libStore) => {
+    let pubLibRoute = libStore === 'bentocues' ? 'cues' : 'contracts';
+    send({ type: 'library', action: pubLibRoute, task: 'STATS', privacy: 'public' });
+    return await waitForMessage((msg) => msg.action === `${pubLibRoute}-stats`, 10000);
+  };
+
   return {
     on: emitter.on.bind(emitter),
     once: emitter.once.bind(emitter),
@@ -272,7 +278,8 @@ const acceptInvite = async (peerName, base64InviteCode) => {
     sendInvite,
     acceptInvite,
     requestOsmosis,
-    getHyperbeeCount
+    getHyperbeeCount,
+    getStoreStats
   };
 }
 
