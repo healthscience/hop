@@ -1,24 +1,21 @@
 # hop
 health oracle protocol
 
-An experimental and novel coherence protocol to allow a peer to peer network to control, analyse, share and manage decentralises machine learning.
+Gaia Intelligences Shape Health
+
+Attune health by biopoiesis
+
+An experimental and novel coherence protocol to running on a pere to peer network.
 
 Roadmap https://github.com/healthscience/hop/wiki
 
 The protocol brings together four main technologies and can be deployed on any peer to peer network and storage infrastrucutre:
 
-safeFLOW-ecs  - data science compute engine in design of entity component system
-DaMaHub Network Library - Create and use Module and Reference Contracts
-Messenger - route messages between BentoBox-DS or third party applications and HOP
-BeeBee  AI help agent - a natural language interface to produce HOP queries.
+safeFLOW-ecs  - 'scores' that resonancePulse from heli cycles. Authority for coherence ledger entry.
+Library - Cues conduction of knowledge. A cue is function of biopoiesis knowledge. Kept honest via Osmosis.
+BeeBee  - Help, support and orchestrator of the protocol.
+PtoP -  Peer to peer infrastructure via holepunch-hop, networking and storage of data. Warm and cold peers.
 
-PtoP data infrastructure - e.g. hypercore  hyperdrive hyperbee
-
-
-A new CLI command line interface tool to complement is also in the works
-
-
-( Old peerlink software in peerlink branch)
 
 TEST
 
@@ -27,6 +24,11 @@ npm run test
 INSTALL
 
 npm install
+
+npm install-scripts approve --all
+
+npm rebuild
+
 
 USING
 HOP connect to BentoBox-DS via a secure web socket.  Use certbot or certifcate issuer and save those in files call cert.pem and key.pm in the src folder.
@@ -39,5 +41,7 @@ let hopSF = new HOP(options)
 
 Call it
 
-node src/index.js
+node src/index.js -- test-hop-storage
+
+node src/index.js -- test-hop-storage 9822
 
