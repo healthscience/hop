@@ -67,7 +67,6 @@ class HeliRoute extends EventEmitter {
       case 'HELI_GENESIS_SAVE':
         const orbitSignature = await this.saveClock(message.data)
         this.heliLocation.activateSolarHeartbeat(orbitSignature.value.data);
-        console.log('orbitSignature', orbitSignature)
         this.bothSockets(JSON.stringify({ type: 'heliclock', action: 'heli-orbit-signature', data: orbitSignature }))
         break
       case 'get-clock':

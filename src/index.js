@@ -95,7 +95,6 @@ class HOP extends EventEmitter {
     if (result.isValid) {
       // The Hyperbee gets populated as valid cycles complete
       await this.spine.put(`cue!${newCue.hash}`, newCue);
-      console.log(`Knowledge Committed: ${newCue.hash}`);
     } else {
       console.warn("Incoherent Signal Pruned.");
     }
@@ -279,7 +278,6 @@ class HOP extends EventEmitter {
           // HOP jwt must be set and matched
           if (this.hoptoken.length > 12) {
             if (this.hoptoken === o.jwt) {
-              console.log('pass JWT')
               // listen of close / messages
               if (o.type.trim() === 'close') {
                 this.closeHOP()
@@ -333,7 +331,6 @@ class HOP extends EventEmitter {
     }
 
     if (o.action === 'verify-crypto-wasm') {
-      console.log('HOP password path')
       this.verifyAndConnect(o.data)
     }
 
@@ -402,8 +399,6 @@ class HOP extends EventEmitter {
   *
   */
   messageResponder = async (o) => {
-    // console.log('message responseer')
-    // console.log(o)
     let messageRoute = this.MessagesFlow.messageIn(o)
     if (messageRoute.type === 'bbai-reply') {
       await this.wiring.bbai.bbAIpath(messageRoute)
@@ -488,7 +483,6 @@ class HOP extends EventEmitter {
   *
   */
   HOPlife = async function () {
-    console.log('HOP  HOPlife start')
     // bring to be
     this.DataNetwork = new HolepunchHOP(this.options.storename)
     this.DataNetwork.setWebsocket(this.wsocket)
@@ -636,9 +630,7 @@ class HOP extends EventEmitter {
   *
   */
   listenHP = async function () {
-    console.log('HOP lisen live---------------')
     this.DataNetwork.on('hcores-active', async () => {
-      console.log('HOP start HP=======')
       this.hopCrypto = new Encryption()
       // Attach Context to DataNetwork for ECS visibility
       this.DataNetwork.setHOPCrypto(this.hopCrypto)

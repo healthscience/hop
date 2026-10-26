@@ -19,7 +19,6 @@ class SfRoute extends EventEmitter {
 
   constructor(wiring) {
     super()
-    console.log('HOP SF start')
     this.wiring = wiring
     this.live = true
     this.wsocket = {}
@@ -233,7 +232,6 @@ class SfRoute extends EventEmitter {
     // callbacks for datastores
     let resultMatch = {}
     if (data !== null) {
-      console.log('pass')
       if (Object.keys(data).length !== 0) {
         resultMatch.entity = entity
         resultMatch.data = data

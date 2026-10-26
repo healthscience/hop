@@ -49,7 +49,7 @@ class BBRoute extends EventEmitter {
       // The Synapse feeds the Cell directly
       this.wiring.resonagents.syncLedger(data); 
     });
-    console.log("[Synapse] Trinity ignited and short-circuited to safeFLOW.");
+
   }
 
   /**
